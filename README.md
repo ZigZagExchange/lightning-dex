@@ -10,9 +10,15 @@ Because both Arbitrum and Lightning settle instantly, this exchange should be ab
 
 The first implementation of this exchange will feature BTC <> WBTC swaps, with ETH, USDC, USDT, and DAI support to come soon after.
 
-# Bitcoin Base Layer <> Ethereum L1
+# Ethereum 
 
-Support for layer 1 swaps will be added later since it's slightly more complex. Because of slow block settlement times, BTC <> WBTC will be the only pair offered at first. 
+15s block times on Ethereum mean a swap could take as much as 1-2 minutes to complete. Pricing swaps for that long will be difficult, so likely only BTC <> WBTC swaps will be offered at first with the possibiliy of higher fee (0.5%) swaps being added later for ETH and USDC.
+
+Technically, it is not difficult to implement however, so this should follow soon after the Arbitrum DEX.  
+
+# Bitcoin Base Layer
+
+Support for base layer atmoci swaps will be added later since it's slightly more complex. Because of slow block settlement times, BTC <> WBTC will be the only pair offered at first. 
 
 # Roadmap
 

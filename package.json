@@ -1,0 +1,23 @@
+{
+  "name": "lightning-dex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZigZagExchange/lightning-dex.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ZigZagExchange/lightning-dex/issues"
+  },
+  "homepage": "https://github.com/ZigZagExchange/lightning-dex#readme",
+  "devDependencies": {
+    "hardhat": "^2.12.5"
+  }
+}

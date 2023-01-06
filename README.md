@@ -1,13 +1,9 @@
-# Sample Hardhat Project
+# Lightning DEX
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This DEX allows atomic swaps between EVM chains and Lightning.
 
-Try running some of the following tasks:
+Support for Bitcoin layer 1 will be added later since it's slightly more complex. 
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+This repo is under development and more info will be added soon. 
+
+Until then check out the `contracts` folder for the implementation and the `test` folder for examples. 

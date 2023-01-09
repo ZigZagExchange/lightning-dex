@@ -74,35 +74,41 @@ contract ZigZagBTCBridge is ERC20 {
 
   function createDepositHash(uint wbtc_amount, bytes32 hash, uint expiry) public {
     IERC20(WBTC_ADDRESS).transferFrom(msg.sender, address(this), wbtc_amount);
+    require(DEPOSIT_HASHES[hash].wbtc_amount == 0, "hash is already funded");
     DEPOSIT_HASHES[hash] = HTLC(msg.sender, wbtc_amount, expiry);    
   }
 
   function unlockDepositHash(bytes32 hash, bytes memory preimage) public {
     require(sha256(preimage) == hash, "preimage does not match hash");
     require(DEPOSIT_HASHES[hash].expiry > block.timestamp, "HTLC is expired");
+    require(DEPOSIT_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     delete DEPOSIT_HASHES[hash];
   }
 
   function reclaimDepositHash(bytes32 hash) public {
     require(DEPOSIT_HASHES[hash].expiry < block.timestamp, "HTLC is active");
+    require(DEPOSIT_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     IERC20(WBTC_ADDRESS).transfer(DEPOSIT_HASHES[hash].counterparty, DEPOSIT_HASHES[hash].wbtc_amount);
     delete DEPOSIT_HASHES[hash];
   }
 
   function createWithdrawHash(address counterparty, uint wbtc_amount, bytes32 hash, uint expiry) public {
     require(msg.sender == manager, "only manager can create withdraw hashes");
+    require(WITHDRAW_HASHES[hash].wbtc_amount == 0, "hash is already funded");
     WITHDRAW_HASHES[hash] = HTLC(counterparty, wbtc_amount, expiry);    
   }
 
   function unlockWithdrawHash(bytes32 hash, bytes memory preimage) public {
     require(sha256(preimage) == hash, "preimage does not match hash");
     require(WITHDRAW_HASHES[hash].expiry > block.timestamp, "HTLC is expired");
+    require(WITHDRAW_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     IERC20(WBTC_ADDRESS).transfer(WITHDRAW_HASHES[hash].counterparty, WITHDRAW_HASHES[hash].wbtc_amount);
     delete WITHDRAW_HASHES[hash];
   }
 
   function reclaimWithdrawHash(bytes32 hash) public {
     require(WITHDRAW_HASHES[hash].expiry < block.timestamp, "HTLC is active");
+    require(WITHDRAW_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     delete WITHDRAW_HASHES[hash];
   }
 }

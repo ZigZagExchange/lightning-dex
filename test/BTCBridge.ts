@@ -236,4 +236,73 @@ describe("BTCBridge", function () {
         await bridgeContract.connect(manager).createWithdrawHash(wallets[0].address, withdraw_amount, hash, expires);
         await expect(bridgeContract.connect(wallets[0]).reclaimWithdrawHash(hash)).to.be.revertedWith("HTLC is active");
     });
+
+    it("Cannot double fund withdraw hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const withdraw_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(manager).createWithdrawHash(wallets[0].address, withdraw_amount, hash, expires);
+        await expect(bridgeContract.connect(manager).createWithdrawHash(wallets[0].address, withdraw_amount, hash, expires))
+          .to.be.revertedWith("hash is already funded");
+    });
+
+    it("Cannot double reclaim withdraw hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const withdraw_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(manager).createWithdrawHash(wallets[0].address, withdraw_amount, hash, expires);
+        
+        await time.increase(86400)
+
+        await bridgeContract.connect(wallets[0]).reclaimWithdrawHash(hash)
+        await expect(bridgeContract.connect(wallets[0]).reclaimWithdrawHash(hash)).to.be.revertedWith("hash is not funded");
+    });
+
+    it("Cannot double unlock withdraw hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const withdraw_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+
+        await bridgeContract.connect(manager).createWithdrawHash(wallets[0].address, withdraw_amount, hash, expires);
+        await bridgeContract.connect(wallets[0]).unlockWithdrawHash(hash, preimage);
+        await expect(bridgeContract.connect(wallets[0]).unlockWithdrawHash(hash, preimage))
+          .to.be.reverted
+    });
+
+    it("Cannot double fund deposit hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+        await expect(bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires)).to.be.revertedWith("hash is already funded");
+    });
+
+    it("Cannot double reclaim deposit hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+        
+        await time.increase(86400)
+
+        await bridgeContract.connect(wallets[0]).reclaimDepositHash(hash)
+        await expect(bridgeContract.connect(wallets[0]).reclaimDepositHash(hash)).to.be.revertedWith("hash is not funded");
+    });
+
+    it("Cannot double unlock deposit hash", async function () {
+        const preimage = Buffer.from('check check', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+        await bridgeContract.connect(wallets[0]).unlockDepositHash(hash, preimage)
+        await expect(bridgeContract.connect(wallets[0]).unlockDepositHash(hash, preimage)).to.be.reverted
+    });
+
+
 });

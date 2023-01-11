@@ -1,9 +1,11 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT || 3000
 const LNInvoice = require("@node-lightning/invoice");
 const { Pool } = require('pg');
 const crypto = require('crypto');
+const dotenv = require('dotenv');
+
+dotenv.config()
 
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -32,9 +34,14 @@ app.post('/invoice', async (req, res) => {
   if ((decodedInvoice.timestamp + decodedInvoice.expiry) < now + 600) {
     return next("Bad expiry. Expiry should be 1 hour");
   }
-  await db.query("INSERT INTO hashes (hash, invoice) VALUES ($1, $2)", [payment_hash, invoice]);
+  await db.query("INSERT INTO hashes (hash, invoice) VALUES ($1, $2)", [decodedInvoice.paymentHash.toString('hex'), invoice]);
   res.status(200).json({"success": true });
 })
+
+app.get('/invoices', async (req, res) => {
+  const invoices = await db.query("SELECT * FROM hashes WHERE invoice IS NOT NULL");
+  res.status(200).json(invoices.rows);
+});
 
 app.get('/hash/:hash', async (req, res) => {
   const hashes = await db.query("SELECT * FROM hashes WHERE hash=$1", [payment_hash]);
@@ -47,7 +54,7 @@ app.post('/hash/preimage', async (req, res) => {
   const hash = req.body.hash;
   const computedHash = crypto.createHash('sha256').update(preimage, 'hex').digest('hex');
   if (hash !== computedHash) return next("preimage does not match hash");
-  await db.query("INSERT INTO hashes(hash, preimage) VALUES ($1,$2) ON CONFLICT DO UPDATE preimage=$2", [hash, preimage]);
+  await db.query("INSERT INTO hashes (hash, preimage) VALUES ($1,$2) ON CONFLICT (hash) DO UPDATE SET preimage=$2", [hash, preimage]);
   res.status(200).json({"success": true });
 });
 
@@ -56,7 +63,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ "err": err.message })
 })
 
-
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
-})
+module.exports = { app, db }

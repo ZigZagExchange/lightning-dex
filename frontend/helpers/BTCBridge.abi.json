@@ -66,6 +66,35 @@
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "DEPOSIT_HASHES",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "counterparty",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "wbtc_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiry",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "DEPOSIT_RATE_DENOMINATOR",
     "outputs": [
@@ -150,6 +179,35 @@
       {
         "internalType": "uint256",
         "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "WITHDRAW_HASHES",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "counterparty",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "wbtc_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expiry",
         "type": "uint256"
       }
     ],

@@ -6,11 +6,11 @@ import "@nomiclabs/hardhat-etherscan";
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
   etherscan: {
-    apiKey: "1CNJCN5DV3ADPJHXH2DRIM913MBSHYDE66"
+    apiKey: ""
   },
   networks: {
     goerli: {
-      url: "https://goerli.infura.io/v3/",
+      url: "https://goerli.infura.io/v3/3c7f5083c38943ea95aa49278ddeba53",
       accounts: []
     }
   },

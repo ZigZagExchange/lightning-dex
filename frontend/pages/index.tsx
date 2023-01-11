@@ -42,7 +42,6 @@ export default function Home() {
     }
 
     const wallets = await connectWallet();
-    console.log(wallets);
     const ethersProvider = new ethers.providers.Web3Provider(wallets[0].provider, Number(wallets[0].chains[0].id))
     const address = wallets[0].accounts[0].address;
     const WBTC = new ethers.Contract(GOERLI_WBTC_ADDRESS, ERC20_ABI, ethersProvider);
@@ -61,13 +60,17 @@ export default function Home() {
 
     const expiry = parseInt(Date.now() / 1000) + 7200;
     const Bridge = new ethers.Contract(GOERLI_BRIDGE_ADDRESS, BRIDGE_ABI);
-    const hashStatus = await Bridge.DEPOSIT_HASHES('0x' + payment_hash);
-    console.log(hashStatus);
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
+    const hashStatus = await BridgeSigner.DEPOSIT_HASHES('0x' + payment_hash);
+    if (hashStatus.wbtc_amount.gt(0)) {
+      setWbtcLocked(true);
+      return setLockWbtcError("Hash is already funded");
+    }
     try {
       const depositTx = await BridgeSigner.createDepositHash(amount.toString(), '0x' + payment_hash, expiry);
-      const depositResponse = await depositTx.wait();
       setLockWbtcError("Submitted: " + depositTx.hash);
+      const depositResponse = await depositTx.wait();
+      if (depositResponse.status === 0) return setWbtcLocked(true);
     } catch (e) {
       return setLockWbtcError(e.message);
     }
@@ -93,7 +96,7 @@ export default function Home() {
       <main className={styles.main}>
         <h1>WBTC to Lightning</h1>
         <h2>Step 1: Create Invoice</h2>
-        <p>Generate a Lightning invoice for the amount you want to receive</p>
+        <p>Generate a Lightning invoice for the amount you want to receive in your wallet and paste it here.</p>
         <textarea placeholder="lnbc..." rows="5" onChange={handleTextAreaChange}></textarea>
         <div>
           <div>Amount: {decodedInvoice.human_readable_part.amount} sats ({satsToBitcoin(decodedInvoice.human_readable_part.amount)} BTC)</div>
@@ -101,7 +104,7 @@ export default function Home() {
         </div>
 
         <h2>Step 2: Lock WBTC</h2>
-        <p>Submitting this transaction will hashlock WBTC into an atomic swap smart contract. We will not be able to unlock your WBTC until we pay your Lightning invoice.</p>
+        <p>Submitting this transaction will hashlock WBTC into an atomic swap smart contract. Your trading partner will not be able to unlock the WBTC until they pay your Lightning invoice.</p>
         <button onClick={lockWBTC} disabled={!payment_hash}>Lock WBTC</button>
         <p>{lockWbtcError}</p>
 
@@ -111,6 +114,10 @@ export default function Home() {
 
         <h2>Step 4: Check Your Lightning Wallet</h2>
         <p>Your invoice should be paid within 2-3 minutes. If it doesn't get paid, you can reclaim your WBTC in 2 hours. The process is trustless, so you can never lose your funds.</p>  
+
+        <h2>Troubleshooting</h2>
+        <p><i>Question: I locked my WBTC into the contract, but accidentally closed/refreshed the page before I could submit the invoice. Can I continue where I left off?</i></p>
+        <p>Yes. Paste the same invoice back into Step 1, then hit Lock WBTC in Step 2. Instead of submitting a new tx, the site will detect that you have already funded that hash and skip to the next step.</p>
 
       </main>
     </>

@@ -38,7 +38,7 @@ app.use('/', (req, res, next) => {
 
 app.use(express.json());
 
-app.post('/invoice', async (req, res) => {
+app.post('/invoice', async (req, res, next) => {
   const invoice = req.body.invoice;
   let decodedInvoice;
   try {
@@ -61,13 +61,13 @@ app.get('/invoices', async (req, res) => {
   res.status(200).json(invoices.rows);
 });
 
-app.get('/hash/:hash', async (req, res) => {
+app.get('/hash/:hash', async (req, res, next) => {
   const hashes = await db.query("SELECT * FROM hashes WHERE hash=$1", [payment_hash]);
   if (hashes.rows.length > 0) res.status(200).json(hashes.rows[0]);
   else next("Hash not found");
 })
 
-app.post('/hash/preimage', async (req, res) => {
+app.post('/hash/preimage', async (req, res, next) => {
   const preimage = req.body.preimage;
   const hash = req.body.hash;
   const computedHash = crypto.createHash('sha256').update(preimage, 'hex').digest('hex');
@@ -77,8 +77,8 @@ app.post('/hash/preimage', async (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).json({ "err": err.message })
+  console.error(err);
+  res.status(500).json({ err })
 })
 
 module.exports = { app, db, runDbMigration }

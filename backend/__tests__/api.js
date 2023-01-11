@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { app, db } = require("../app.js")
+const { app, db, runDbMigration } = require("../app.js")
 const LNInvoice = require("@node-lightning/invoice");
 const crypto = require('crypto');
 
@@ -11,7 +11,8 @@ const preimage = "9915a4c377ccdad9c29d2709a95f3223";
 const hash = crypto.createHash("sha256").update(preimage, "hex").digest("hex");
 
 beforeAll(async () => {
-  await db.query("DELETE FROM hashes");
+  await db.query("DROP TABLE IF EXISTS hashes");
+  await runDbMigration();
 });
 
 describe("Tests", () => {

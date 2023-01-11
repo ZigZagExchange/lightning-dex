@@ -12,13 +12,18 @@ const db = new Pool({
   ssl: { rejectUnauthorized: false },
 })
 
-db.query(`
-  CREATE TABLE IF NOT EXISTS hashes (
-    hash TEXT PRIMARY KEY,
-    invoice TEXT,
-    preimage TEXT
-  )
-`);
+async function runDbMigration () {
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS hashes (
+      hash TEXT PRIMARY KEY,
+      invoice TEXT,
+      preimage TEXT,
+      expiry INTEGER
+    )
+  `);
+}
+
+runDbMigration();
 
 app.use(express.json());
 
@@ -31,15 +36,17 @@ app.post('/invoice', async (req, res) => {
     return next("Bad invoice: " + e.message);
   }
   const now = parseInt(Date.now() / 1000)
-  if ((decodedInvoice.timestamp + decodedInvoice.expiry) < now + 600) {
+  const unix_expiry = decodedInvoice.timestamp + decodedInvoice.expiry;
+  if (unix_expiry < now + 600) {
     return next("Bad expiry. Expiry should be 1 hour");
   }
-  await db.query("INSERT INTO hashes (hash, invoice) VALUES ($1, $2)", [decodedInvoice.paymentHash.toString('hex'), invoice]);
+  const hash = decodedInvoice.paymentHash.toString('hex');
+  await db.query("INSERT INTO hashes (hash, invoice, expiry) VALUES ($1, $2, $3)", [hash, invoice, unix_expiry]);
   res.status(200).json({"success": true });
 })
 
 app.get('/invoices', async (req, res) => {
-  const invoices = await db.query("SELECT * FROM hashes WHERE invoice IS NOT NULL");
+  const invoices = await db.query("SELECT * FROM hashes WHERE invoice IS NOT NULL AND expiry > EXTRACT(EPOCH FROM NOW())");
   res.status(200).json(invoices.rows);
 });
 
@@ -63,4 +70,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ "err": err.message })
 })
 
-module.exports = { app, db }
+module.exports = { app, db, runDbMigration }

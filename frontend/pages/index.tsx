@@ -15,6 +15,7 @@ export default function Home() {
   
   const [userInvoice, setUserInvoice] = useState(null);
   const [lockWbtcError, setLockWbtcError] = useState("");
+  const [submitInvoiceError, setSubmitInvoiceError] = useState("");
   const [wbtcLocked, setWbtcLocked] = useState(false);
   let decodedInvoice;
   try {
@@ -78,6 +79,18 @@ export default function Home() {
   }
 
   async function submitInvoice() {
+    const response = await fetch('https://api.bitcoin.zigzag.exchange/invoice', {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        invoice: userInvoice
+      })
+    });
+    if (response.status != 200) {
+      const json = await response.json();
+      return setSubmitInvoiceError(json.err);
+    }
+    else return setSubmitInvoiceError("Submitted");
   }
 
   function satsToBitcoin(sats) {
@@ -105,12 +118,13 @@ export default function Home() {
 
         <h2>Step 2: Lock WBTC</h2>
         <p>Submitting this transaction will hashlock WBTC into an atomic swap smart contract. Your trading partner will not be able to unlock the WBTC until they pay your Lightning invoice.</p>
-        <button onClick={lockWBTC} disabled={!payment_hash}>Lock WBTC</button>
+        <button onClick={lockWBTC} disabled={!payment_hash || wbtcLocked}>Lock WBTC</button>
         <p>{lockWbtcError}</p>
 
         <h2>Step 3: Submit Invoice</h2>
         <p>Once your lock transaction confirms, submit your invoice. Your trading partner will check if your WBTC has been locked up properly, and pay your Lightning invoice if it has.</p>
         <button onClick={submitInvoice} disabled={!wbtcLocked}>Submit Invoice</button>
+        <p>{submitInvoiceError}</p>
 
         <h2>Step 4: Check Your Lightning Wallet</h2>
         <p>Your invoice should be paid within 2-3 minutes. If it doesn't get paid, you can reclaim your WBTC in 2 hours. The process is trustless, so you can never lose your funds.</p>  

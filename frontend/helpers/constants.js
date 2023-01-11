@@ -1,4 +1,6 @@
 module.exports = {
   MAINNET_RPC_URL: 'https://mainnet.infura.io/v3/3c7f5083c38943ea95aa49278ddeba53',
-  GOERLI_RPC_URL: 'https://goerli.infura.io/v3/3c7f5083c38943ea95aa49278ddeba53'
+  GOERLI_RPC_URL: 'https://goerli.infura.io/v3/3c7f5083c38943ea95aa49278ddeba53',
+  GOERLI_WBTC_ADDRESS: "0x1DF4feb27f0E99F0011A4564Cf7230D3E73c9d6d",
+  GOERLI_BRIDGE_ADDRESS: "0xDca2761c73661b9b9C4c133Fb71E1cdB7B8C8CD4",
 }

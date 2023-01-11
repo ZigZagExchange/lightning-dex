@@ -30,8 +30,8 @@ contract ZigZagBTCBridge is ERC20 {
     uint wbtc_amount;
     uint expiry;
   }
-  mapping(bytes32 => HTLC) DEPOSIT_HASHES;
-  mapping(bytes32 => HTLC) WITHDRAW_HASHES;
+  mapping(bytes32 => HTLC) public DEPOSIT_HASHES;
+  mapping(bytes32 => HTLC) public WITHDRAW_HASHES;
 
   constructor(address _manager, address _wbtc_address) ERC20("ZigZag WBTC LP", "ZWBTCLP") {
     manager = _manager;

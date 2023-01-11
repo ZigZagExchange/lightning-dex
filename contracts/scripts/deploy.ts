@@ -1,18 +1,14 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  const manager = "0x6f457Ce670D18FF8bda00E1B5D9654833e7D91BB";
+  const wbtc_address = "0x1DF4feb27f0E99F0011A4564Cf7230D3E73c9d6d";
+  const Bridge = await ethers.getContractFactory("ZigZagBTCBridge");
+  const bridge = await Bridge.deploy(manager, wbtc_address);
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  await bridge.deployed();
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
-  await lock.deployed();
-
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
+  console.log(`Bridge deployed to ${bridge.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

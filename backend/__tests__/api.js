@@ -29,6 +29,19 @@ describe("Tests", () => {
     expect(response.statusCode).toBe(200);
   });
 
+  test("Duplicate invoice throws error", async () => {
+    const invoice = new LNInvoice.Invoice();
+    invoice.network = "bc";
+    invoice.valueSat = 25000000;
+    invoice.timestamp = parseInt(Date.now() / 1000);
+    invoice.paymentHash = hash;
+    invoice.shortDesc = "eth:WBTC:0.25";
+    invoice.expiry = 3600;
+    const encodedInvoice = LNInvoice.encode(invoice, privKey);
+    const response = await request(app).post("/invoice").send({ invoice: encodedInvoice });
+    expect(response.statusCode).toBe(500);
+  });
+
   test("Bad expiry", async () => {
     const invoice = new LNInvoice.Invoice();
     invoice.network = "bc";

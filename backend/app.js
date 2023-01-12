@@ -52,7 +52,12 @@ app.post('/invoice', async (req, res, next) => {
     return next("Bad expiry. Expiry should be 1 hour");
   }
   const hash = decodedInvoice.paymentHash.toString('hex');
-  await db.query("INSERT INTO hashes (hash, invoice, expiry) VALUES ($1, $2, $3)", [hash, invoice, unix_expiry]);
+  try {
+    await db.query("INSERT INTO hashes (hash, invoice, expiry) VALUES ($1, $2, $3)", [hash, invoice, unix_expiry]);
+  }
+  catch (e) {
+    return next(e.detail);
+  }
   res.status(200).json({"success": true });
 })
 

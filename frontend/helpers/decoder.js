@@ -3,10 +3,6 @@
 //TODO - A reader MUST check that the SHA-2 256 in the h field exactly matches the hashed description.
 //TODO - A reader MUST use the n field to validate the signature instead of performing signature recovery if a valid n field is provided.
 
-module.exports = {
-  invoiceDecode
-}
-
 function invoiceDecode(paymentRequest) {
     let input = paymentRequest.toLowerCase();
     let splitPosition = input.lastIndexOf('1');
@@ -362,3 +358,8 @@ function toFixed(x) {
 }
 
 function isDigit(str) { return str >= '0' && str <= '9' }
+
+
+module.exports = {
+  invoiceDecode,
+}

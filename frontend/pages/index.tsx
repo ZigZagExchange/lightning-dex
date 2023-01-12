@@ -17,25 +17,32 @@ export default function Home() {
   const [lockWbtcError, setLockWbtcError] = useState("");
   const [submitInvoiceError, setSubmitInvoiceError] = useState("");
   const [wbtcLocked, setWbtcLocked] = useState(false);
-  let decodedInvoice;
-  try {
-    decodedInvoice = invoiceDecode(userInvoice);
-  } catch (e) {
-    decodedInvoice = {
-      human_readable_part: {
-        amount: 0,
-      },
-      data: {
-        tags: []
-      }
-    }
-  }
 
   function handleTextAreaChange(e) {
     setUserInvoice(e.target.value);
   }
 
+  function getDecodedInvoice () {
+    try {
+      return invoiceDecode(userInvoice);
+    } catch (e) {
+      return {
+        human_readable_part: {
+          amount: 0,
+        },
+        data: {
+          time_stamp: parseInt(Date.now() / 1000),
+          tags: [{
+            value: 0,
+            description: 'expiry'
+          }]
+        }
+      }
+    }
+  }
+
   async function lockWBTC() {
+    const decodedInvoice = getDecodedInvoice();
     const amount = ethers.BigNumber.from(decodedInvoice.human_readable_part.amount).mul(1003).div(1000); // 0.3% fee
     const payment_hash = decodedInvoice.data.tags.find(t => t.description === "payment_hash")?.value;
     if (payment_hash.length < 32) {
@@ -71,6 +78,7 @@ export default function Home() {
       const depositTx = await BridgeSigner.createDepositHash(amount.toString(), '0x' + payment_hash, expiry);
       setLockWbtcError("Submitted: " + depositTx.hash);
       const depositResponse = await depositTx.wait();
+      console.log(depositResponse);
       if (depositResponse.status === 0) return setWbtcLocked(true);
     } catch (e) {
       return setLockWbtcError(e.message);
@@ -97,6 +105,13 @@ export default function Home() {
     return sats / 1e8;
   }
 
+  function getInvoiceExpirySeconds () {
+    const decodedInvoice = getDecodedInvoice();
+    const invoice_expiry = decodedInvoice.data.tags.find(t => t.description === "expiry")?.value;
+    return decodedInvoice.data.time_stamp + invoice_expiry - parseInt(Date.now() / 1000);
+  }
+
+  const decodedInvoice = getDecodedInvoice();
   const payment_hash = decodedInvoice.data.tags.find(t => t.description === "payment_hash")?.value;
   return (
     <>
@@ -114,15 +129,16 @@ export default function Home() {
         <div>
           <div>Amount: {decodedInvoice.human_readable_part.amount} sats ({satsToBitcoin(decodedInvoice.human_readable_part.amount)} BTC)</div>
           <div>Payment Hash: {payment_hash}</div>
+          <div>Expiry: {getInvoiceExpirySeconds()} seconds</div>
         </div>
 
         <h2>Step 2: Lock WBTC</h2>
         <p>Submitting this transaction will hashlock WBTC into an atomic swap smart contract. Your trading partner will not be able to unlock the WBTC until they pay your Lightning invoice.</p>
-        <button onClick={lockWBTC} disabled={!payment_hash || wbtcLocked}>Lock WBTC</button>
+        <button onClick={lockWBTC} disabled={!payment_hash || wbtcLocked || getInvoiceExpirySeconds() < 600}>Lock WBTC</button>
         <p>{lockWbtcError}</p>
 
         <h2>Step 3: Submit Invoice</h2>
-        <p>Once your lock transaction confirms, submit your invoice. Your trading partner will check if your WBTC has been locked up properly, and pay your Lightning invoice if it has.</p>
+        <p>Once your lock transaction confirms, you can submit your invoice. Your trading partner will check if your WBTC has been locked up properly, and pay your Lightning invoice if it has.</p>
         <button onClick={submitInvoice} disabled={!wbtcLocked}>Submit Invoice</button>
         <p>{submitInvoiceError}</p>
 

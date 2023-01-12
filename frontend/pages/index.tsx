@@ -3,10 +3,11 @@ import Image from 'next/image'
 import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
 import React, { useState } from 'react'
-import { invoiceDecode } from '../helpers/decoder'
 import { connectWallet } from '../helpers/wallet'
 import { ethers } from 'ethers'
 import { GOERLI_WBTC_ADDRESS, GOERLI_BRIDGE_ADDRESS } from '../helpers/constants'
+let LNInvoice = require("@node-lightning/invoice");
+
 
 const ERC20_ABI = require('../helpers/ERC20.abi.json');
 const BRIDGE_ABI = require('../helpers/BTCBridge.abi.json');
@@ -17,6 +18,7 @@ export default function Home() {
   const [lockWbtcError, setLockWbtcError] = useState("");
   const [submitInvoiceError, setSubmitInvoiceError] = useState("");
   const [wbtcLocked, setWbtcLocked] = useState(false);
+  const [invoiceSubmitted, setInvoiceSubmitted] = useState(false);
 
   function handleTextAreaChange(e) {
     setUserInvoice(e.target.value);
@@ -24,27 +26,21 @@ export default function Home() {
 
   function getDecodedInvoice () {
     try {
-      return invoiceDecode(userInvoice);
+      return LNInvoice.decode(userInvoice);
     } catch (e) {
       return {
-        human_readable_part: {
-          amount: 0,
-        },
-        data: {
-          time_stamp: parseInt(Date.now() / 1000),
-          tags: [{
-            value: 0,
-            description: 'expiry'
-          }]
-        }
+        valueSat: 0,
+        timestamp: parseInt(Date.now() / 1000),
+        expiry: 0,
+        paymentHash: Buffer.alloc(0)
       }
     }
   }
 
   async function lockWBTC() {
     const decodedInvoice = getDecodedInvoice();
-    const amount = ethers.BigNumber.from(decodedInvoice.human_readable_part.amount).mul(1003).div(1000); // 0.3% fee
-    const payment_hash = decodedInvoice.data.tags.find(t => t.description === "payment_hash")?.value;
+    const amount = ethers.BigNumber.from(decodedInvoice.valueSat).mul(1003).div(1000); // 0.3% fee
+    const payment_hash = decodedInvoice.paymentHash.toString('hex');
     if (payment_hash.length < 32) {
       return setLockWbtcError('Payment hash is invalid');
     }
@@ -79,7 +75,7 @@ export default function Home() {
       setLockWbtcError("Submitted: " + depositTx.hash);
       const depositResponse = await depositTx.wait();
       console.log(depositResponse);
-      if (depositResponse.status === 0) return setWbtcLocked(true);
+      if (depositResponse.status === 1) return setWbtcLocked(true);
     } catch (e) {
       return setLockWbtcError(e.message);
     }
@@ -94,11 +90,14 @@ export default function Home() {
         invoice: userInvoice
       })
     });
+    const json = await response.json();
     if (response.status != 200) {
-      const json = await response.json();
       return setSubmitInvoiceError(json.err);
     }
-    else return setSubmitInvoiceError("Submitted");
+    else {
+      setInvoiceSubmitted(true);
+      return setSubmitInvoiceError("Submitted");
+    }
   }
 
   function satsToBitcoin(sats) {
@@ -107,12 +106,11 @@ export default function Home() {
 
   function getInvoiceExpirySeconds () {
     const decodedInvoice = getDecodedInvoice();
-    const invoice_expiry = decodedInvoice.data.tags.find(t => t.description === "expiry")?.value;
-    return decodedInvoice.data.time_stamp + invoice_expiry - parseInt(Date.now() / 1000);
+    return decodedInvoice.timestamp + decodedInvoice.expiry - parseInt(Date.now() / 1000);
   }
 
   const decodedInvoice = getDecodedInvoice();
-  const payment_hash = decodedInvoice.data.tags.find(t => t.description === "payment_hash")?.value;
+  const payment_hash = decodedInvoice.paymentHash.toString('hex');
   return (
     <>
       <Head>
@@ -123,11 +121,12 @@ export default function Home() {
       </Head>
       <main className={styles.main}>
         <h1>WBTC to Lightning</h1>
+
         <h2>Step 1: Create Invoice</h2>
         <p>Generate a Lightning invoice for the amount you want to receive in your wallet and paste it here.</p>
         <textarea placeholder="lnbc..." rows="5" onChange={handleTextAreaChange}></textarea>
         <div>
-          <div>Amount: {decodedInvoice.human_readable_part.amount} sats ({satsToBitcoin(decodedInvoice.human_readable_part.amount)} BTC)</div>
+          <div>Amount: {decodedInvoice.valueSat} sats ({satsToBitcoin(decodedInvoice.valueSat)} BTC)</div>
           <div>Payment Hash: {payment_hash}</div>
           <div>Expiry: {getInvoiceExpirySeconds()} seconds</div>
         </div>
@@ -139,7 +138,7 @@ export default function Home() {
 
         <h2>Step 3: Submit Invoice</h2>
         <p>Once your lock transaction confirms, you can submit your invoice. Your trading partner will check if your WBTC has been locked up properly, and pay your Lightning invoice if it has.</p>
-        <button onClick={submitInvoice} disabled={!wbtcLocked}>Submit Invoice</button>
+        <button onClick={submitInvoice} disabled={!wbtcLocked || invoiceSubmitted}>Submit Invoice</button>
         <p>{submitInvoiceError}</p>
 
         <h2>Step 4: Check Your Lightning Wallet</h2>

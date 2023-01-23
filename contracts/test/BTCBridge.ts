@@ -304,5 +304,25 @@ describe("BTCBridge", function () {
         await expect(bridgeContract.connect(wallets[0]).unlockDepositHash(hash, preimage)).to.be.reverted
     });
 
+    it("Send to user", async function () {
+        const beforeContractBalance = await WBTC.balanceOf(bridgeContract.address);
+        const beforeUserBalance = await WBTC.balanceOf(wallets[0].address);
+
+        const send_amount = ethers.utils.parseUnits("1", 8);
+        await bridgeContract.connect(manager).sendToUser(wallets[0].address, send_amount);
+
+        const afterContractBalance = await WBTC.balanceOf(bridgeContract.address);
+        const afterUserBalance = await WBTC.balanceOf(wallets[0].address);
+
+        expect(beforeContractBalance.sub(afterContractBalance)).to.equal(send_amount);
+        expect(afterUserBalance.sub(beforeUserBalance)).to.equal(send_amount);
+    });
+
+    it("Non-manager cannot send", async function () {
+        const send_amount = ethers.utils.parseUnits("1", 8);
+        await expect(bridgeContract.connect(wallets[0]).sendToUser(wallets[0].address, send_amount))
+          .to.be.revertedWith("only manager can send WBTC")
+    });
+
 
 });

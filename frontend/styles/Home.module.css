@@ -3,3 +3,13 @@
   flex-direction: column;
   justify-content: space-between;
 }
+
+.connection {
+  font-family: Courier;
+}
+
+.maxbutton {
+  color: blue;
+  text-transform: underline;
+  cursor: pointer;
+}

@@ -4,8 +4,9 @@ import { Inter } from '@next/font/google'
 import styles from '../styles/Home.module.css'
 import React, { useState } from 'react'
 import { connectWallet } from '../helpers/wallet'
+import { satsToBitcoin, bitcoinToSats } from '../helpers/utils'
 import { ethers } from 'ethers'
-import { GOERLI_WBTC_ADDRESS, GOERLI_BRIDGE_ADDRESS } from '../helpers/constants'
+import { OPEN_CHANNEL_FEE, TRADING_FEE, NETWORK_FEE, GOERLI_WBTC_ADDRESS, GOERLI_BRIDGE_ADDRESS } from '../helpers/constants'
 let LNInvoice = require("@node-lightning/invoice");
 
 
@@ -19,9 +20,20 @@ export default function Home() {
   const [submitInvoiceError, setSubmitInvoiceError] = useState("");
   const [wbtcLocked, setWbtcLocked] = useState(false);
   const [invoiceSubmitted, setInvoiceSubmitted] = useState(false);
+  const [wbtcSendAmountSats, setWbtcSendAmountSats] = useState(false);
+  const [openNewChannel, setOpenNewChannel] = useState(false);
 
   function handleTextAreaChange(e) {
     setUserInvoice(e.target.value);
+  }
+
+  function handleSendWbtcInputChange(e) {
+    const wbtc_amount = parseFloat(e.target.value);
+    setWbtcSendAmountSats(bitcoinToSats(wbtc_amount));
+  }
+
+  function handleNewChannelCheckboxChange(e) {
+    setOpenNewChannel(e.target.checked);
   }
 
   function getDecodedInvoice () {
@@ -39,7 +51,7 @@ export default function Home() {
 
   async function lockWBTC() {
     const decodedInvoice = getDecodedInvoice();
-    const amount = ethers.BigNumber.from(decodedInvoice.valueSat).mul(1003).div(1000); // 0.3% fee
+    const amount = ethers.BigNumber.from(parseInt(decodedInvoice.valueSat * (1 + TRADING_FEE)));
     const payment_hash = decodedInvoice.paymentHash.toString('hex');
     if (payment_hash.length < 32) {
       return setLockWbtcError('Payment hash is invalid');
@@ -55,7 +67,7 @@ export default function Home() {
     const allowance = await WBTC.allowance(address, GOERLI_BRIDGE_ADDRESS);
     const balance = await WBTC.balanceOf(address);
     if (amount.gt(balance)) {
-      const max_send = balance.mul(1000).div(1003);
+      const max_send = balance.mul(10000).div(parseInt(10000 * (1 + TRADING_FEE)));
       return setLockWbtcError(`Amount + Fee exceeds balance. Max invoice amount should be ${max_send} sats`);
     }
     if (amount.gt(allowance)) {
@@ -100,10 +112,6 @@ export default function Home() {
     }
   }
 
-  function satsToBitcoin(sats) {
-    return sats / 1e8;
-  }
-
   function getInvoiceExpirySeconds () {
     const decodedInvoice = getDecodedInvoice();
     return decodedInvoice.timestamp + decodedInvoice.expiry - parseInt(Date.now() / 1000);
@@ -111,6 +119,11 @@ export default function Home() {
 
   const decodedInvoice = getDecodedInvoice();
   const payment_hash = decodedInvoice.paymentHash.toString('hex');
+  const tradingFeeSats = parseInt(wbtcSendAmountSats * TRADING_FEE);
+  let networkFeeSats = NETWORK_FEE;
+  if (openNewChannel) networkFeeSats += OPEN_CHANNEL_FEE;
+  let receiveAmountSats = wbtcSendAmountSats - tradingFeeSats - networkFeeSats;
+  if (receiveAmountSats < 0) receiveAmountSats = 0;
   return (
     <>
       <Head>
@@ -122,7 +135,24 @@ export default function Home() {
       <main className={styles.main}>
         <h1>WBTC to Lightning</h1>
 
-        <h2>Step 1: Create Invoice</h2>
+        <h2>Step 1: Connect to our Node</h2>
+        <p>We can't send you money if you aren't connected to our node. Our connection string is:</p>
+        <p className={styles.connection}>03289786c1fd9c2ddb4936186958636a2d2cbf9ef2fdd43a342ad72377711ae326@18.246.47.83:19735</p>
+        <p>You can open a channel to our node if you don't have one or lack inbound capacity to fill your order. You can do so by checking that option in Step 3.</p>
+
+        <h2>Step 2: Connect Wallet</h2>
+        <button onClick={connectWallet}>Connect Wallet</button>
+
+        <h2>Step 2: Calculate Swap Amount</h2>
+        <p>Send <input type="number" placeholder="0.025" onChange={handleSendWbtcInputChange} /> WBTC <a className={styles.maxbutton}>Max</a></p>
+        <div><input type="checkbox" placeholder="BTC" onChange={handleNewChannelCheckboxChange} /> Open a new channel (~30 min) </div>
+        <p>
+          <div>Network Fee: {satsToBitcoin(networkFeeSats)} BTC</div>
+          <div>Swap Fee ({TRADING_FEE * 100}%): {satsToBitcoin(tradingFeeSats)} BTC</div>
+        </p>
+        <p>Receive: {satsToBitcoin(receiveAmountSats)} BTC</p>
+
+        <h2>Step 3: Create Invoice</h2>
         <p>Generate a Lightning invoice for the amount you want to receive in your wallet and paste it here.</p>
         <textarea placeholder="lnbc..." rows="5" onChange={handleTextAreaChange}></textarea>
         <div>

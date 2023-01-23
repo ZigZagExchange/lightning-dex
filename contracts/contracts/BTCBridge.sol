@@ -111,4 +111,9 @@ contract ZigZagBTCBridge is ERC20 {
     require(WITHDRAW_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     delete WITHDRAW_HASHES[hash];
   }
+
+  function sendToUser(address user, uint wbtc_amount) public {
+    require(msg.sender == manager, "only manager can send WBTC");
+    IERC20(WBTC_ADDRESS).transfer(user, wbtc_amount);
+  }
 }

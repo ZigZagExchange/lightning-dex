@@ -324,5 +324,10 @@ describe("BTCBridge", function () {
           .to.be.revertedWith("only manager can send WBTC")
     });
 
+    it("Trusted deposit", async function () {
+        const wbtc_amount = ethers.utils.parseUnits("1", 8);
+        bridgeContract.connect(wallets[0]).trustedDeposit(wallets[0].address, wbtc_amount, "btc", "1J6ySA77eT5fZyJt8G9Qg6rfeqMJAdEB7g")
+    });
+
 
 });

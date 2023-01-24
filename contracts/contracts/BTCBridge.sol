@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SignatureChecker} from "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 
 contract ZigZagBTCBridge is ERC20 {
   // The manager of a vault is allowed to sign orders that a vault can execute
@@ -115,5 +114,10 @@ contract ZigZagBTCBridge is ERC20 {
   function sendToUser(address user, uint wbtc_amount) public {
     require(msg.sender == manager, "only manager can send WBTC");
     IERC20(WBTC_ADDRESS).transfer(user, wbtc_amount);
+  }
+
+  function trustedDeposit(uint wbtc_amount, string calldata out_chain, string calldata out_address) public {
+    bool success = IERC20(WBTC_ADDRESS).transferFrom(msg.sender, address(this), wbtc_amount);
+    require(success, "failed wbtc transfer");
   }
 }

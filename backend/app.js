@@ -21,6 +21,12 @@ async function runDbMigration () {
       expiry INTEGER
     )
   `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS deposit_addresses (
+      btc_address TEXT PRIMARY KEY,
+      eth_address CITEXT
+    )
+  `);
 }
 
 runDbMigration();
@@ -80,6 +86,16 @@ app.post('/hash/preimage', async (req, res, next) => {
   await db.query("INSERT INTO hashes (hash, preimage) VALUES ($1,$2) ON CONFLICT (hash) DO UPDATE SET preimage=$2", [hash, preimage]);
   res.status(200).json({"success": true });
 });
+
+app.get('/deposit_address/:address', async (req, res, next) => {
+  const address = req.param.address;
+  const deposit_addresses = await db.query("SELECT * FROM deposit_addresses WHERE btc_address=$1 OR eth_address=$1", [address]);
+  if (deposit_addresses.rows.length > 0) {
+    return res.status(200).json(deposit_addresses.rows[0]);
+  }
+
+  //await db.query("INSERT INTO deposit_addresses VALUES($1, $2)", [btc_address, eth_address]);
+})
 
 app.use((err, req, res, next) => {
   console.error(err);

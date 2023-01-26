@@ -15,7 +15,7 @@ The frontend is currently deployed to https://lightning-dex.netlify.app but shou
 Our Lightning connection address is: 
 
 ```
-unsetpublickey@34.214.120.115
+unsetpublickey@34.214.120.115:9735
 ```
 
 (The key will be set soon)

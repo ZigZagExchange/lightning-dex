@@ -20,20 +20,20 @@ export default function Home() {
   const [submitInvoiceError, setSubmitInvoiceError] = useState("");
   const [wbtcLocked, setWbtcLocked] = useState(false);
   const [invoiceSubmitted, setInvoiceSubmitted] = useState(false);
-  const [wbtcSendAmountSats, setWbtcSendAmountSats] = useState(false);
+  const [wbtcSendAmountSats, setWbtcSendAmountSats] = useState(0);
   const [openNewChannel, setOpenNewChannel] = useState(false);
 
-  function handleTextAreaChange(e) {
-    setUserInvoice(e.target.value);
+  function handleTextAreaChange(e: any) {
+    setUserInvoice(e.target?.value);
   }
 
-  function handleSendWbtcInputChange(e) {
+  function handleSendWbtcInputChange(e: any) {
     const wbtc_amount = parseFloat(e.target.value);
     setWbtcSendAmountSats(bitcoinToSats(wbtc_amount));
   }
 
-  function handleNewChannelCheckboxChange(e) {
-    setOpenNewChannel(e.target.checked);
+  function handleNewChannelCheckboxChange(e: any) {
+    setOpenNewChannel(e.target?.checked);
   }
 
   function getDecodedInvoice () {
@@ -42,7 +42,7 @@ export default function Home() {
     } catch (e) {
       return {
         valueSat: 0,
-        timestamp: parseInt(Date.now() / 1000),
+        timestamp: Math.floor(Date.now() / 1000),
         expiry: 0,
         paymentHash: Buffer.alloc(0)
       }
@@ -51,7 +51,7 @@ export default function Home() {
 
   async function lockWBTC() {
     const decodedInvoice = getDecodedInvoice();
-    const amount = ethers.BigNumber.from(parseInt(decodedInvoice.valueSat * (1 + TRADING_FEE)));
+    const amount = ethers.BigNumber.from(Math.floor(decodedInvoice.valueSat * (1 + TRADING_FEE)));
     const payment_hash = decodedInvoice.paymentHash.toString('hex');
     if (payment_hash.length < 32) {
       return setLockWbtcError('Payment hash is invalid');
@@ -67,14 +67,14 @@ export default function Home() {
     const allowance = await WBTC.allowance(address, GOERLI_BRIDGE_ADDRESS);
     const balance = await WBTC.balanceOf(address);
     if (amount.gt(balance)) {
-      const max_send = balance.mul(10000).div(parseInt(10000 * (1 + TRADING_FEE)));
+      const max_send = balance.mul(10000).div(Math.floor(10000 * (1 + TRADING_FEE)));
       return setLockWbtcError(`Amount + Fee exceeds balance. Max invoice amount should be ${max_send} sats`);
     }
     if (amount.gt(allowance)) {
       const approveTx = await WBTCSigner.approve(GOERLI_BRIDGE_ADDRESS, ethers.constants.MaxUint256);
     }
 
-    const expiry = parseInt(Date.now() / 1000) + 7200;
+    const expiry = Math.floor(Date.now() / 1000) + 7200;
     const Bridge = new ethers.Contract(GOERLI_BRIDGE_ADDRESS, BRIDGE_ABI);
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
     const hashStatus = await BridgeSigner.DEPOSIT_HASHES('0x' + payment_hash);
@@ -88,7 +88,7 @@ export default function Home() {
       const depositResponse = await depositTx.wait();
       console.log(depositResponse);
       if (depositResponse.status === 1) return setWbtcLocked(true);
-    } catch (e) {
+    } catch (e: any) {
       return setLockWbtcError(e.message);
     }
 
@@ -114,12 +114,12 @@ export default function Home() {
 
   function getInvoiceExpirySeconds () {
     const decodedInvoice = getDecodedInvoice();
-    return decodedInvoice.timestamp + decodedInvoice.expiry - parseInt(Date.now() / 1000);
+    return decodedInvoice.timestamp + decodedInvoice.expiry - Math.floor(Date.now() / 1000);
   }
 
   const decodedInvoice = getDecodedInvoice();
   const payment_hash = decodedInvoice.paymentHash.toString('hex');
-  const tradingFeeSats = parseInt(wbtcSendAmountSats * TRADING_FEE);
+  const tradingFeeSats = Math.floor(wbtcSendAmountSats * TRADING_FEE);
   let networkFeeSats = NETWORK_FEE;
   if (openNewChannel) networkFeeSats += OPEN_CHANNEL_FEE;
   let receiveAmountSats = wbtcSendAmountSats - tradingFeeSats - networkFeeSats;
@@ -136,9 +136,9 @@ export default function Home() {
         <h1>WBTC to Lightning</h1>
 
         <h2>Step 1: Connect to our Node</h2>
-        <p>We can't send you money if you aren't connected to our node. Our connection string is:</p>
+        <p>We cannot send you money if you are not connected to our node. Our connection string is:</p>
         <p className={styles.connection}>03289786c1fd9c2ddb4936186958636a2d2cbf9ef2fdd43a342ad72377711ae326@18.246.47.83:19735</p>
-        <p>You can open a channel to our node if you don't have one or lack inbound capacity to fill your order. You can do so by checking that option in Step 3.</p>
+        <p>You can open a channel to our node if you do not have one or lack inbound capacity to fill your order. You can do so by checking that option in Step 3.</p>
 
         <h2>Step 2: Connect Wallet</h2>
         <button onClick={connectWallet}>Connect Wallet</button>
@@ -154,7 +154,7 @@ export default function Home() {
 
         <h2>Step 3: Create Invoice</h2>
         <p>Generate a Lightning invoice for the amount you want to receive in your wallet and paste it here.</p>
-        <textarea placeholder="lnbc..." rows="5" onChange={handleTextAreaChange}></textarea>
+        <textarea placeholder="lnbc..." rows={5} onChange={handleTextAreaChange}></textarea>
         <div>
           <div>Amount: {decodedInvoice.valueSat} sats ({satsToBitcoin(decodedInvoice.valueSat)} BTC)</div>
           <div>Payment Hash: {payment_hash}</div>
@@ -172,7 +172,7 @@ export default function Home() {
         <p>{submitInvoiceError}</p>
 
         <h2>Step 4: Check Your Lightning Wallet</h2>
-        <p>Your invoice should be paid within 2-3 minutes. If it doesn't get paid, you can reclaim your WBTC in 2 hours. The process is trustless, so you can never lose your funds.</p>  
+        <p>Your invoice should be paid within 2-3 minutes. If it does not get paid, you can reclaim your WBTC in 2 hours. The process is trustless, so you can never lose your funds.</p>  
 
         <h2>Troubleshooting</h2>
         <p><i>Question: I locked my WBTC into the contract, but accidentally closed/refreshed the page before I could submit the invoice. Can I continue where I left off?</i></p>

@@ -13,7 +13,7 @@ module.exports = {
       wbtcVaultAddress: "0x77b03e0f8Af662cE284988676F5683A65894E9c2",
     }
   },
-  NETWORK_FEE: 50000,
+  NETWORK_FEE: 20000,
   OPEN_CHANNEL_FEE: 50000,
   TRADING_FEE: 0.003
 }

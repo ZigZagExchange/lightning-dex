@@ -10,7 +10,7 @@ You can view it on Arbiscan: https://arbiscan.io/address/0x888bc0D57727b74d42FB3
 
 The backend is deployed to https://api.bitcoin.zigzag.exchange
 
-The frontend is currently deployed to https://lightning-dex.netlify.app but should be used with great caution.  
+The frontend is currently deployed to https://lightning-dex.vercel.app/ but should be used with great caution.  
 
 We have a public Lightning node. You can connect to us at: 
 

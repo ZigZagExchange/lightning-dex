@@ -100,7 +100,8 @@ export default function Pool() {
       <main>
         <nav>
           <Link href="/">Swap</Link>&nbsp;
-          <Link href="/pool">Pool</Link>
+          <Link href="/pool">Pool</Link>&nbsp;
+          <Link href="/help">Help</Link>
         </nav>
         <h1>WBTC LP Pool</h1>
         <p><button onClick={updateBalances}>Update Balances</button></p>

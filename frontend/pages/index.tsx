@@ -110,28 +110,18 @@ export default function Home() {
       <main className={styles.main}>
         <nav>
           <Link href="/">Swap</Link>&nbsp;
-          <Link href="/pool">Pool</Link>
+          <Link href="/pool">Pool</Link>&nbsp;
+          <Link href="/help">Help</Link>
         </nav>
 
-        <h1>Swap</h1>
+        <h1>Swap WBTC for BTC</h1>
 
-        <h2>Open a Channel</h2>
-        <p className={styles.connection}>02572fcd9ca25472108ff62b975dff47f5625e57abcf0f354065c9586db8dbd632@34.214.120.115:9735</p>
-
-        <h2>My Swaps</h2>
-        <p><button onClick={connectWallet}>Load History</button></p>
-
-        <h2>New Swap</h2>
         <textarea placeholder="Paste lightning invoice here..." rows={5} onChange={handleTextAreaChange}></textarea>
         <div>Receive: {satsToBitcoin(decodedInvoice.valueSat)} BTC</div>
         <div>Send: {satsToBitcoin(Number(decodedInvoice.valueSat) + NETWORK_FEE)} WBTC</div>
         <div>Payment Hash: {decodedInvoice.paymentHash.toString('hex')}</div>
-        <p><button onClick={lockWBTC}>Lock WBTC</button></p>
+        <p><button onClick={lockWBTC}>Send WBTC</button></p>
         <p className={styles.errormessage}>{lockWbtcError}</p>
-
-        <h2 className={styles.troubleshooting}>Troubleshooting</h2>
-        <p><i>Question: I locked my WBTC into the contract, but it is not showing up in my swaps.</i></p>
-        <p>Paste the same invoice back into New Swap and click Lock WBTC. Instead of submitting a new tx, the site will detect that you have already funded that hash.</p>
 
       </main>
     </>

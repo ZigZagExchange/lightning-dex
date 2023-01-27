@@ -34,10 +34,10 @@ contract ZigZagBTCBridge is ERC20 {
 
   event DepositCreated( address indexed intiator, uint256 wbtc_amount, uint32 expiry, bytes32 indexed hash);
   event DepositRevoked(bytes32 indexed hash);
-  event DepositProcessed(bytes32 indexed hash, bytes preimage);
-  event WithdrawCreated(address indexed recipient, uint256 wbtc_amount, uint32 expiry, bytes32 indexed hash);
+  event DepositProcessed(address indexed initiator, uint256 wbtc_amount, bytes preimage, bytes32 indexed hash);
+  event WithdrawCreated(address indexed receiver, uint256 wbtc_amount, uint32 expiry, bytes32 indexed hash);
   event WithdrawRevoked(bytes32 indexed hash);
-  event WithdrawProcessed(bytes32 indexed hash, bytes preimage);
+  event WithdrawProcessed(address indexed receiver, uint256 wbtc_amount, bytes preimage, bytes32 indexed hash);
 
 
   constructor(address _manager, address _wbtc_address) ERC20("ZigZag WBTC LP", "ZWBTCLP") {
@@ -90,8 +90,8 @@ contract ZigZagBTCBridge is ERC20 {
     require(sha256(preimage) == hash, "preimage does not match hash");
     require(DEPOSIT_HASHES[hash].expiry > block.timestamp, "HTLC is expired");
     require(DEPOSIT_HASHES[hash].wbtc_amount > 0, "hash is not funded");
+    emit DepositProcessed(DEPOSIT_HASHES[hash].counterparty, DEPOSIT_HASHES[hash].wbtc_amount, preimage, hash);
     delete DEPOSIT_HASHES[hash];
-    emit DepositProcessed(hash, preimage);
   }
 
   function reclaimDepositHash(bytes32 hash) public {
@@ -114,8 +114,8 @@ contract ZigZagBTCBridge is ERC20 {
     require(WITHDRAW_HASHES[hash].expiry > block.timestamp, "HTLC is expired");
     require(WITHDRAW_HASHES[hash].wbtc_amount > 0, "hash is not funded");
     IERC20(WBTC_ADDRESS).transfer(WITHDRAW_HASHES[hash].counterparty, WITHDRAW_HASHES[hash].wbtc_amount);
+    emit WithdrawProcessed(WITHDRAW_HASHES[hash].counterparty, WITHDRAW_HASHES[hash].wbtc_amount, preimage, hash);
     delete WITHDRAW_HASHES[hash];
-    emit WithdrawProcessed(hash, preimage);
   }
 
   function reclaimWithdrawHash(bytes32 hash) public {

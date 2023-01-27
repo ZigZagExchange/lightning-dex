@@ -16,7 +16,11 @@ export default function Pool() {
 
   async function updateBalances () {
     const wallets = await connectWallet();
-    const ethersProvider = new ethers.providers.Web3Provider(wallets[0].provider, Number(wallets[0].chains[0].id))
+    const chainId = Number(wallets[0].chains[0].id);
+    if (chainId != 42161) {
+      return toast.error("wrong network");
+    }
+    const ethersProvider = new ethers.providers.Web3Provider(wallets[0].provider, chainId);
     const address = wallets[0].accounts[0].address;
 
     const WBTC = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcAddress, ERC20_ABI, ethersProvider);

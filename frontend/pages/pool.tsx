@@ -30,7 +30,7 @@ export default function Pool() {
   }
 
   async function depositWbtc (e: any) {
-    const deposit_amount = document.getElementById("wbtc-deposit-amount").valueAsNumber
+    const deposit_amount = (document.getElementById("wbtc-deposit-amount") as HTMLInputElement)?.valueAsNumber
     if (deposit_amount > wbtcBalance) {
       return toast.error("not enough balance");
     }
@@ -48,9 +48,9 @@ export default function Pool() {
     const depositAmountBN = ethers.BigNumber.from(deposit_amount * 1e8);
     if (depositAmountBN.gt(allowance)) {
       const approveTx = await WBTCSigner.approve(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, ethers.constants.MaxUint256);
-      const allowanceToast = toast.info("Waiting on allowance tx");
+      const allowanceToast = toast.info("Waiting on approval");
       await approveTx.wait();
-      allowanceToast.close();
+      toast.dismiss(allowanceToast);
     }
     const depositTx = await VaultSigner.depositWBTCToLP(depositAmountBN);
     await depositTx.wait();
@@ -58,7 +58,7 @@ export default function Pool() {
   }
 
   async function withdrawLP (e: any) {
-    const withdraw_amount = document.getElementById("lp-withdraw-amount").valueAsNumber
+    const withdraw_amount = (document.getElementById("lp-withdraw-amount") as HTMLInputElement)?.valueAsNumber
     if (withdraw_amount > lpBalance) {
       return toast.error("not enough balance");
     }

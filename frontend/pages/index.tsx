@@ -65,18 +65,18 @@ export default function Home() {
     const WBTCSigner = WBTC.connect(ethersProvider.getSigner());
 
 
-    const allowance = await WBTC.allowance(address, GOERLI_BRIDGE_ADDRESS);
+    const allowance = await WBTC.allowance(address, CHAIN_CONFIG.arbitrum.wbtcVaultAddress);
     const balance = await WBTC.balanceOf(address);
     if (amount.gt(balance)) {
       const max_send = balance.mul(10000).div(Math.floor(10000 * (1 + TRADING_FEE)));
       return setLockWbtcError(`Amount + Fee exceeds balance. Max invoice amount should be ${max_send} sats`);
     }
     if (amount.gt(allowance)) {
-      const approveTx = await WBTCSigner.approve(GOERLI_BRIDGE_ADDRESS, ethers.constants.MaxUint256);
+      const approveTx = await WBTCSigner.approve(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, ethers.constants.MaxUint256);
     }
 
     const expiry = Math.floor(Date.now() / 1000) + 7200;
-    const Bridge = new ethers.Contract(GOERLI_BRIDGE_ADDRESS, BRIDGE_ABI);
+    const Bridge = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, BRIDGE_ABI);
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
     const hashStatus = await BridgeSigner.DEPOSIT_HASHES('0x' + payment_hash);
     if (hashStatus.wbtc_amount.gt(0)) {
@@ -151,11 +151,9 @@ export default function Home() {
 
         <h2>Step 2: Calculate Swap Amount</h2>
         <p>Send <input type="number" placeholder="0.025" onChange={handleSendWbtcInputChange} /> WBTC <a className={styles.maxbutton}>Max</a></p>
-        <div><input type="checkbox" placeholder="BTC" onChange={handleNewChannelCheckboxChange} /> Open a new channel (~30 min) </div>
-        <p>
-          <div>Network Fee: {satsToBitcoin(networkFeeSats)} BTC</div>
-          <div>Swap Fee ({TRADING_FEE * 100}%): {satsToBitcoin(tradingFeeSats)} BTC</div>
-        </p>
+        <p><input type="checkbox" placeholder="BTC" onChange={handleNewChannelCheckboxChange} /> Open a new channel (~30 min) </p>
+        <div>Network Fee: {satsToBitcoin(networkFeeSats)} BTC</div>
+        <div>Swap Fee ({TRADING_FEE * 100}%): {satsToBitcoin(tradingFeeSats)} BTC</div>
         <p>Receive: {satsToBitcoin(receiveAmountSats)} BTC</p>
 
         <h2>Step 3: Create Invoice</h2>

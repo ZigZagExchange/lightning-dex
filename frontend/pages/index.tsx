@@ -23,15 +23,6 @@ export default function Home() {
     setUserInvoice(e.target?.value);
   }
 
-  function handleSendWbtcInputChange(e: any) {
-    const wbtc_amount = parseFloat(e.target.value);
-    setWbtcSendAmountSats(bitcoinToSats(wbtc_amount));
-  }
-
-  function handleNewChannelCheckboxChange(e: any) {
-    setOpenNewChannel(e.target?.checked);
-  }
-
   function getDecodedInvoice () {
     try {
       return LNInvoice.decode(userInvoice);
@@ -75,13 +66,11 @@ export default function Home() {
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
     const hashStatus = await BridgeSigner.DEPOSIT_HASHES('0x' + payment_hash);
     if (hashStatus.wbtc_amount.gt(0)) {
-      setWbtcLocked(true);
       return setLockWbtcError("Hash is already funded");
     }
     try {
       const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       const depositResponse = await depositTx.wait();
-      console.log(depositResponse);
       await submitInvoice();
       // TODO: Update My Swaps
     } catch (e: any) {
@@ -141,7 +130,7 @@ export default function Home() {
         <p className={styles.errormessage}>{lockWbtcError}</p>
 
         <h2 className={styles.troubleshooting}>Troubleshooting</h2>
-        <p><i>Question: I locked my WBTC into the contract, but it's not showing up in my swaps.</i></p>
+        <p><i>Question: I locked my WBTC into the contract, but it is not showing up in my swaps.</i></p>
         <p>Paste the same invoice back into New Swap and click Lock WBTC. Instead of submitting a new tx, the site will detect that you have already funded that hash.</p>
 
       </main>

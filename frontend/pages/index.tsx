@@ -6,7 +6,8 @@ import React, { useState } from 'react'
 import { connectWallet } from '../helpers/wallet'
 import { satsToBitcoin, bitcoinToSats } from '../helpers/utils'
 import { ethers } from 'ethers'
-import { OPEN_CHANNEL_FEE, TRADING_FEE, NETWORK_FEE, GOERLI_WBTC_ADDRESS, GOERLI_BRIDGE_ADDRESS } from '../helpers/constants'
+import { OPEN_CHANNEL_FEE, TRADING_FEE, NETWORK_FEE, CHAIN_CONFIG } from '../helpers/constants'
+import Link from 'next/link'
 let LNInvoice = require("@node-lightning/invoice");
 
 
@@ -60,7 +61,7 @@ export default function Home() {
     const wallets = await connectWallet();
     const ethersProvider = new ethers.providers.Web3Provider(wallets[0].provider, Number(wallets[0].chains[0].id))
     const address = wallets[0].accounts[0].address;
-    const WBTC = new ethers.Contract(GOERLI_WBTC_ADDRESS, ERC20_ABI, ethersProvider);
+    const WBTC = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcAddress, ERC20_ABI, ethersProvider);
     const WBTCSigner = WBTC.connect(ethersProvider.getSigner());
 
 
@@ -133,6 +134,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
+        <nav>
+          <Link href="/">Swap</Link>&nbsp;
+          <Link href="/pool">Pool</Link>
+        </nav>
+
         <h1>WBTC to Lightning</h1>
 
         <h2>Step 1: Connect to our Node</h2>

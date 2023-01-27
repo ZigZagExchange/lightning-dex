@@ -1,3 +1,11 @@
 html {
   /*background-color: #ebddbd;*/
 }
+
+/* Pool Page */
+.token-table th {
+  text-align: left;
+}
+.token-table td {
+  padding: 5px;
+}

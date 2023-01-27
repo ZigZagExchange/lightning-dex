@@ -304,4 +304,36 @@ describe("BTCBridge", function () {
         await expect(bridgeContract.connect(wallets[0]).unlockDepositHash(hash, preimage)).to.be.reverted
     });
 
+    it("DepositCreated event", async function () {
+        const preimage = Buffer.from('check233', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        const tx = await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+        await expect(tx).to.emit(bridgeContract, "DepositCreated").withArgs(wallets[0].address, deposit_amount, expires, hash);
+    });
+
+    it("DepositRevoked event", async function () {
+        const preimage = Buffer.from('check234', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+
+        await time.increase(86400);
+
+        const tx = await bridgeContract.connect(wallets[0]).reclaimDepositHash(hash)
+        await expect(tx).to.emit(bridgeContract, "DepositRevoked").withArgs(hash);
+    });
+
+    it("DepositProcessed event", async function () {
+        const preimage = Buffer.from('check235', "utf-8");
+        const hash = '0x' + crypto.createHash('sha256').update(preimage).digest('hex');
+        const deposit_amount = ethers.utils.parseUnits("1", 8);
+        const expires = (await time.latest()) + 3600;
+        await bridgeContract.connect(wallets[0]).createDepositHash(deposit_amount, hash, expires);
+        const tx = await bridgeContract.connect(wallets[0]).unlockDepositHash(hash, preimage);
+        await expect(tx).to.emit(bridgeContract, "DepositProcessed").withArgs(wallets[0].address, deposit_amount, preimage, hash);
+    });
+
 });

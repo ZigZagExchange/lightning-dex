@@ -26,7 +26,7 @@ export async function connectWallet() {
     window.localStorage.setItem('connectedWallets', JSON.stringify(connectedWallets))
   })
 
-  const previouslyConnectedWallets = JSON.parse(window.localStorage.getItem('connectedWallets'))
+  const previouslyConnectedWallets = JSON.parse(window.localStorage.getItem('connectedWallets') || "[]")
 
   if (previouslyConnectedWallets.length > 0) {
     return await onboard.connectWallet({

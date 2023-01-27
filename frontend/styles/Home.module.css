@@ -13,3 +13,11 @@
   text-transform: underline;
   cursor: pointer;
 }
+
+.troubleshooting {
+  margin-top: 300px;
+}
+
+.errormessage {
+  color: red;
+}

@@ -77,7 +77,7 @@ export default function Pool() {
     const VaultSigner = Vault.connect(ethersProvider.getSigner());
 
     const allowance = await Vault.allowance(address, CHAIN_CONFIG.arbitrum.wbtcVaultAddress);
-    const withdrawAmountBN = ethers.BigNumber.from(withdraw_amount * 1e18);
+    const withdrawAmountBN = ethers.BigNumber.from((withdraw_amount * 1e18).toFixed(0));
     if (withdrawAmountBN.gt(allowance)) {
       const approveTx = await VaultSigner.approve(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, ethers.constants.MaxUint256);
       const allowanceToast = toast.info("Waiting on approval", { autoClose: false });

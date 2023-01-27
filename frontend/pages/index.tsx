@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import { connectWallet } from '../helpers/wallet'
 import { satsToBitcoin, bitcoinToSats } from '../helpers/utils'
 import { ethers } from 'ethers'
-import { OPEN_CHANNEL_FEE, TRADING_FEE, NETWORK_FEE, CHAIN_CONFIG } from '../helpers/constants'
+import { OPEN_CHANNEL_FEE, NETWORK_FEE, CHAIN_CONFIG } from '../helpers/constants'
 import Link from 'next/link'
 let LNInvoice = require("@node-lightning/invoice");
 
@@ -18,11 +18,6 @@ export default function Home() {
   
   const [userInvoice, setUserInvoice] = useState(null);
   const [lockWbtcError, setLockWbtcError] = useState("");
-  const [submitInvoiceError, setSubmitInvoiceError] = useState("");
-  const [wbtcLocked, setWbtcLocked] = useState(false);
-  const [invoiceSubmitted, setInvoiceSubmitted] = useState(false);
-  const [wbtcSendAmountSats, setWbtcSendAmountSats] = useState(0);
-  const [openNewChannel, setOpenNewChannel] = useState(false);
 
   function handleTextAreaChange(e: any) {
     setUserInvoice(e.target?.value);
@@ -52,7 +47,7 @@ export default function Home() {
 
   async function lockWBTC() {
     const decodedInvoice = getDecodedInvoice();
-    const amount = ethers.BigNumber.from(Math.floor(decodedInvoice.valueSat * (1 + TRADING_FEE)));
+    const wbtc_amount = ethers.BigNumber.from(Math.floor(decodedInvoice.valueSat) + NETWORK_FEE);
     const payment_hash = decodedInvoice.paymentHash.toString('hex');
     if (payment_hash.length < 32) {
       return setLockWbtcError('Payment hash is invalid');
@@ -67,11 +62,11 @@ export default function Home() {
 
     const allowance = await WBTC.allowance(address, CHAIN_CONFIG.arbitrum.wbtcVaultAddress);
     const balance = await WBTC.balanceOf(address);
-    if (amount.gt(balance)) {
-      const max_send = balance.mul(10000).div(Math.floor(10000 * (1 + TRADING_FEE)));
+    if (wbtc_amount.gt(balance)) {
+      const max_send = balance.sub(NETWORK_FEE);
       return setLockWbtcError(`Amount + Fee exceeds balance. Max invoice amount should be ${max_send} sats`);
     }
-    if (amount.gt(allowance)) {
+    if (wbtc_amount.gt(allowance)) {
       const approveTx = await WBTCSigner.approve(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, ethers.constants.MaxUint256);
     }
 
@@ -84,11 +79,11 @@ export default function Home() {
       return setLockWbtcError("Hash is already funded");
     }
     try {
-      const depositTx = await BridgeSigner.createDepositHash(amount.toString(), '0x' + payment_hash, expiry);
-      setLockWbtcError("Submitted: " + depositTx.hash);
+      const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       const depositResponse = await depositTx.wait();
       console.log(depositResponse);
-      if (depositResponse.status === 1) return setWbtcLocked(true);
+      await submitInvoice();
+      // TODO: Update My Swaps
     } catch (e: any) {
       return setLockWbtcError(e.message);
     }
@@ -105,11 +100,7 @@ export default function Home() {
     });
     const json = await response.json();
     if (response.status != 200) {
-      return setSubmitInvoiceError(json.err);
-    }
-    else {
-      setInvoiceSubmitted(true);
-      return setSubmitInvoiceError("Submitted");
+      return setLockWbtcError(json.err);
     }
   }
 
@@ -119,12 +110,6 @@ export default function Home() {
   }
 
   const decodedInvoice = getDecodedInvoice();
-  const payment_hash = decodedInvoice.paymentHash.toString('hex');
-  const tradingFeeSats = Math.floor(wbtcSendAmountSats * TRADING_FEE);
-  let networkFeeSats = NETWORK_FEE;
-  if (openNewChannel) networkFeeSats += OPEN_CHANNEL_FEE;
-  let receiveAmountSats = wbtcSendAmountSats - tradingFeeSats - networkFeeSats;
-  if (receiveAmountSats < 0) receiveAmountSats = 0;
   return (
     <>
       <Head>
@@ -139,48 +124,25 @@ export default function Home() {
           <Link href="/pool">Pool</Link>
         </nav>
 
-        <h1>WBTC to Lightning</h1>
+        <h1>Swap</h1>
 
-        <h2>Step 1: Connect to our Node</h2>
-        <p>We cannot send you money if you are not connected to our node. Our connection string is:</p>
-        <p className={styles.connection}>03289786c1fd9c2ddb4936186958636a2d2cbf9ef2fdd43a342ad72377711ae326@18.246.47.83:19735</p>
-        <p>You can open a channel to our node if you do not have one or lack inbound capacity to fill your order. You can do so by checking that option in Step 3.</p>
+        <h2>Open a Channel</h2>
+        <p className={styles.connection}>02572fcd9ca25472108ff62b975dff47f5625e57abcf0f354065c9586db8dbd632@34.214.120.115:9735</p>
 
-        <h2>Step 2: Connect Wallet</h2>
-        <button onClick={connectWallet}>Connect Wallet</button>
+        <h2>My Swaps</h2>
+        <p><button onClick={connectWallet}>Load History</button></p>
 
-        <h2>Step 2: Calculate Swap Amount</h2>
-        <p>Send <input type="number" placeholder="0.025" onChange={handleSendWbtcInputChange} /> WBTC <a className={styles.maxbutton}>Max</a></p>
-        <p><input type="checkbox" placeholder="BTC" onChange={handleNewChannelCheckboxChange} /> Open a new channel (~30 min) </p>
-        <div>Network Fee: {satsToBitcoin(networkFeeSats)} BTC</div>
-        <div>Swap Fee ({TRADING_FEE * 100}%): {satsToBitcoin(tradingFeeSats)} BTC</div>
-        <p>Receive: {satsToBitcoin(receiveAmountSats)} BTC</p>
+        <h2>New Swap</h2>
+        <textarea placeholder="Paste lightning invoice here..." rows={5} onChange={handleTextAreaChange}></textarea>
+        <div>Receive: {satsToBitcoin(decodedInvoice.valueSat)} BTC</div>
+        <div>Send: {satsToBitcoin(Number(decodedInvoice.valueSat) + NETWORK_FEE)} WBTC</div>
+        <div>Payment Hash: {decodedInvoice.paymentHash.toString('hex')}</div>
+        <p><button onClick={lockWBTC}>Lock WBTC</button></p>
+        <p className={styles.errormessage}>{lockWbtcError}</p>
 
-        <h2>Step 3: Create Invoice</h2>
-        <p>Generate a Lightning invoice for the amount you want to receive in your wallet and paste it here.</p>
-        <textarea placeholder="lnbc..." rows={5} onChange={handleTextAreaChange}></textarea>
-        <div>
-          <div>Amount: {decodedInvoice.valueSat} sats ({satsToBitcoin(decodedInvoice.valueSat)} BTC)</div>
-          <div>Payment Hash: {payment_hash}</div>
-          <div>Expiry: {getInvoiceExpirySeconds()} seconds</div>
-        </div>
-
-        <h2>Step 2: Lock WBTC</h2>
-        <p>Submitting this transaction will hashlock WBTC into an atomic swap smart contract. Your trading partner will not be able to unlock the WBTC until they pay your Lightning invoice.</p>
-        <button onClick={lockWBTC} disabled={!payment_hash || wbtcLocked || getInvoiceExpirySeconds() < 600}>Lock WBTC</button>
-        <p>{lockWbtcError}</p>
-
-        <h2>Step 3: Submit Invoice</h2>
-        <p>Once your lock transaction confirms, you can submit your invoice. Your trading partner will check if your WBTC has been locked up properly, and pay your Lightning invoice if it has.</p>
-        <button onClick={submitInvoice} disabled={!wbtcLocked || invoiceSubmitted}>Submit Invoice</button>
-        <p>{submitInvoiceError}</p>
-
-        <h2>Step 4: Check Your Lightning Wallet</h2>
-        <p>Your invoice should be paid within 2-3 minutes. If it does not get paid, you can reclaim your WBTC in 2 hours. The process is trustless, so you can never lose your funds.</p>  
-
-        <h2>Troubleshooting</h2>
-        <p><i>Question: I locked my WBTC into the contract, but accidentally closed/refreshed the page before I could submit the invoice. Can I continue where I left off?</i></p>
-        <p>Yes. Paste the same invoice back into Step 1, then hit Lock WBTC in Step 2. Instead of submitting a new tx, the site will detect that you have already funded that hash and skip to the next step.</p>
+        <h2 className={styles.troubleshooting}>Troubleshooting</h2>
+        <p><i>Question: I locked my WBTC into the contract, but it's not showing up in my swaps.</i></p>
+        <p>Paste the same invoice back into New Swap and click Lock WBTC. Instead of submitting a new tx, the site will detect that you have already funded that hash.</p>
 
       </main>
     </>

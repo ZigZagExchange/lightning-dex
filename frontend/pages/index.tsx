@@ -69,9 +69,9 @@ export default function Home() {
       return setLockWbtcError("Hash is already funded");
     }
     try {
+      await submitInvoice();
       const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       const depositResponse = await depositTx.wait();
-      await submitInvoice();
       // TODO: Update My Swaps
     } catch (e: any) {
       return setLockWbtcError(e.message);
@@ -89,7 +89,7 @@ export default function Home() {
     });
     const json = await response.json();
     if (response.status != 200) {
-      return setLockWbtcError(json.err);
+      throw new Error(json.err);
     }
   }
 

@@ -81,6 +81,16 @@ app.post('/hash/preimage', async (req, res, next) => {
   res.status(200).json({"success": true });
 });
 
+let CHANNELS = [];
+app.post('/channels', async (req, res, next) => {
+  CHANNELS = req.body;
+  res.status(200).json({"success": true });
+});
+
+app.get('/channels', async (req, res, next) => {
+  res.status(200).json(CHANNELS);
+});
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err })

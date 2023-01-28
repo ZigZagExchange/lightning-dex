@@ -4,7 +4,7 @@ module.exports = {
       chainId: 42161,
       rpcUrl: 'https://arb1.arbitrum.io/rpc',
       wbtcAddress: "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f",
-      wbtcVaultAddress: '0x888bc0D57727b74d42FB3a06B647FDeA8A06bB3B',
+      wbtcVaultAddress: '0x7F6678cdBC715F15501342ecFB34ABCC903cBF6F',
     },
     goerli: {
       chainId: 5,
@@ -13,7 +13,7 @@ module.exports = {
       wbtcVaultAddress: "0x77b03e0f8Af662cE284988676F5683A65894E9c2",
     }
   },
-  NETWORK_FEE: 20000,
+  NETWORK_FEE: 2000,
   OPEN_CHANNEL_FEE: 50000,
   TRADING_FEE: 0.003
 }

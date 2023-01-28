@@ -3,7 +3,7 @@ html {
 }
 
 /* Pool Page */
-.token-table th {
+.token-table th, .my-orders-table th {
   text-align: left;
 }
 .token-table td {

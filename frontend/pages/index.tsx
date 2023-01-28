@@ -18,7 +18,7 @@ export default function Home() {
   
   const [userInvoice, setUserInvoice] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [myOrders, setMyOrders] = useState([]);
+  const [myOrders, setMyOrders] = useState([] as any[]);
 
   async function updateOrders() {
     const wallets = await connectWallet();
@@ -26,7 +26,7 @@ export default function Home() {
     const address = wallets[0].accounts[0].address;
     const Bridge = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, BRIDGE_ABI, ethersProvider);
     const orders = await Bridge.queryFilter("DepositCreated");
-    const orderArgs = orders.map(o => ({ ...o.args, hash: o.args.hash.slice(2) })); // Remove 0x in front of payment hash
+    const orderArgs  = orders.map(o => ({ ...o.args, hash: o.args?.hash.slice(2) })); // Remove 0x in front of payment hash
     setMyOrders([ ...orderArgs]);
   }
 
@@ -106,12 +106,12 @@ export default function Home() {
     }
   }
 
-  function getExpiryMinutes (unix_timestamp) {
+  function getExpiryMinutes (unix_timestamp: number) {
     const now = Math.floor(Date.now() / 1000);
     return Math.floor((unix_timestamp - now) / 60)
   }
 
-  async function reclaimHash(payment_hash) {
+  async function reclaimHash(payment_hash: string) {
     const wallets = await connectWallet();
     const ethersProvider = new ethers.providers.Web3Provider(wallets[0].provider, Number(wallets[0].chains[0].id))
     const address = wallets[0].accounts[0].address;
@@ -166,7 +166,7 @@ export default function Home() {
         <p><button onClick={lockWBTC}>Send Order</button></p>
         <p className={styles.errormessage}>{errorMessage}</p>
 
-        <div><button onClick={updateOrders}>Update Orders</button></div>
+        <div><button onClick={updateOrders}>Refresh Orders</button></div>
         <h3>My Orders</h3>
         <table className="my-orders-table">
           <thead>

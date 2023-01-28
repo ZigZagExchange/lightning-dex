@@ -16,7 +16,7 @@ const config: HardhatUserConfig = {
       accounts: []
     }, 
     arbitrum: {
-      url: "",
+      url: "https://arb1.arbitrum.io/rpc",
       accounts: []
     }, 
   },

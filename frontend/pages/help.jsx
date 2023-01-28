@@ -32,6 +32,11 @@ export default function Help() {
 
       <hr/>
 
+      <p><i>How long does it take for my BTC to arrive?</i></p>
+      <p>Your BTC should arrive within 2-3 minutes. If it does not arrive, you can reclaim your WBTC in 2 hours after the hashlock expires. The process is trustless, so you can never lose money.</p>
+
+      <hr/>
+
       <p><i>Where can I get more help?</i></p>
       <p><a href="https://discord.gg/zigzag">Discord</a></p>
 

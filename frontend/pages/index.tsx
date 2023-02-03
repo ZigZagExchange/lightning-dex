@@ -26,7 +26,7 @@ export default function Home() {
     const address = wallets[0].accounts[0].address;
     const Bridge = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, BRIDGE_ABI, ethersProvider);
     const orders = await Bridge.queryFilter("DepositCreated");
-    const orderArgs  = orders.map(o => ({ ...o.args, hash: o.args?.hash.slice(2) })); // Remove 0x in front of payment hash
+    const orderArgs  = orders.reverse().map(o => ({ ...o.args, hash: o.args?.hash.slice(2) })); // Remove 0x in front of payment hash
     setMyOrders([ ...orderArgs]);
   }
 
@@ -81,8 +81,8 @@ export default function Home() {
     }
     try {
       console.log(wbtc_amount.toString(), '0x' + payment_hash, expiry);
-      const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       await submitInvoice();
+      const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       const depositResponse = await depositTx.wait();
       const newOrder = { hash: payment_hash, wbtc_amount, expiry, intiator: address };
       setMyOrders([ ...myOrders, newOrder ]);
@@ -118,7 +118,7 @@ export default function Home() {
     const Bridge = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, BRIDGE_ABI, ethersProvider);
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
     const deposit_info = await Bridge.DEPOSIT_HASHES('0x' + payment_hash);
-    if (deposit_info.wbtc_amount.eq(0)) return setErrorMessage("Swap was successful. Nothing to claim.");
+    if (deposit_info.wbtc_amount.eq(0)) return setErrorMessage("Nothing to claim.");
     try {
       const reclaimTx = await BridgeSigner.reclaimDepositHash('0x' + payment_hash);
     } catch (e: any) {
@@ -130,11 +130,10 @@ export default function Home() {
   const orderRows = []
   for (let i in myOrders) {
     const order = myOrders[i];
-    const expiry_minutes = getExpiryMinutes(order.expiry);
-    const expiry_text = expiry_minutes > 0 ? expiry_minutes + "m" : "expired";
-    const reclaim_disabled = expiry_minutes > 0;
+    const expiry_text = new Date(order.expiry * 1000).toLocaleDateString() + ' ' + new Date(order.expiry * 1000).toLocaleTimeString();
+    const reclaim_disabled = (order.expiry * 1000) > Date.now();
     orderRows.push((    
-       <tr>
+       <tr key={order.hash}>
           <td>{order.hash}</td>
           <td>{satsToBitcoin(order.wbtc_amount.toString())} WBTC</td>
           <td>{expiry_text}</td>

@@ -72,7 +72,7 @@ export default function Home() {
       const approveTx = await WBTCSigner.approve(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, ethers.constants.MaxUint256);
     }
 
-    const expiry = Math.floor(Date.now() / 1000) + 7200;
+    const expiry = Math.floor(Date.now() / 1000) + 300;
     const Bridge = new ethers.Contract(CHAIN_CONFIG.arbitrum.wbtcVaultAddress, BRIDGE_ABI);
     const BridgeSigner = Bridge.connect(ethersProvider.getSigner());
     const hashStatus = await BridgeSigner.DEPOSIT_HASHES('0x' + payment_hash);
@@ -85,7 +85,7 @@ export default function Home() {
       const depositTx = await BridgeSigner.createDepositHash(wbtc_amount.toString(), '0x' + payment_hash, expiry);
       const depositResponse = await depositTx.wait();
       const newOrder = { hash: payment_hash, wbtc_amount, expiry, intiator: address };
-      setMyOrders([ ...myOrders, newOrder ]);
+      setMyOrders([ newOrder, ...myOrders ]);
     } catch (e: any) {
       return setErrorMessage(e.message);
     }

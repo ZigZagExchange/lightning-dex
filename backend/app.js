@@ -19,6 +19,12 @@ async function runDbMigration () {
       invoice TEXT
     )
   `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS invoice_requests (
+      id SERIAL PRIMARY KEY,
+      amount NUMERIC
+    )
+  `);
 }
 
 runDbMigration();
@@ -65,14 +71,17 @@ app.get('/hash/:hash', async (req, res, next) => {
   else next("Hash not found");
 })
 
-let CHANNELS = [];
-app.post('/channels', async (req, res, next) => {
-  CHANNELS = req.body;
+app.post('/invoice/request', async (req, res, next) => {
+  const amount = parseInt(req.body.amount);
+  if (isNaN(amount)) return next("Invalid amount");
+  if (amount < 2000) return next("Min amount is 2000");
+  try {
+    await db.query("INSERT INTO invoice_requests (amount) VALUES ($1)", [amount]);
+  }
+  catch (e) {
+    return next(e.detail);
+  }
   res.status(200).json({"success": true });
-});
-
-app.get('/channels', async (req, res, next) => {
-  res.status(200).json(CHANNELS);
 });
 
 app.use((err, req, res, next) => {

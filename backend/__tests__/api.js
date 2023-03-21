@@ -12,6 +12,7 @@ const hash = crypto.createHash("sha256").update(preimage, "hex").digest("hex");
 
 beforeAll(async () => {
   await db.query("DROP TABLE IF EXISTS hashes");
+  await db.query("DROP TABLE IF EXISTS invoice_requests");
   await runDbMigration();
 });
 
@@ -63,36 +64,9 @@ describe("Tests", () => {
     expect(response.body.invoice).toBeTruthy();
   });
 
-  test("publish channels", async () => {
-    const channels = [
-      {
-        "remote_pubkey": "0378b189d84fc901a448376d7142a41881a89386e6cb766b4c6c7f76468f0f2d06",
-        "local_balance": "10000",
-        "remote_balance": "9988777"
-      }
-    ]
-    const response = await request(app).post("/channels").send(channels);
+  test("Submit an invoice request", async () => {
+    const response = await request(app).post("/invoice/request").send({ amount: 5000 });
     expect(response.statusCode).toBe(200);
-  });
-
-  test("get channels", async () => {
-    const channels = [
-      {
-        "remote_pubkey": "0378b189d84fc901a448376d7142a41881a89386e6cb766b4c6c7f76468f0f2d06",
-        "local_balance": "10000",
-        "remote_balance": "9988777"
-      }
-    ]
-    const response = await request(app).post("/channels").send(channels);
-    expect(response.statusCode).toBe(200);
-
-    const channels_response = await request(app).get("/channels");
-    expect(channels_response.statusCode).toBe(200);
-    expect(channels_response.body instanceof Array).toBe(true);
-    expect(channels_response.body.length).toBe(1);
-    expect(channels_response.body[0].remote_pubkey).toBe(channels[0].remote_pubkey);
-    expect(channels_response.body[0].local_balance).toBe(channels[0].local_balance);
-    expect(channels_response.body[0].remote_balance).toBe(channels[0].remote_balance);
   });
 });
 

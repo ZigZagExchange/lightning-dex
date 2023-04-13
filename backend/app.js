@@ -75,13 +75,10 @@ app.post('/invoice/request', async (req, res, next) => {
   const amount = parseInt(req.body.amount);
   if (isNaN(amount)) return next("Invalid amount");
   if (amount < 2000) return next("Min amount is 2000");
-  try {
-    await db.query("INSERT INTO invoice_requests (amount) VALUES ($1)", [amount]);
-  }
-  catch (e) {
-    return next(e.detail);
-  }
-  res.status(200).json({"success": true });
+  const invoicegen = await exec(`lncli addinvoice --amt ${amount}`);
+  const invoice = JSON.parse(invoicegen.stdout)
+
+  res.status(200).json(invoice);
 });
 
 app.use((err, req, res, next) => {

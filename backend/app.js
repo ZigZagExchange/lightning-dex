@@ -3,9 +3,10 @@ const app = express()
 const LNInvoice = require("@node-lightning/invoice");
 const { Pool } = require('pg');
 const crypto = require('crypto');
-const dotenv = require('dotenv');
+const nodeChildProcess = require('node:child_process');
+const util = require('node:util');
 
-dotenv.config()
+const exec = util.promisify(nodeChildProcess.exec);
 
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -71,8 +72,8 @@ app.get('/hash/:hash', async (req, res, next) => {
   else next("Hash not found");
 })
 
-app.post('/invoice/request', async (req, res, next) => {
-  const amount = parseInt(req.body.amount);
+app.get('/invoice/request/:amount', async (req, res, next) => {
+  const amount = parseInt(req.params.amount);
   if (isNaN(amount)) return next("Invalid amount");
   if (amount < 2000) return next("Min amount is 2000");
   const invoicegen = await exec(`lncli addinvoice --amt ${amount}`);

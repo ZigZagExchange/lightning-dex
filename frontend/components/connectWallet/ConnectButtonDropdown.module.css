@@ -1,0 +1,66 @@
+.container {
+  position: absolute;
+  right: 0;
+
+  animation: fadein 0.1s ease-out forwards;
+
+  z-index: 1000000000000000;
+  overflow: hidden;
+  outline: none;
+  padding-top: 5px;
+  border-radius: 4px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  transition: opacity 0.1s ease-out;
+}
+
+.container > * {
+  width: 100%;
+}
+
+.container button {
+  background: var(--glass_background);
+  color: white;
+  border: none;
+  padding: 0.5rem 1em;
+  border-radius: 14px;
+  font-size: inherit;
+  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.container button svg {
+  font-size: 20px;
+  fill: white;
+  margin-right: 10px;
+}
+
+.container button:disabled svg {
+  fill: var(--gray_lighter);
+}
+
+.container button:not(:disabled):hover svg {
+  fill: white;
+}
+
+.container button > * {
+  opacity: 0.5;
+  transition: opacity 0.1s ease-out;
+}
+
+.container button:hover > * {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}

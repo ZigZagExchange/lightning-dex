@@ -1,14 +1,22 @@
-import '../styles/globals.css'
-import 'react-toastify/dist/ReactToastify.css';
-import type { AppProps } from 'next/app'
-import { ToastContainer } from 'react-toastify';
+import "../styles/globals.css"
+import type { AppProps } from "next/app"
 
+import WalletProvider from "../contexts/WalletContext"
+import ExchangeProvider from "../contexts/ExchangeContext"
+import SwapProvider from "../contexts/SwapContext"
+import { ToastContainer } from 'react-toastify'
 
-export default function App({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
-      <>
-        <Component {...pageProps} />
-        <ToastContainer />
-      </>
+    <WalletProvider>
+      <ExchangeProvider>
+        <SwapProvider>
+          <Component {...pageProps} />
+          <ToastContainer />
+        </SwapProvider>
+      </ExchangeProvider>
+    </WalletProvider>
   )
 }
+
+export default MyApp

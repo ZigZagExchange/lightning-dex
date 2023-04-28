@@ -1,0 +1,24 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 20px;
+}
+
+.icon_container {
+  margin: 5px;
+  display: flex;
+}
+
+.icon {
+  fill: white;
+  opacity: 0.5;
+  transition: all 0.1s ease-out;
+}
+
+.icon:hover {
+  opacity: 1;
+  fill: var(--accent_lighter);
+  filter: drop-shadow(0 0 5px var(--accent_darker));
+}

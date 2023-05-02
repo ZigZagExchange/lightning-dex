@@ -1,59 +1,50 @@
-import { useContext, useState } from "react"
-import DownArrow from "../DownArrow"
-import styles from "./NetworkSelector.module.css"
+import { useContext } from "react"
+
+import Jazzicon, { jsNumberForAddress } from "react-jazzicon"
 
 import { WalletContext } from "../../contexts/WalletContext"
-import { networkSelectorOrder, NETWORKS } from "../../data/networks"
 
-function NetworkSelector() {
-  const { network, switchNetwork } = useContext(WalletContext)
-  const [showDropdown, setShowDropdown] = useState<boolean>(false)
+import styles from "./NetworkSelector.module.css"
+import DownArrow from "../DownArrow"
+import { hideAddress } from "../../utils/utils"
 
-  const networkList = []
-  for (let i = 0; i < networkSelectorOrder.length; i++) {
-    const key = networkSelectorOrder[i]
-    if (network && key === network.networkId) continue
+function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpen: () => void }) {
+  const { userAddress, username, network, connect, disconnect } = useContext(WalletContext)
 
-    const networkOption = NETWORKS[key]
+  function open() {
+    networkSelectorModalOpen();
+  }
 
-    networkList.push(
-      <div key={key} className={styles.network_entry} onClick={() => switchNetwork(networkOption.networkId)}>
-        <span className={styles.network_icon}>{networkOption.icon}</span> <span> {networkOption.name}</span>
+  if (!userAddress) {
+    return (
+      <div className={styles.container}>
+        <button className={styles.connect_button} onClick={open}>
+          <div className={styles.text}>0.0 ETH</div>
+        </button>
+      </div>
+    )
+  } else {
+    let usernameOrAddress
+    if (username) {
+      usernameOrAddress = <div className={styles.username}>{username}</div>
+    } else if (userAddress) {
+      usernameOrAddress = <div className={styles.address}>{hideAddress(userAddress)}</div>
+    }
+
+    return (
+      <div className={styles.container} onMouseEnter={open}>
+        <div className={styles.profile_button}>
+          <div className={styles.profile_image_container}>
+            <Jazzicon diameter={30} seed={jsNumberForAddress(userAddress)} />
+          </div>
+          <div className={styles.username_address_container}>{usernameOrAddress}</div>
+          <div className={styles.arrow}>
+            <DownArrow />
+          </div>
+        </div>
       </div>
     )
   }
-
-  return (
-    <div
-      className={styles.container}
-      onMouseLeave={() => {
-        setShowDropdown(false)
-      }}
-      onClick={() => setShowDropdown(v => !v)}
-    >
-      <div
-        className={`${styles.selected} ${showDropdown ? styles.active_selected : ""} ${
-          network?.networkId === undefined || network?.networkId === null ? styles.wrong_network : ""
-        }`}
-        onMouseEnter={() => setShowDropdown(true)}
-      >
-        <span className={styles.selected_network_icon}>
-          {network && (network.networkId === undefined || network.networkId !== null) ? NETWORKS[network.networkId].icon : "?"}
-        </span>{" "}
-        <div className={styles.selected_name_container}>{network ? network.name : "Wrong Network"}</div>
-        {networkList.length > 0 ? <DownArrow /> : ""}
-      </div>
-      <div
-        style={{
-          opacity: showDropdown ? "1" : "0",
-          pointerEvents: showDropdown ? "all" : "none",
-        }}
-        className={styles.dropdown_container}
-      >
-        {networkList}
-      </div>
-    </div>
-  )
 }
 
 export default NetworkSelector

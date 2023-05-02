@@ -1,9 +1,8 @@
 import React, { createContext, useEffect, useState } from "react"
-
 import { ethers } from "ethers"
 
 import { Resolution } from "@unstoppabledomains/resolution"
-import Onboard, { WalletState } from "../node_modules/@web3-onboard/core/dist"
+import Onboard, { WalletState } from "@web3-onboard/core/dist"
 import injectedModule from "@web3-onboard/injected-wallets"
 import walletConnectModule from "@web3-onboard/walletconnect/dist"
 import coinbaseWalletModule from "@web3-onboard/coinbase"
@@ -85,6 +84,9 @@ const onboard = Onboard({
       enabled: false,
     },
   },
+  connect: {
+    showSidebar: false
+  }
 })
 
 function WalletProvider({ children }: Props) {

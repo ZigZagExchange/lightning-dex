@@ -13,6 +13,7 @@
   position: fixed;
   right: 0;
   left: 0;
+  padding: 2.5rem 7rem;
   transform: translateZ(1000px);
   -webkit-transform: translateZ(1000px);
 
@@ -52,7 +53,7 @@
   /* background-color; */
 }
 
-@media (width <= 600px) {
+@media (width <=600px) {
   .header_left {
     /* display: none; */
     gap: 0;
@@ -118,6 +119,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -171,10 +173,12 @@
   z-index: -1;
   /* opacity: 0.5; */
 }
+
 @keyframes pulse {
   from {
     background-color: var(--accent_lighter);
   }
+
   to {
     background-color: var(--accent);
   }
@@ -288,6 +292,7 @@
     opacity: 0;
     top: calc(-100% - 20%);
   }
+
   to {
     top: calc(200% + 20%);
   }

@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Azeret+Mono&family=IBM+Plex+Mono:wght@400;500;700&family=Roboto:wght@100;400;700&family=Poppins:wght@100;400;700;900&family=Roboto+Mono&display=swap");
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* @font-face {
   font-family: "Kievit";
   src: local("Kievit Medium"),
@@ -56,23 +60,22 @@
   --onboard-modal-border-radius: 14px;
 
   --onboard-font-family-normal: "Poppins", sans-serif;
-  --onboard-font-family-semibold: "Poppins", sans-serif
-  --onboard-font-family-light: "Poppins", sans-serif;
+  --onboard-font-family-semibold: "Poppins", sans-serif --onboard-font-family-light: "Poppins", sans-serif;
   --onboard-font-size-5: 0.9rem;
 
   --account-select-white: rgb(3, 25, 43);
   /* --account-select-white: gray;  */
   --account-select-gray-700: white;
   --account-select-black: white;
-  --account-select-gray-600:var(--turquoise_dark);
-  --account-select-gray-500:var(--turquoise_dark);
+  --account-select-gray-600: var(--turquoise_dark);
+  --account-select-gray-500: var(--turquoise_dark);
   --onboard-gray-400: rgb(3, 25, 43);
   --onboard-white: var(--turquoise_dark);
-  --account-select-gray-200:none;
-  --account-select-gray-100:var(--turquoise_darker);
-  
-  --account-select-primary-500:var(--turquoise_dark);
-  --account-select-primary-300:var(--turquoise_dark);
+  --account-select-gray-200: none;
+  --account-select-gray-100: var(--turquoise_darker);
+
+  --account-select-primary-500: var(--turquoise_dark);
+  --account-select-primary-300: var(--turquoise_dark);
 
   --account-select-modal-primary-100: #eff1fc;
   --account-select-modal-primary-200: #d0d4f7;
@@ -222,8 +225,10 @@ body {
   /* background-image: radial-gradient(circle at 50% 50%, rgb(0, 183, 255) 1.9%, var(--turquoise_darker) 2%, rgb(0, 17, 24) 50%); */
 
   --bg: #162537;
-  background: radial-gradient(circle at -10% -10%, #0569a3, #0c3c58 10%, #12334e 20%, var(--bg) 50%, transparent 60%) -10% -10%,
-    radial-gradient(circle at 110% 110%, #0569a3, #0c3c58 10%, #12334e 15%, var(--bg) 50%) 100% 100%;
+
+  background: radial-gradient(23.86% 33.62% at 50.97% 47.88%, rgba(255, 0, 255, 0.04) 0%, rgba(172, 143, 255, 0.04) 100%), rgb(17, 17, 17);
+  /* background: radial-gradient(circle at -10% -10%, #0569a3, #0c3c58 10%, #12334e 20%, var(--bg) 50%, transparent 60%) -10% -10%,
+    radial-gradient(circle at 110% 110%, #0569a3, #0c3c58 10%, #12334e 15%, var(--bg) 50%) 100% 100%; */
   background-repeat: no-repeat;
   /* filter: blur(20px); */
   /* animation: AnimateBG 40s ease-in-out infinite; */
@@ -233,15 +238,19 @@ body {
   0% {
     background-position: 0% 50%;
   }
+
   25% {
     background-position: 75% 25%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   75% {
     background-position: 25% 75%;
   }
+
   100% {
     background-position: 0% 50%;
   }
@@ -297,6 +306,7 @@ input[type="number"] {
 body::-webkit-scrollbar {
   background-color: var(--container_background_color);
 }
+
 *::-webkit-scrollbar {
   width: 8px;
   height: 6px;
@@ -324,7 +334,8 @@ input {
   background-color: var(--container_background_color);
   border-width: 1px;
   border-style: solid;
-  border-color: var(--container_border_color); /*var(--container_border_color);*/
+  border-color: var(--container_border_color);
+  /*var(--container_border_color);*/
   border-radius: var(--container_border_radius);
   /* box-shadow: 0 0 2px var(--container_border_color), inset 0 0 3px var(--container_border_color); */
 }
@@ -422,19 +433,23 @@ button {
   animation: pulse 0.5s ease-in-out infinite alternate;
   z-index: -1;
 }
+
 @keyframes pulse {
   from {
     background-color: var(--accent_lighter);
   }
+
   to {
     background-color: var(--accent);
   }
 }
 
 /* Pool Page */
-.token-table th, .my-orders-table th {
+.token-table th,
+.my-orders-table th {
   text-align: left;
 }
+
 .token-table td {
   padding: 5px;
 }

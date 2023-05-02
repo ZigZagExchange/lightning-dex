@@ -36,6 +36,13 @@
   transition: all 0.05s ease-out;
 }
 
-.hidden > .modal {
+.modal.wallet_modal {
+  width: 384px;
+  padding: 0;
+  box-shadow: none;
+  border: none;
+}
+
+.hidden>.modal {
   scale: 0.9;
 }

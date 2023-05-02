@@ -12,7 +12,7 @@ function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpe
   const { userAddress, username, network, connect, disconnect } = useContext(WalletContext)
 
   function open() {
-    networkSelectorModalOpen();
+    networkSelectorModalOpen()
   }
 
   if (!userAddress) {

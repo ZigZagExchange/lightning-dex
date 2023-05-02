@@ -12,7 +12,7 @@ function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () 
   const { userAddress, username, network, connect, disconnect } = useContext(WalletContext)
 
   function open() {
-    openConnectWalletModal();
+    openConnectWalletModal()
   }
 
   if (!userAddress) {

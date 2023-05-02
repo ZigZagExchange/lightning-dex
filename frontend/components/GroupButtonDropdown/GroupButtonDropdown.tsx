@@ -1,9 +1,9 @@
 import { useContext, useState } from "react"
 import styles from "./GroupButtonDropdown.module.scss"
-import Link from "next/link";
+import Link from "next/link"
 
 function GroupButtonDropdown() {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false)
 
     function toggle() {
         setIsOpen(v => !v)

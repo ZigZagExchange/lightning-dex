@@ -1,4 +1,5 @@
-import styles from "./NetWorkSelectorModal.module.scss";
+import Image from "next/image"
+import styles from "./NetWorkSelectorModal.module.scss"
 
 interface Props {
     close: () => void
@@ -25,19 +26,19 @@ function NetworkSelectorModal({ close }: Props) {
 
                 <div className={`${styles.token_container} flex flex-col space-y-3 overflow-y-auto scrollbar-hide py-2 max-h-[80vh]`}>
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-[#5170ad] hover:!bg-opacity-20 hover:!border-[#5170ad]">
-                        <img src="/tokenIcons/eth.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/eth.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left">
                             <div className="text-white ">Ethereum</div>
                         </div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-gray-500 hover:!bg-opacity-20 hover:!border-gray-500 bg-gray-500 active:bg-gray-700 border-gray-500 dark:border-gray-500 bg-opacity-50">
-                        <img src="/tokenIcons/abt.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/abt.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left"><div className="text-white ">Arbitrum</div></div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-red-500 hover:!bg-opacity-20 hover:!border-red-500">
-                        <img src="/tokenIcons/avax.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/avax.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Avalanche</div>
@@ -45,30 +46,30 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-red-500 hover:!bg-opacity-20 hover:!border-red-500">
-                        <img src="/tokenIcons/bnb.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/bnb.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left">
                             <div className="text-white ">BNB Chain</div>
                         </div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-red-500 hover:!bg-opacity-20 hover:!border-red-500">
-                        <img src="/tokenIcons/opt.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" /><div className="flex-col text-left" >
+                        <Image src="/tokenIcons/opt.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" /><div className="flex-col text-left" >
                             <div className="text-white ">Optimism</div></div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500">
-                        <img src="/tokenIcons/pol.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/pol.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left" >
                             <div className="text-white ">Polygon</div>
                         </div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500">
-                        <img src="/tokenIcons/aur.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/aur.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left"><div className="text-white ">Aurora</div></div></button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500">
-                        <img src="/tokenIcons/bob.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/bob.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left" >
                             <div className="text-white ">Boba Network</div>
@@ -76,7 +77,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500">
-                        <img src="/tokenIcons/canto.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/canto.svg" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Canto</div>
@@ -84,7 +85,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500">
-                        <img src="/tokenIcons/cronos.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/cronos.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Cronos</div>
@@ -92,7 +93,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500">
-                        <img src="/tokenIcons/dfk.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/dfk.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">DFK Chain</div>
@@ -100,7 +101,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500">
-                        <img src="/tokenIcons/dog.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/dog.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Dogechain</div>
@@ -108,7 +109,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500">
-                        <img src="/tokenIcons/fantom.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/fantom.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white">Fantom</div>
@@ -116,14 +117,14 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-cyan-500 hover:!bg-opacity-20 hover:!border-cyan-500">
-                        <img src="/tokenIcons/harmony.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/harmony.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
                         <div className="flex-col text-left">
                             <div className="text-white ">Harmony</div>
                         </div>
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-orange-500 hover:!bg-opacity-20 hover:!border-orange-500">
-                        <img src="/tokenIcons/klaytn.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/klaytn.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Klaytn</div>
@@ -131,7 +132,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500">
-                        <img src="/tokenIcons/metis.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/metis.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Metis</div>
@@ -139,7 +140,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500">
-                        <img src="/tokenIcons/moonbeam.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/moonbeam.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Moonbeam</div>
@@ -147,7 +148,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500">
-                        <img src="/tokenIcons/moonriver.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/moonriver.jfif" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Moonriver</div>
@@ -155,7 +156,7 @@ function NetworkSelectorModal({ close }: Props) {
                     </button>
 
                     <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500">
-                        <img src="/tokenIcons/terra.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
+                        <Image src="/tokenIcons/terra.png" alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" />
 
                         <div className="flex-col text-left">
                             <div className="text-white ">Terra</div>
@@ -167,4 +168,4 @@ function NetworkSelectorModal({ close }: Props) {
     )
 }
 
-export default NetworkSelectorModal;
+export default NetworkSelectorModal

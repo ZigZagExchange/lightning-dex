@@ -1,4 +1,5 @@
 import Image from "next/image"
+import styles from "./ConnectWalletModal.module.scss"
 
 interface Props {
     close: () => void
@@ -22,7 +23,7 @@ function ConnectWalletModal({ close }: Props) {
                     <p className="text-gray-400"></p>
                 </div>
 
-                <div>
+                <div className={styles.button_group}>
                     <div className="flex flex-col pt-4">
                         <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-[#0a0a0a]  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30">
                             <Image src="/wallets/metamask.svg" alt="icon" className="w-8 mr-3 rounded-lg" width={20} height={20} />

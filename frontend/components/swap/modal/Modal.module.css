@@ -39,8 +39,8 @@
 .modal.wallet_modal {
   width: 384px;
   padding: 0;
-  box-shadow: none;
-  border: none;
+  /* box-shadow: none;
+  border: none; */
 }
 
 .hidden>.modal {

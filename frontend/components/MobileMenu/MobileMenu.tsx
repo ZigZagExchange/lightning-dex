@@ -1,8 +1,8 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from "next/image"
+import Link from "next/link"
 
 import logo from "../../public/img/zz.svg"
-import { useState } from "react";
+import { useState } from "react"
 
 interface Props {
     networkSelectorModalOpen: () => void,
@@ -10,7 +10,7 @@ interface Props {
 }
 
 function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false)
 
     return (
         <div>
@@ -109,4 +109,4 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
     )
 }
 
-export default MobileMenu;
+export default MobileMenu

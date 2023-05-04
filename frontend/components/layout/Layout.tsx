@@ -91,7 +91,7 @@ function Layout(props: Props) {
         </div>
       </div>
 
-      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 sm:px-28`}>
+      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 md:px-28`}>
         {headerWarning}
         {headerLeft}
         <NavBar />

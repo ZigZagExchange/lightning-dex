@@ -15,7 +15,7 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
     return (
         <div>
             <div className={`absolute inset-x-0 top-0 z-[20] transition origin-top-right transform ${!isOpen ? "hidden" : ""}`}>
-                <div className="h-full min-h-full divide-y divide-gray-600 bg-[#333]">
+                <div className="h-full min-h-full divide-y divide-gray-600 bg-[#0f1a26]">
                     <div className="px-4 pt-1 pb-6">
                         <div className="flex items-center justify-between mt-5 ml-3">
                             <div className="flex items-center flex-shrink-0 py-1 ">
@@ -27,7 +27,7 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
                                     <span className="sr-only">Close menu</span>
 
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12">
                                         </path>
                                     </svg>
                                 </button>
@@ -100,8 +100,8 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
                 <button className="rounded-lg p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-400 hover:bg-gray-800 focus:outline-none" id="headlessui-popover-button-3" type="button" aria-expanded="false">
                     <span className="sr-only">Open menu</span>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-8 h-8">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-8 h-8">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
             </div>

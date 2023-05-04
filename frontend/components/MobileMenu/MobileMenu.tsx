@@ -36,27 +36,27 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
 
                         <div className="mt-6">
                             <div className="grid grid-cols-1 gap-2  py-6 ">
-                                <Link href="/about" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/about" className="block  px-3 pt-2 pb-2 rounded-lg text-[rgba(255,255,255,0.5)] hover:text-opacity-100">
                                     <p className="text-white">About</p>
                                 </Link>
 
-                                <Link href="/bridge" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/bridge" className="block  px-3 pt-2 pb-2 rounded-lg text-[rgba(255,255,255,0.5)] hover:text-opacity-100">
                                     <p className="text-white text-opacity-30">Bridge</p>
                                 </Link>
 
-                                <Link href="/" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/" className="block  px-3 pt-2 pb-2 rounded-lg text-[rgba(255,255,255,0.5)] hover:text-opacity-100">
                                     <p className="text-white text-opacity-30">Swap</p>
                                 </Link>
 
-                                <Link href="/pool" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/pool" className="block  px-3 pt-2 pb-2 rounded-lg text-[rgba(255,255,255,0.5)] hover:text-opacity-100">
                                     <p className="text-white text-opacity-30">Pools</p>
                                 </Link>
 
-                                <Link href="/stake" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/stake" className="block  px-3 pt-2 pb-2 rounded-lg text-[rgba(255,255,255,0.5)] hover:text-opacity-100">
                                     <p className="text-white text-opacity-30">Stake</p>
                                 </Link>
 
-                                <Link href="/explorer" target="_blank" className="block  px-3 pt-2 pb-2 rounded-lg text-2xl font-semibold hover:text-opacity-100">
+                                <Link href="/explorer" target="_blank" className="block  px-3 pt-2 pb-2 rounded-lg  hover:text-opacity-100">
                                     <p className="text-white text-opacity-30">Explorer</p>
                                 </Link>
                             </div>

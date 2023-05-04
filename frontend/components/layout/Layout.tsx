@@ -58,7 +58,7 @@ function Layout(props: Props) {
   }
 
   let headerLeft = (
-    <nav className={`${styles.header_left} 2xl:mr-[10rem]`}>
+    <nav className={`${styles.header_left} lg:mr-[5rem]`}>
       {/* <Link href="/"> */}
       {/* <a className={`${styles.nav_link}`}> */}
       <span className={`${styles.icon}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>

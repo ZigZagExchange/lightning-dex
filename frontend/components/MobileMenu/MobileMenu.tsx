@@ -13,7 +13,7 @@ function MobileMenu({ networkSelectorModalOpen, openConnectWalletModal }: Props)
     const [isOpen, setIsOpen] = useState(false)
 
     return (
-        <div>
+        <div className="lg:hidden">
             <div className={`absolute inset-x-0 top-0 z-[20] transition origin-top-right transform ${!isOpen ? "hidden" : ""}`}>
                 <div className="h-full min-h-full divide-y divide-gray-600 bg-[#0f1a26]">
                     <div className="px-4 pt-1 pb-6">

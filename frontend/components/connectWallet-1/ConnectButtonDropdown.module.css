@@ -22,7 +22,7 @@
 }
 
 .container button {
-  background-color: var(--turquoise_darker);
+  background: var(--glass_background);
   color: white;
   border: none;
   padding: 0.5rem 1em;

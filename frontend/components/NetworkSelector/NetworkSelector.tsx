@@ -17,7 +17,7 @@ function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpe
 
   if (!userAddress) {
     return (
-      <div className={styles.container}>
+      <div className={`lg:flex hidden ${styles.container}`}>
         <button className={styles.connect_button} onClick={open}>
           <div className={styles.text}>0.0 ETH</div>
         </button>

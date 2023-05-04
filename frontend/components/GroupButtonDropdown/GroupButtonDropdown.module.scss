@@ -4,13 +4,11 @@
   // height: 46px;
   margin-left: .5rem;
 
-  display: flex;
   align-items: center;
   justify-content: center;
 
   transition: all 0.1s ease-out;
   position: relative;
-  z-index: 100;
   font-size: 0.9rem;
 
   border-radius: 14px;
@@ -45,7 +43,7 @@
   left: 50%;
   margin-top: 0.75rem;
   padding: 0.5rem;
-  background: var(--glass_background);
+  background: #0f1a26;
   border-radius: .75rem;
   transform: translate3d(-100%, 0, 0);
   z-index: 10;

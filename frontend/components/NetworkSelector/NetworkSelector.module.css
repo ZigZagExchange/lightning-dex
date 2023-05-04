@@ -1,7 +1,6 @@
 .container {
   position: relative;
   padding: 0 0px;
-  display: flex;
   justify-content: space-evenly;
   align-items: center;
 

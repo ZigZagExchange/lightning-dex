@@ -15,10 +15,12 @@ import styles from "./Layout.module.css"
 import FooterSocials from "../footerSocials/FooterSocials"
 import ConnectWallet from "../connectWallet/ConnectWallet"
 import NetworkSelector from "../NetworkSelector/NetworkSelector"
+import MobileMenu from "../MobileMenu/MobileMenu"
 import GroupButtonDropdown from "../GroupButtonDropdown/GroupButtonDropdown"
 import HeaderSocials from "../HeaderSocials/HeaderSocials"
 import NavBar from "../navBar/NavBar"
 import Modal, { ModalMode } from "../swap/modal/Modal"
+
 
 interface Props {
   children?: ReactNode
@@ -56,7 +58,7 @@ function Layout(props: Props) {
   }
 
   let headerLeft = (
-    <nav className={styles.header_left}>
+    <nav className={`${styles.header_left} 2xl:mr-[10rem]`}>
       {/* <Link href="/"> */}
       {/* <a className={`${styles.nav_link}`}> */}
       <span className={`${styles.icon}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -89,7 +91,7 @@ function Layout(props: Props) {
         </div>
       </div>
 
-      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""}`}>
+      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 sm:px-28`}>
         {headerWarning}
         {headerLeft}
         <NavBar />
@@ -99,6 +101,10 @@ function Layout(props: Props) {
           {modal}
           <GroupButtonDropdown />
         </div>
+
+        <MobileMenu
+          networkSelectorModalOpen={() => { setModal("network") }}
+          openConnectWalletModal={() => { setModal("connectWallet") }} />
       </header>
       {/* <div className={styles.mobile_nav}>
         <Link href="https://arbitrum.zigzag.exchange/">

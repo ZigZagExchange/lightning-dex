@@ -17,7 +17,7 @@ function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () 
 
   if (!userAddress) {
     return (
-      <div className={styles.container}>
+      <div className={`lg:flex hidden ${styles.container}`}>
         <button className={styles.connect_button} onClick={open}>
           <div className={styles.text}>Connect Wallet</div>
         </button>
@@ -32,12 +32,14 @@ function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () 
     }
 
     return (
-      <div className={styles.container} onMouseEnter={open}>
+      <div className={`lg:flex hidden ${styles.container}`} onMouseEnter={open}>
         <div className={styles.profile_button}>
           <div className={styles.profile_image_container}>
             <Jazzicon diameter={30} seed={jsNumberForAddress(userAddress)} />
           </div>
+
           <div className={styles.username_address_container}>{usernameOrAddress}</div>
+
           <div className={styles.arrow}>
             <DownArrow />
           </div>

@@ -13,7 +13,6 @@
   position: fixed;
   right: 0;
   left: 0;
-  padding: 2.5rem 7rem;
   transform: translateZ(1000px);
   -webkit-transform: translateZ(1000px);
 
@@ -32,7 +31,6 @@
 
 .header_left {
   display: flex;
-  margin-right: 5rem;
   justify-content: center;
   align-items: center;
   gap: 1rem;

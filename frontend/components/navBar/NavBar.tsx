@@ -5,7 +5,7 @@ import styles from "./NavBar.module.css"
 function NavBar() {
   const [tab, setTab] = useState(3)
   return (
-    <nav className={styles.container}>
+    <nav className={`${styles.container} lg:flex hidden`}>
       <Link href="/about" className={`${styles.tab_container} ${tab === 1 ? styles.tab_active : ''}`} onClick={() => setTab(1)}>About</Link>
       <Link href="/bridge" className={`${styles.tab_container} ${tab === 2 ? styles.tab_active : ''}`} onClick={() => setTab(2)}>Bridge</Link>
       <Link href="/" className={`${styles.tab_container} ${tab === 3 ? styles.tab_active : ''}`} onClick={() => setTab(3)}>Swap</Link>

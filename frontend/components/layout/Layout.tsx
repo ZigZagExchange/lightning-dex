@@ -15,8 +15,12 @@ import styles from "./Layout.module.css"
 import FooterSocials from "../footerSocials/FooterSocials"
 import ConnectWallet from "../connectWallet/ConnectWallet"
 import NetworkSelector from "../NetworkSelector/NetworkSelector"
+import MobileMenu from "../MobileMenu/MobileMenu"
+import GroupButtonDropdown from "../GroupButtonDropdown/GroupButtonDropdown"
 import HeaderSocials from "../HeaderSocials/HeaderSocials"
 import NavBar from "../navBar/NavBar"
+import Modal, { ModalMode } from "../swap/modal/Modal"
+
 
 interface Props {
   children?: ReactNode
@@ -26,6 +30,7 @@ function Layout(props: Props) {
   const { userAddress, network, ethersProvider } = useContext(WalletContext)
   const [headerWarning, setHeaderWarning] = useState<JSX.Element | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
+  const [modal, setModal] = useState<ModalMode>(null)
 
   const router = useRouter()
 
@@ -48,8 +53,12 @@ function Layout(props: Props) {
     setHeaderWarning(null)
   }, [ethersProvider, network])
 
+  const handleTokenClick = (newTokenAddress: string) => {
+    setModal(null)
+  }
+
   let headerLeft = (
-    <nav className={styles.header_left}>
+    <nav className={`${styles.header_left} lg:mr-[5rem]`}>
       {/* <Link href="/"> */}
       {/* <a className={`${styles.nav_link}`}> */}
       <span className={`${styles.icon}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -58,7 +67,7 @@ function Layout(props: Props) {
       {/* </a> */}
       {/* </Link> */}
       <Link href="https://arbitrum.zigzag.exchange/" className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/trade" ? styles.active_nav_link : ""}`}>
-      Order Book
+        Order Book
       </Link>
       {/* <Link href="/">
           <a className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/swap" ? styles.active_nav_link : ""}`}>Swap</a>
@@ -82,14 +91,20 @@ function Layout(props: Props) {
         </div>
       </div>
 
-      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""}`}>
+      <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 md:px-28`}>
         {headerWarning}
         {headerLeft}
         <NavBar />
         <div className={styles.header_right}>
-          <NetworkSelector />
-          <ConnectWallet />
+          <NetworkSelector networkSelectorModalOpen={() => { setModal("network") }} />
+          <ConnectWallet openConnectWalletModal={() => { setModal("connectWallet") }} />
+          {modal}
+          <GroupButtonDropdown />
         </div>
+
+        <MobileMenu
+          networkSelectorModalOpen={() => { setModal("network") }}
+          openConnectWalletModal={() => { setModal("connectWallet") }} />
       </header>
       {/* <div className={styles.mobile_nav}>
         <Link href="https://arbitrum.zigzag.exchange/">
@@ -103,6 +118,8 @@ function Layout(props: Props) {
       <footer className={styles.footer}>
         <FooterSocials />
       </footer>
+
+      <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
     </>
   )
 }

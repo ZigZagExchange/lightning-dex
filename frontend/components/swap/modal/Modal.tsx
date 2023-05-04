@@ -10,8 +10,10 @@ import ApproveModal from "../modals/approveModal/ApproveModal"
 import SwapModal from "../modals/swapModal/SwapModal"
 import WrapModal from "../modals/wrapModal/WrapModal"
 import UnwrapModal from "../modals/unwrapModal/UnwrapModal"
+import ConnectWalletModal from "../modals/connectWalletModal/ConnectWalletModal"
+import NetworkSelectorModal from "../modals/networkSelectorModal/NetworkSelectorModal"
 
-export type ModalMode = "selectBuyToken" | "selectSellToken" | "approve" | "swap" | "wrap" | "unwrap" | null
+export type ModalMode = "selectBuyToken" | "selectSellToken" | "approve" | "swap" | "wrap" | "unwrap" | "connectWallet" | "network" | null
 
 interface Props {
   selectedModal: ModalMode
@@ -94,6 +96,30 @@ export default function Modal({ selectedModal, onTokenClick, close }: Props) {
       >
         <div className={styles.modal}>
           <UnwrapModal close={close_modal} />
+        </div>
+      </div>
+    )
+  } else if (selectedModal === "connectWallet") {
+    return (
+      <div
+        className={`${styles.container} ${!selectedModal ? styles.hidden : ""}`}
+        onClick={e => (e.target === container_ref.current ? close_modal() : null)}
+        ref={container_ref}
+      >
+        <div className={`${styles.modal} ${styles.wallet_modal}`}>
+          <ConnectWalletModal close={close_modal} />
+        </div>
+      </div>
+    )
+  } else if (selectedModal === "network") {
+    return (
+      <div
+        className={`${styles.container} ${!selectedModal ? styles.hidden : ""}`}
+        onClick={e => (e.target === container_ref.current ? close_modal() : null)}
+        ref={container_ref}
+      >
+        <div className={`${styles.modal} ${styles.wallet_modal}`}>
+          <NetworkSelectorModal close={close_modal} />
         </div>
       </div>
     )

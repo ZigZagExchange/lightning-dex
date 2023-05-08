@@ -2,7 +2,7 @@ import { useContext } from "react"
 
 import input_styles from "../Input.module.css"
 
-import TokenSelector from "../tokenSelector copy/TokenSelector"
+import TokenSelector from "../../swap copy/tokenSelector/TokenSelector"
 import { SwapContext } from "../../../contexts/SwapContext"
 import { ExchangeContext } from "../../../contexts/ExchangeContext"
 import { truncateDecimals } from "../../../utils/utils"

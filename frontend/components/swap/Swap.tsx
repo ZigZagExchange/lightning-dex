@@ -6,6 +6,7 @@ import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
 import TransactionSettings from "./transactionSettings/TransactionSettings"
 import SwapButton from "./swapButton/SwapButton"
+import NetworkSelector from "./networkSelector/NetworkSelector"
 import TokenSelector from "./tokenSelector/TokenSelector"
 
 import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
@@ -38,6 +39,8 @@ function Swap() {
   const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
   const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
   const [showNetworkSelector, setShowNetworkSelector] = useState(0)
+  const [firstCount, setFirstCount] = useState(0)
+  const [secondCount, setSecondCount] = useState(0)
 
   const [modal, setModal] = useState<ModalMode>(null)
 
@@ -138,7 +141,9 @@ function Swap() {
 
         <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
-            <TokenSelector count={showNetworkSelector} />
+            <NetworkSelector count={showNetworkSelector} />
+            <TokenSelector count={firstCount} />
+            <TokenSelector count={secondCount} />
 
             <div className="grid grid-cols-1 gap-4  place-content-center">
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
@@ -248,7 +253,7 @@ function Swap() {
                   <div className="flex space-x-2">
                     <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                       <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700  hover:border-orange-300">
+                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700  hover:border-orange-300" onClick={() => setFirstCount(firstCount + 1)}>
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                               <div className="relative flex p-1 rounded-full">
@@ -295,7 +300,7 @@ function Swap() {
                   <div className="flex space-x-2">
                     <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                       <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300">
+                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300" onClick={() => setSecondCount(secondCount + 1)}>
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                               <div className="relative flex p-1 rounded-full">

@@ -9,11 +9,11 @@ function TokenSelector({ count }: props) {
   const [active, setActive] = useState(false)
 
   useEffect(() => {
-    setActive(true)
+    count > 0 && setActive(true)
   }, [count])
 
   return (
-    <div className={`droplist origin-bottom absolute w-full h-full md:w-[95%] md:h-[95%] -ml-0 md:-ml-3 md:mt-3 bg-[#333] z-20 rounded-3xl ${active ? "active" : ""}`}>
+    <div className={`droplist origin-bottom absolute w-full h-full md:w-[95%] md:h-[95%] -ml-0 md:-ml-3 md:mt-3 bg-bgBase z-20 rounded-3xl ${active ? "active" : ""}`}>
       <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
         <div className="absolute z-10 w-full px-6 pt-3 bg-primary rounded-t-xl">
           <div className="flex items-center float-right mb-2 font-medium sm:float-none">
@@ -27,158 +27,64 @@ function TokenSelector({ count }: props) {
           </div>
         </div>
 
-        <div className="px-3 pt-20 pb-8 space-y-4 bg-primaryer md:px-6 rounded-xl">
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-[#5170ad] hover:!bg-opacity-20 hover:!border-[#5170ad] bg-[#5170ad] hover:bg[#3f4f8c] active:bg-[#314367] border-[#5170ad] dark:border-[#5170ad] bg-opacity-50">
-            <Image src="/tokenIcons/eth.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Ethereum</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+        <div className="bg-bgLighter space-y-4 pt-20 pb-8 px-2 md:px-6 rounded-3xl">
+          <div className="flex items-center transition-all bg-opacity-40 duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:border-orange-300 hover:bg-orange-50 focus:bg-orange-50 active:bg-orange-50 dark:hover:bg-opacity-20 dark:focus:bg-opacity-20 dark:active:bg-opacity-20  dark:hover:bg-orange-500 dark:focus:bg-orange-500 dark:active:bg-orange-500 bg-[#58535B]
+      ">
+            <div className="flex items-center w-full">
+              <Image alt="token" className="w-10 h-10 ml-2 mr-4 rounded-full" src="/tokenIcons/dai.svg" width={40} height={40} />
+              <div className="flex-col text-left">
+                <div className="text-lg font-medium text-white">DAI</div><
+                  div className="flex items-center text-sm text-white">
+                  <div className="mr-1 opacity-70">Dai</div>
+                  <div className="opacity-60">on</div>
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent bg-opacity-40 hover:!bg-opacity-20 hover:!border-gray-500 bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/abt.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Arbitrum</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
+                  <Image alt="token" src="/tokenIcons/eth.svg" className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
+                  <div className="hidden md:inline-block opacity-70">Ethereum</div>
+                </div>
+              </div>
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-red-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-red-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/avax.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Avalanche</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
+              <div className="ml-auto mr-5 text-lg text-white">
+              </div>
             </div>
-          </button>
+          </div>
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-[#ecae0b] bg-opacity-40 hover:!bg-opacity-20 hover:!border-[#ecae0b] bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/bnb.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">BNB Chain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+          <div className="flex items-center transition-all bg-opacity-40 duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:border-blue-300 hover:bg-blue-50 focus:bg-blue-50 active:bg-blue-50  dark:hover:bg-opacity-20 dark:focus:bg-opacity-20 dark:active:bg-opacity-20  dark:hover:bg-blue-500 dark:focus:bg-blue-500 dark:active:bg-blue-500 bg-bgLight ">
+            <div className="flex items-center w-full">
+              <Image alt="token" className="w-10 h-10 ml-2 mr-4 rounded-full" src="/tokenIcons/usdc.svg" width={40} height={40} />
+              <div className="flex-col text-left">
+                <div className="text-lg font-medium text-white">USDC</div><
+                  div className="flex items-center text-sm text-white">
+                  <div className="mr-1 opacity-70">USD Circle</div>
+                  <div className="opacity-60">on</div>
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-red-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-red-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/opt.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Optimism</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
+                  <Image alt="token" src="/tokenIcons/eth.svg" className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
+                  <div className="hidden md:inline-block opacity-70">Ethereum</div>
+                </div>
+              </div>
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B]  active:bg-[#58535B]">
-            <Image src="/tokenIcons/pol.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Polygon</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
+              <div className="ml-auto mr-5 text-lg text-white">
+              </div>
             </div>
-          </button>
+          </div>
 
-          <button className=" flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/aur.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Aurora</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+          <div className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:border-green-300 hover:bg-green-50 focus:bg-green-50 active:bg-green-50  dark:hover:bg-opacity-20 dark:focus:bg-opacity-20 dark:active:bg-opacity-20  dark:hover:bg-green-500 dark:focus:bg-green-500 dark:active:bg-green-500 bg-[#58535B]">
+            <div className="flex items-center w-full">
+              <Image alt="token" className="w-10 h-10 ml-2 mr-4 rounded-full" src="/tokenIcons/usdt.svg" width={40} height={40} />
+              <div className="flex-col text-left">
+                <div className="text-lg font-medium text-white">USDT</div><
+                  div className="flex items-center text-sm text-white">
+                  <div className="mr-1 opacity-70">USD Tether</div>
+                  <div className="opacity-60">on</div>
 
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/bob.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Boba Network</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
+                  <Image alt="token" src="/tokenIcons/eth.svg" className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
+                  <div className="hidden md:inline-block opacity-70">Ethereum</div>
+                </div>
+              </div>
 
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/canto.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Canto</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
+              <div className="ml-auto mr-5 text-lg text-white">
+              </div>
             </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/cronos.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Cronos</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/dfk.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">DFK Chain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/dog.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Dogechain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/fantom.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Fantom</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-cyan-500 hover:!bg-opacity-20 hover:!border-cyan-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/harmony.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Harmony</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-orange-500 hover:!bg-opacity-20 hover:!border-orange-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/klaytn.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Klaytn</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/metis.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Metis</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/moonbeam.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Moonbeam</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B]  active:bg-[#58535B]">
-            <Image src="/tokenIcons/moonriver.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Moonriver</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/terra.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Terra</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+          </div>
         </div>
       </div>
     </div>

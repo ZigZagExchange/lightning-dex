@@ -45,7 +45,7 @@
   padding-left: 5px;
 }
 
-@media (width <= 500px) {
+@media (width <=500px) {
   .icon_container {
     width: 2rem;
     height: 2rem;

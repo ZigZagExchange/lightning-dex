@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react"
+import Image from "next/image"
 
 interface props {
   count: number
 }
 
 function TokenSelector({ count }: props) {
-  const [active, setActive] = useState(false);
+  const [active, setActive] = useState(false)
 
   useEffect(() => {
-    setActive(true);
+    setActive(true)
   }, [count])
 
   return (
@@ -185,4 +185,4 @@ function TokenSelector({ count }: props) {
   )
 }
 
-export default TokenSelector;
+export default TokenSelector

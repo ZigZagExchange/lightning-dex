@@ -6,7 +6,7 @@ import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
 import TransactionSettings from "./transactionSettings/TransactionSettings"
 import SwapButton from "./swapButton/SwapButton"
-import TokenSelector from "./tokenSelector/TokenSelector";
+import TokenSelector from "./tokenSelector/TokenSelector"
 
 import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
@@ -37,7 +37,7 @@ function Swap() {
   const { network, userAddress } = useContext(WalletContext)
   const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
   const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
-  const [showNetworkSelector, setShowNetworkSelector] = useState(0);
+  const [showNetworkSelector, setShowNetworkSelector] = useState(0)
 
   const [modal, setModal] = useState<ModalMode>(null)
 

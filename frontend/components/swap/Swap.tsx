@@ -6,6 +6,7 @@ import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
 import TransactionSettings from "./transactionSettings/TransactionSettings"
 import SwapButton from "./swapButton/SwapButton"
+import TokenSelector from "./tokenSelector/TokenSelector";
 
 import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
@@ -15,6 +16,7 @@ import { constants, ethers } from "ethers"
 import Separator from "./separator/Separator"
 import useTranslation from "next-translate/useTranslation"
 import { NetworkType } from "../../data/networks"
+import Image from "next/image"
 
 export enum SellValidationState {
   OK,
@@ -32,10 +34,10 @@ export enum BuyValidationState {
 }
 
 function Swap() {
-  console.log("SWAP RENDER")
   const { network, userAddress } = useContext(WalletContext)
   const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
   const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
+  const [showNetworkSelector, setShowNetworkSelector] = useState(0);
 
   const [modal, setModal] = useState<ModalMode>(null)
 
@@ -124,55 +126,237 @@ function Swap() {
   }, [sellTokenInfo, buyTokenInfo, sellAmount, buyAmount, sellTokenUsdPrice, buyTokenUsdPrice])
 
   return (
-    <div className={styles.container}>
-      <div className={styles.from_to_container}>
-        <h1 className={styles.title}>{t("swap")}</h1>
-
-        <div className={styles.from_container}>
-          <div className={styles.from_header}>
-            <div className={styles.from_title}>{t("from")}</div>
-            <div className={styles.from_balance}>{sellTokenInfo ? `${getBalanceReadable(sellTokenInfo.address)} ${sellTokenInfo.symbol}` : null}</div>
-          </div>
-          <div className={styles.from_input_container}>
-            <SellInput openSellTokenSelectModal={() => setModal("selectSellToken")} />
-          </div>
-          <div className={styles.below_input_container}>
-            <ExplorerButton network={network} token={sellTokenInfo} />
-            <div className={styles.value_container}>{sellTokenEstimatedValue}</div>
+    <>
+      <div className="pb-3 place-self-center">
+        <div className="flex justify-between mb-5 ml-5 mr-5">
+          <div>
+            <div className="text-2xl font-medium text-white">Swap</div>
+            <div className="text-base text-white text-opacity-50">Exchange stablecoins on-chain.
+            </div>
           </div>
         </div>
 
-        <Separator />
+        <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
+          <div className="mb-8">
+            <TokenSelector count={showNetworkSelector} />
 
-        <div className={styles.to_container}>
-          <div className={styles.to_header}>
-            <div className={styles.to_title}>{t("to")}</div>
-            <div className={styles.to_balance}>{buyTokenInfo ? `${getBalanceReadable(buyTokenInfo.address)} ${buyTokenInfo.symbol}` : null}</div>
-          </div>
-          <div className={styles.to_input_container}>
-            <BuyInput openBuyTokenSelectModal={() => setModal("selectBuyToken")} />
-          </div>
-          <div className={styles.below_input_container}>
-            <ExplorerButton network={network} token={buyTokenInfo} />
-            <div className={styles.value_container}>{buyTokenEstimatedValue}</div>
-          </div>
-        </div>
+            <div className="grid grid-cols-1 gap-4  place-content-center">
+              <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
+                <div className="flex items-center justify-center md:justify-between">
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Chain</div>
 
-        <TransactionSettings />
-      </div>
+                  <div className="flex items-center space-x-4 md:space-x-3">
+                    <div className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full">
+                      <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                      <div className="hidden md:inline-block lg:inline-block">
+                        <div className="mr-2 text-sm text-white">Ethereum</div>
+                      </div>
+                    </div>
 
-      <SwapButton
-        validationStateBuy={validationStateBuy}
-        validationStateSell={validationStateSell}
-        openSwapModal={() => setModal("swap")}
-        openApproveModal={() => setModal("approve")}
-        openWrapModal={() => setModal("wrap")}
-        openUnwrapModal={() => setModal("unwrap")}
-        closeModal={() => setModal(null)}
-      />
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/abt.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Arbitrum
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/avax.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Avalanche" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Avalanche
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/bnb.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="BNB Chain" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              BNB Chain
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/opt.png" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Optimism" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Optimism
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/pol.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Polygon" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-blackborder-0 mt-3 z-50 font-normal leading-normaltext-sm max-w-xs text-left o-underline  break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Polygon
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <div></div>
+                <div className="p-3 border-none bg-primary rounded-xl">
+                  <div className="flex space-x-2">
+                    <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
+                      <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
+                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700  hover:border-orange-300">
+                          <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
+                            <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
+                              <div className="relative flex p-1 rounded-full">
+                                <Image alt="dai" src="/tokenIcons/dai.svg" width={28} height={28} />
+                              </div>
+                            </div>
+
+                            <div className="text-left cursor-pointer">
+                              <h4 className="text-lg font-medium text-gray-300 ">
+                                <span>DAI</span>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                              </h4>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+
+                      <div className="flex flex-grow items-center w-full h-16 border-none">
+                        <input type="number" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" value="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <div><div className="absolute mt-1 ml-2">
+                  <div className="-mt-8">
+                    <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
+                      <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                </div>
+
+                <div className="p-3 border-none bg-primary rounded-xl">
+                  <div className="flex space-x-2">
+                    <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
+                      <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
+                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300">
+                          <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
+                            <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
+                              <div className="relative flex p-1 rounded-full">
+                                <Image alt="usdc" width={40} height={40} className="w-7 h-7" src="/tokenIcons/usdc.svg" />
+                              </div>
+                            </div>
+
+                            <div className="text-left cursor-pointer">
+                              <h4 className="text-lg font-medium text-gray-300 ">
+                                <span>USDC</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                              </h4>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+
+                      <div className="flex flex-grow items-center w-full h-16 border-none">
+                        <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" value="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
+              <div className="flex justify-end"></div>
+              <div className="flex justify-between">
+                <div className="flex space-x-2 text-[#88818C]">
+                  <p>Expected Price on</p>
+                  <span className="flex items-center space-x-1">
+
+                    <Image alt="ethereum" width={16} height={16} src="/tokenIcons/eth.svg" className="w-4 h-4 rounded-full" />
+                    <span className="text-white">Ethereum
+                    </span></span>
+                </div>
+
+                <span className="text-[#88818C]">—</span>
+              </div>
+
+              <div className="flex justify-between">
+                <p className="text-[#88818C] ">Slippage</p>
+                <span className="text-[#88818C]">—</span>
+              </div>
+            </div>
+
+            <div className="px-2 py-2 md:px-0 md:py-4">
+              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled type="button">
+                <span>Enter amount to swap</span>
+              </button>
+            </div>
+          </div>
+        </div >
+      </div >
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
-    </div>
+    </>
   )
 }
 

@@ -1,5 +1,5 @@
 .container {
-  width: max(512px, 25vw);
+  width: max(500px, 25vw);
   align-self: center;
   justify-content: center;
   flex: 1;
@@ -85,12 +85,11 @@
   min-height: 23px;
 }
 
-@media (width <=500px) {
+@media (width <= 500px) {
   .container {
     width: 100%;
     justify-content: flex-start;
   }
-
   .from_to_container {
     /* padding: 0.1rem; */
     /* padding-bottom: 0.5rem; */

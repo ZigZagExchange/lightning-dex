@@ -1,25 +1,184 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import styled from "styled-components"
 
 interface props {
-  count: number
+  count: number;
 }
 
+const networksItems = [
+  {
+    name: "Ethereum",
+    layer: "Layer 1",
+    color: "#5170ad",
+    icon: "eth.svg"
+  },
+  {
+    name: "Arbitrum",
+    layer: "Layer 2",
+    color: "#58535B",
+    icon: "abt.jfif"
+  },
+  {
+    name: "Avalanche",
+    layer: "Layer 1",
+    color: "#ef4444",
+    icon: "avax.svg"
+  },
+  {
+    name: "BNB Chain",
+    layer: "Layer 1",
+    color: "#ecae0b",
+    icon: "bnb.svg"
+  },
+  {
+    name: "Arbitrum",
+    layer: "Layer 2",
+    color: "#58535B",
+    icon: "abt.jfif"
+  },
+  {
+    name: "Optimism",
+    layer: "Layer 2",
+    color: "#ef4444",
+    icon: "opt.png"
+  },
+  {
+    name: "Arbitrum",
+    layer: "Layer 2",
+    color: "#58535B",
+    icon: "abt.jfif"
+  },
+  {
+    name: "Polygon",
+    layer: "Layer 2",
+    color: "#a855f7",
+    icon: "pol.jfif"
+  },
+  {
+    name: "Aurora",
+    layer: "Layer 1",
+    color: "#84cc16",
+    icon: "aur.png"
+  },
+  {
+    name: "Boba Network",
+    layer: "Layer 2",
+    color: "#84cc16",
+    icon: "bob.png"
+  },
+  {
+    name: "Canto",
+    layer: "Layer 1",
+    color: "#14b8a6",
+    icon: "canto.svg"
+  },
+  {
+    name: "Cronos",
+    layer: "Layer 1",
+    color: "#3b82f6",
+    icon: "cronos.png"
+  },
+  {
+    name: "DFK Chain",
+    layer: "Layer 1",
+    color: "#14b8a6",
+    icon: "dfk.png"
+  },
+  {
+    name: "Canto",
+    layer: "Layer 1",
+    color: "#14b8a6",
+    icon: "canto.svg"
+  },
+  {
+    name: "Dogechain",
+    layer: "Layer 1",
+    color: "#a855f7",
+    icon: "dog.png"
+  },
+  {
+    name: "Fantom",
+    layer: "Layer 1",
+    color: "#3b82f6",
+    icon: "fantom.jfif"
+  },
+  {
+    name: "Harmony",
+    layer: "Layer 1",
+    color: "#06b6d4",
+    icon: "harmony.jfif "
+  },
+  {
+    name: "Klaytn",
+    layer: "Layer 1",
+    color: "#f97316",
+    icon: "klaytn.jfif"
+  },
+  {
+    name: "Metis",
+    layer: "Layer 2",
+    color: "#14b8a6",
+    icon: "metis.png"
+  },
+  {
+    name: "Moonbeam",
+    layer: "Layer 1",
+    color: "#14b8a6",
+    icon: "moonbeam.jfif"
+  },
+  {
+    name: "Moonriver",
+    layer: "Layer 1",
+    color: "#a855f7",
+    icon: "moonriver.jfif"
+  },
+  {
+    name: "Terra",
+    layer: "Layer 1",
+    color: "#3b82f6",
+    icon: "terra.png"
+  },
+]
+
+const NetworkItem: any = styled.div`
+  button{
+    background-color: #58535B80;
+    border-color: #58535B;
+
+    &:hover, &.active {
+      background-color: ${(props: any) => props.color + "50"};
+      border-color: ${(props: any) => props.color};
+    }
+  }
+`
+
 function NetworkSelector({ count }: props) {
-  const [active, setActive] = useState(false)
+  const [active, setActive] = useState<boolean>(false)
+  const [search, setSearch] = useState<string>("")
 
   useEffect(() => {
     count > 0 && setActive(true)
   }, [count])
 
+  const closeDroplist = () => {
+    setSearch("")
+    setActive(false)
+  }
+
   return (
-    <div className={`droplist origin-bottom absolute w-full h-full md:w-[95%] md:h-[95%] -ml-0 md:-ml-3 md:mt-3 bg-[#333] z-20 rounded-3xl ${active ? "active" : ""}`}>
-      <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">
+    <div className={`droplist origin-bottom absolute bg-bgBase w-full h-full md:w-[95%] md:h-[95%] -ml-0 md:-ml-3 md:mt-3 z-20 rounded-3xl ${active ? "active" : ""}`}>
+      <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl bg-bgLighter">
         <div className="absolute z-10 w-full px-6 pt-3 bg-primary rounded-t-xl">
           <div className="flex items-center float-right mb-2 font-medium sm:float-none">
-            <input className="text-white  focus:outline-none hidden sm:inline-block flex-grow h-full min-w-[70%] py-2 pr-2 rounded bg-transparent placeholder-white placeholder-opacity-40" placeholder="Search by asset, name, or chainID." />
+            <input
+              className="text-white  focus:outline-none hidden sm:inline-block flex-grow h-full min-w-[70%] py-2 pr-2 rounded bg-transparent placeholder-white placeholder-opacity-40"
+              placeholder="Search by asset, name, or chainID."
+              value={search}
+              onChange={(e: React.FormEvent<HTMLInputElement>) => setSearch(e.currentTarget.value)}
+            />
 
-            <div className="flex items-center justify-center w-8 h-8 float-right group hover:cursor-pointer rounded-full bg-white bg-opacity-10" onClick={() => setActive(false)}>
+            <div className="flex items-center justify-center w-8 h-8 float-right group hover:cursor-pointer rounded-full bg-white bg-opacity-10" onClick={closeDroplist}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-6 text-white transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path>
               </svg>
@@ -27,158 +186,30 @@ function NetworkSelector({ count }: props) {
           </div>
         </div>
 
-        <div className="px-3 pt-20 pb-8 space-y-4 bg-primaryer md:px-6 rounded-xl">
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-[#5170ad] hover:!bg-opacity-20 hover:!border-[#5170ad] bg-[#5170ad] hover:bg[#3f4f8c] active:bg-[#314367] border-[#5170ad] dark:border-[#5170ad] bg-opacity-50">
-            <Image src="/tokenIcons/eth.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Ethereum</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+        <div className="px-3 pt-20 pb-8 space-y-4 md:px-6 rounded-xl">
+          {
+            networksItems.map((item, index) =>
+              item.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) &&
+              <NetworkItem color={item.color} key={`${item.name} + ${index}`}>
+                <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent" >
+                  <Image src={`/tokenIcons/${item.icon}`} alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
+                  <div className="flex-col text-left">
+                    <div className="text-lg font-medium text-white">{item.name}</div>
+                    <div className="text-sm text-white opacity-50">{item.layer}</div>
+                  </div>
+                </button>
+              </NetworkItem>
+            )}
 
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent bg-opacity-40 hover:!bg-opacity-20 hover:!border-gray-500 bg-[#58535B] hover:bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/abt.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Arbitrum</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
+          {
+            search.length > 0 &&
+            <div className="px-12 py-4 text-xl text-center text-white">No other results found for
+              <i className="text-white text-opacity-60"> {search}</i>.
+              <div className="pt-4 text-lg text-white text-opacity-50 align-bottom text-medium">Want to see a chain supported on Synapse? Submit a request
+                <span className="text-white text-opacity-70 hover:underline hover:cursor-pointer">here</span>
+              </div>
             </div>
-          </button>
-
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-red-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-red-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/avax.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Avalanche</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-[#ecae0b] bg-opacity-40 hover:!bg-opacity-20 hover:!border-[#ecae0b] bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/bnb.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">BNB Chain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-red-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-red-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/opt.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Optimism</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
-
-          <button className="flex items-center transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 bg-opacity-40 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B]  active:bg-[#58535B]">
-            <Image src="/tokenIcons/pol.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Polygon</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
-
-          <button className=" flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/aur.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Aurora</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/bob.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Boba Network</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/canto.svg" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Canto</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/cronos.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Cronos</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-lime-500 hover:!bg-opacity-20 hover:!border-lime-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/dfk.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">DFK Chain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/dog.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Dogechain</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/fantom.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Fantom</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-cyan-500 hover:!bg-opacity-20 hover:!border-cyan-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/harmony.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Harmony</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-orange-500 hover:!bg-opacity-20 hover:!border-orange-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/klaytn.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Klaytn</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/metis.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Metis</div>
-              <div className="text-sm text-white opacity-50">Layer 2</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-teal-500 hover:!bg-opacity-20 hover:!border-teal-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/moonbeam.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Moonbeam</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-purple-500 hover:!bg-opacity-20 hover:!border-purple-500 bg-[#58535B]  active:bg-[#58535B]">
-            <Image src="/tokenIcons/moonriver.jfif" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Moonriver</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
-
-          <button className="flex items-center bg-opacity-40 transition-all duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:!bg-blue-500 hover:!bg-opacity-20 hover:!border-blue-500 bg-[#58535B] active:bg-[#58535B]">
-            <Image src="/tokenIcons/terra.png" alt="Switch Network" width={40} height={40} className="w-10 h-10 ml-2 mr-4 rounded-full" />
-            <div className="flex-col text-left">
-              <div className="text-lg font-medium text-white">Terra</div>
-              <div className="text-sm text-white opacity-50">Layer 1</div>
-            </div>
-          </button>
+          }
         </div>
       </div>
     </div>

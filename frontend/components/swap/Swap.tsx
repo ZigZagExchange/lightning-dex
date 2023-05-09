@@ -278,6 +278,12 @@ function Swap() {
 
                         <div className="flex flex-grow items-center w-full h-16 border-none">
                           <input type="number" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
+                          <label htmlFor="inputRow" className="absolute hidden pt-3 mt-8 ml-4 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer">0.0
+                            <span className="text-opacity-50 text-secondaryTextColor"> available</span>
+                          </label>
+                          <div className="hidden mr-2 sm:inline-block">
+                            <button className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest">Max</button>
+                          </div>
                         </div>
                       </div>
                     </div>

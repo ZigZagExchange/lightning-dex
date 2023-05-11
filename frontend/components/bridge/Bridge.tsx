@@ -1,6 +1,6 @@
 import { useState, useContext, useMemo } from "react"
 
-import styles from "./Swap.module.css"
+import styles from "./Bridge.module.css"
 import SellInput from "./sellInput/SellInput"
 import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
@@ -8,6 +8,7 @@ import TransactionSettings from "./transactionSettings/TransactionSettings"
 import SwapButton from "./swapButton/SwapButton"
 import NetworkSelector from "./networkSelector/NetworkSelector"
 import TokenSelector from "./tokenSelector/TokenSelector"
+import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 
 import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
@@ -41,6 +42,7 @@ function Swap() {
   const [showNetworkSelector, setShowNetworkSelector] = useState(0)
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
+  const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder, setSwapOrder] = useState<string>("order-0")
 
   const [modal, setModal] = useState<ModalMode>(null)
@@ -132,19 +134,55 @@ function Swap() {
   return (
     <>
       <div className="pb-3 place-self-center">
-        <div className="flex justify-between mb-5 ml-5 mr-5">
-          <div>
-            <div className="text-2xl font-medium text-white">Swap</div>
-            <div className="text-base text-white text-opacity-50">Exchange stablecoins on-chain.
+        {
+          !showSettings ?
+            <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
+              <div>
+                <div className="text-2xl font-medium text-white">Bridge</div>
+
+                <div className="text-base text-white text-opacity-50">Send your assets across chains.</div>
+              </div>
+              <div>
+
+                <button
+                  className="group cursor-pointer rounded-lg outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
+                  onClick={() => setShowSettings(true)}
+                >
+                  <svg viewBox="0 0 19 19" fill="none" className="w-5 h-5 mr-2">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M11.2135 1.64549C10.7765 -0.148512 8.22351 -0.148512 7.78651 1.64549C7.72126 1.91507 7.59329 2.16543 7.41301 2.37621C7.23273 2.58699 7.00523 2.75223 6.74903 2.85847C6.49282 2.96472 6.21515 3.00898 5.93861 2.98764C5.66207 2.9663 5.39448 2.87998 5.15761 2.73569C3.57981 1.77429 1.77431 3.57979 2.73571 5.15759C3.35671 6.17649 2.80586 7.50589 1.64666 7.78764C-0.148494 8.22349 -0.148494 10.7776 1.64666 11.2123C1.91631 11.2777 2.16671 11.4058 2.37749 11.5862C2.58827 11.7666 2.75346 11.9942 2.85961 12.2506C2.96575 12.5069 3.00986 12.7847 2.98833 13.0613C2.96679 13.3379 2.88024 13.6056 2.73571 13.8424C1.77431 15.4202 3.57981 17.2257 5.15761 16.2643C5.39444 16.1198 5.66205 16.0332 5.93867 16.0117C6.21528 15.9901 6.49307 16.0342 6.74941 16.1404C7.00575 16.2465 7.2334 16.4117 7.41382 16.6225C7.59424 16.8333 7.72233 17.0837 7.78766 17.3533C8.22351 19.1485 10.7777 19.1485 11.2124 17.3533C11.2779 17.0838 11.4061 16.8336 11.5866 16.623C11.767 16.4123 11.9946 16.2472 12.2509 16.1411C12.5072 16.035 12.7849 15.9909 13.0614 16.0123C13.3379 16.0337 13.6055 16.12 13.8424 16.2643C15.4202 17.2257 17.2257 15.4202 16.2643 13.8424C16.12 13.6055 16.0337 13.3379 16.0123 13.0614C15.9909 12.7848 16.035 12.5072 16.1411 12.2509C16.2473 11.9946 16.4123 11.767 16.623 11.5866C16.8336 11.4061 17.0838 11.2779 17.3534 11.2123C19.1485 10.7765 19.1485 8.22234 17.3534 7.78764C17.0837 7.72231 16.8333 7.59423 16.6225 7.41381C16.4117 7.23339 16.2466 7.00574 16.1404 6.74939C16.0343 6.49305 15.9902 6.21526 16.0117 5.93865C16.0332 5.66204 16.1198 5.39442 16.2643 5.15759C17.2257 3.57979 15.4202 1.77429 13.8424 2.73569C13.6056 2.88022 13.338 2.96678 13.0613 2.98831C12.7847 3.00984 12.5069 2.96573 12.2506 2.85959C11.9943 2.75344 11.7666 2.58825 11.5862 2.37748C11.4058 2.1667 11.2777 1.91629 11.2124 1.64664L11.2135 1.64549ZM9.50001 12.95C10.415 12.95 11.2925 12.5865 11.9395 11.9395C12.5865 11.2925 12.95 10.415 12.95 9.49999C12.95 8.58499 12.5865 7.70747 11.9395 7.06047C11.2925 6.41347 10.415 6.04999 9.50001 6.04999C8.58501 6.04999 7.70749 6.41347 7.06049 7.06047C6.41349 7.70747 6.05001 8.58499 6.05001 9.49999C6.05001 10.415 6.41349 11.2925 7.06049 11.9395C7.70749 12.5865 8.58501 12.95 9.50001 12.95V12.95Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+
+                  <span>Settings</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
+            :
+            <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
+              <div>
+                <div className="text-2xl font-medium text-white">Settings</div>
+
+                <div className="text-base text-white text-opacity-50">Customize your experience.
+                </div>
+              </div>
+              <div>
+                <button className="group cursor-pointer rounded-lg outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white" onClick={() => { setShowSettings(false) }}>
+                  <span>Close</span>
+                </button>
+              </div>
+            </div>
+        }
 
         <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
             <NetworkSelector count={showNetworkSelector} />
             <TokenSelector count={firstCount} />
             <TokenSelector count={secondCount} />
+            <SettingsDropdown show={showSettings} onClick={(val) => setShowSettings(val)} />
 
             <div className="grid grid-cols-1 gap-4  place-content-center">
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
@@ -339,29 +377,51 @@ function Swap() {
             </div>
 
             <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
-              <div className="flex justify-end"></div>
+              <div className="flex items-center justify-between">
+                <div className="flex justify-between text-[#88818C]">
+                  <span className="text-[#88818C]">Will also receive 0.0006 </span>
+                  <span className="ml-1 font-medium text-white">ETH
+                    <span className="text-[#88818C] font-normal"> ($1.10)</span>
+                  </span>
+                </div>
+              </div>
+
               <div className="flex justify-between">
                 <div className="flex space-x-2 text-[#88818C]">
                   <p>Expected Price on</p>
                   <span className="flex items-center space-x-1">
-
-                    <Image alt="ethereum" width={16} height={16} src="/tokenIcons/eth.svg" className="w-4 h-4 rounded-full" />
-                    <span className="text-white">Ethereum
-                    </span></span>
+                    <Image alt="arbitrium" src="/tokenIcons/abt.jfif" width={16} height={16} className="w-4 h-4 rounded-full" />
+                    <span className="text-white">Arbitrum</span>
+                  </span>
                 </div>
 
                 <span className="text-[#88818C]">—</span>
               </div>
-
               <div className="flex justify-between">
+
                 <p className="text-[#88818C] ">Slippage</p>
                 <span className="text-[#88818C]">—</span>
               </div>
             </div>
 
-            <div className="px-2 py-2 md:px-0 md:py-4">
+            <div
+              className="origin-top -mx-0 md:-mx-6">
+              <div>
+                <div className="w-[30%]">
+                  <div className="flex items-center justify-center  h-[26px] -mt-4 p-2 absolute ml-5 md:ml-10 text-sm text-[#D8D1DC] rounded-md bg-bgLight">Withdraw to...</div>
+                </div>
+
+                <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
+                  <div className="h-14 flex flex-grow items-center bg-transparent border border-bgLight hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder="Enter Arbitrum address..." />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">
               <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled type="button">
-                <span>Enter amount to swap</span>
+                <span>Invalid Destination Address</span>
               </button>
             </div>
           </div>

@@ -187,7 +187,7 @@ function Swap() {
             <div className="grid grid-cols-1 gap-4  place-content-center">
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
-                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Chain</div>
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Origin</div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     <div className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full">
@@ -284,12 +284,9 @@ function Swap() {
                     </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 gap-4 relative place-content-center">
                 <div className={`pt-2 ${swapOrder}`}>
-                  <div></div>
-                  <div className="p-3 border-none bg-primary rounded-xl">
+                  <div className="py-3 border-none bg-primary rounded-xl">
                     <div className="flex space-x-2">
                       <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                         <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
@@ -327,48 +324,145 @@ function Swap() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="absolute mt-1 ml-2 top-[8.5rem]" onClick={() => setSwapOrder(v => v === "order-1" ? "order-0" : "order-1")}>
-                  <div className="-mt-8">
-                    <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
-                      <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                        </svg>
+              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={() => setSwapOrder(v => v === "order-1" ? "order-0" : "order-1")}>
+                <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
+                  <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
+                <div className="flex items-center justify-center md:justify-between">
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Dest.</div>
+
+                  <div className="flex items-center space-x-4 md:space-x-3">
+                    <div className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full">
+                      <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                      <div className="hidden md:inline-block lg:inline-block">
+                        <div className="mr-2 text-sm text-white">Ethereum</div>
                       </div>
                     </div>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/abt.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Arbitrum
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/avax.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Avalanche" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Avalanche
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/bnb.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="BNB Chain" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              BNB Chain
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/opt.png" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Optimism" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Optimism
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
+                      <div className="inline-block">
+                        <Image src="/tokenIcons/pol.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Polygon" />
+                      </div>
+
+                      <div className="overflow-visible">
+                        <div className="bg-blackborder-0 mt-3 z-50 font-normal leading-normaltext-sm max-w-xs text-left o-underline  break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div>
+                            <div className="p-3 font-light text-white">
+                              Polygon
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </button>
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <div className="p-3 border-none bg-primary rounded-xl">
-                    <div className="flex space-x-2">
-                      <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
-                        <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                          <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300" onClick={() => setSecondCount(secondCount + 1)}>
-                            <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
-                              <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
-                                <div className="relative flex p-1 rounded-full">
-                                  <Image alt="usdc" width={40} height={40} className="w-7 h-7" src="/tokenIcons/usdc.svg" />
-                                </div>
-                              </div>
-
-                              <div className="text-left cursor-pointer">
-                                <h4 className="text-lg font-medium text-gray-300 ">
-                                  <span>USDC</span>
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                                  </svg>
-                                </h4>
+                <div className="py-3">
+                  <div className="flex space-x-2">
+                    <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
+                      <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
+                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300" onClick={() => setSecondCount(secondCount + 1)}>
+                          <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
+                            <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
+                              <div className="relative flex p-1 rounded-full">
+                                <Image alt="usdc" width={40} height={40} className="w-7 h-7" src="/tokenIcons/usdc.svg" />
                               </div>
                             </div>
-                          </div>
-                        </button>
 
-                        <div className="flex flex-grow items-center w-full h-16 border-none">
-                          <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
-                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
+                            <div className="text-left cursor-pointer">
+                              <h4 className="text-lg font-medium text-gray-300 ">
+                                <span>USDC</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                              </h4>
+                            </div>
+                          </div>
                         </div>
+                      </button>
+
+                      <div className="flex flex-grow items-center w-full h-16 border-none">
+                        <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
                       </div>
                     </div>
                   </div>

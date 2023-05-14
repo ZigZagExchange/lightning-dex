@@ -1,0 +1,65 @@
+.container {
+  background-color: var(--glass_background);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  position: relative;
+  /* height: 50px; */
+  height: 3rem;
+}
+
+.input {
+  background-color: transparent;
+  color: white;
+  outline: none;
+  border: none !important;
+  text-align: right;
+  padding: 10px;
+  font-size: 1.3rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+.error {
+  background-color: var(--glass_red);
+  background: linear-gradient(-15deg, hsla(0, 100%, 50%, 0.5), hsla(0, 100%, 50%, 0.1) 75%);
+}
+
+.error .input::selection {
+  background-color: var(--glass_red);
+  color: white;
+}
+
+.input::placeholder {
+  color: white;
+  opacity: 0.5;
+}
+
+.max_button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  padding: 0 15px;
+  height: 100%;
+  font-size: inherit;
+  font-family: inherit;
+  transition: background-color 0.1s ease-out;
+  opacity: 1;
+}
+
+.max_button:hover {
+  background-color: var(--turquoise);
+  background: var(--zz_gradient);
+  cursor: pointer;
+  opacity: 1;
+  color: black;
+}
+
+@media (width<=500px) {
+  .input {
+    font-size: 1.2rem;
+  }
+}

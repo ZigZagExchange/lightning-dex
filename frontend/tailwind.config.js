@@ -13,6 +13,7 @@ module.exports = {
       colors: {
         bgBase: "#0f1a26",
         bgLighter: "#0f2a40",
+        bgLightest: "#0f3a40",
         bgLight: "#0b121b",
         primary: "#0b121b"
       }

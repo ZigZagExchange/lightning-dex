@@ -1,7 +1,7 @@
 import type { NextPage } from "next"
 import Head from "next/head"
 import Layout from "../components/layout/Layout"
-import Swap from "../components/swap/Swap"
+import Bridge from "../components/bridge/Bridge"
 
 const Home: NextPage = () => {
   return (
@@ -11,7 +11,7 @@ const Home: NextPage = () => {
         <meta name="description" content="The Lightning to Ethereum Exchange" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Swap />
+      <Bridge />
     </Layout>
   )
 }

@@ -54,6 +54,8 @@
 }
 
 .connect_button .text {
+  display: flex;
+  align-items: center;
   background-clip: text;
   /* background: var(--zz_gradient); */
   /* text-shadow: 0 0 10px var(--turquoise_darker); */

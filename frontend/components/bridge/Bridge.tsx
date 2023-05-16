@@ -208,19 +208,19 @@ function Swap() {
                         </div>
                         :
                         <button
-                          className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
+                          className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
                           onClick={() => { setModal("connectWallet") }}
                         >
                           <div className="inline-block">
-                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
+                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
                           </div>
 
-                          <div className="overflow-visible">
-                            <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div className="absolute overflow-visible top-[2.5rem] z-[2]">
+                            <div className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
                               <div>
-                                <div className="p-3 font-light text-white">
-                                  Arbitrum
+                                <div className="p-3 text-white">
+                                  {item.name}
                                 </div>
                               </div>
                             </div>
@@ -299,19 +299,19 @@ function Swap() {
                         </div>
                         :
                         <button
-                          className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
+                          className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
                           onClick={() => { setModal("connectWallet") }}
                         >
                           <div className="inline-block">
-                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
+                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
                           </div>
 
-                          <div className="overflow-visible">
-                            <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                          <div className="absolute overflow-visible top-[2.5rem] z-[2]">
+                            <div className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
                               <div>
-                                <div className="p-3 font-light text-white">
-                                  Arbitrum
+                                <div className="p-3 text-white">
+                                  {item.name}
                                 </div>
                               </div>
                             </div>

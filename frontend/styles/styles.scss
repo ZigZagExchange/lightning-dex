@@ -21,3 +21,11 @@ onboard-v2 {
         transform: scaleY(1);
     }
 }
+
+.token-item {
+    &:hover {
+        .hidden {
+            display: block;
+        }
+    }
+}

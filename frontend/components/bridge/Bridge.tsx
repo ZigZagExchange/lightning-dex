@@ -19,6 +19,9 @@ import Separator from "./separator/Separator"
 import useTranslation from "next-translate/useTranslation"
 import { NetworkType } from "../../data/networks"
 import Image from "next/image"
+import { networksItems } from "../../utils/data"
+import { useAtom } from "jotai"
+import { destTokenAtom, originTokenAtom } from "../../store/token"
 
 export enum SellValidationState {
   OK,
@@ -44,6 +47,8 @@ function Swap() {
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder, setSwapOrder] = useState<string>("order-0")
+  const [originToken, setOriginToken] = useAtom(originTokenAtom)
+  const [destToken, setDestToken] = useAtom(destTokenAtom)
 
   const [modal, setModal] = useState<ModalMode>(null)
 
@@ -190,98 +195,38 @@ function Swap() {
                   <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Origin</div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
-                    <div className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full">
-                      <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
-                      <div className="hidden md:inline-block lg:inline-block">
-                        <div className="mr-2 text-sm text-white">Ethereum</div>
-                      </div>
-                    </div>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/abt.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Arbitrum
-                            </div>
+                    {networksItems.map((item: any) =>
+                      item.name === originToken ?
+                        <div
+                          className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
+                          key={`${item.name}-${item.token}`}
+                        >
+                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <div className="hidden md:inline-block lg:inline-block">
+                            <div className="mr-2 text-sm text-white">Ethereum</div>
                           </div>
                         </div>
-                      </div>
-                    </button>
+                        :
+                        <button
+                          className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
+                          key={`${item.name}-${item.token}`}
+                          onClick={() => { setModal("connectWallet") }}
+                        >
+                          <div className="inline-block">
+                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
+                          </div>
 
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/avax.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Avalanche" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Avalanche
+                          <div className="absolute overflow-visible top-[2.5rem] z-[2]">
+                            <div className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                              <div>
+                                <div className="p-3 text-white">
+                                  {item.name}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/bnb.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="BNB Chain" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              BNB Chain
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/opt.png" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Optimism" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Optimism
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/pol.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Polygon" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-blackborder-0 mt-3 z-50 font-normal leading-normaltext-sm max-w-xs text-left o-underline  break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Polygon
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                      </svg>
-                    </button>
+                        </button>
+                    )}
                   </div>
                 </div>
 
@@ -341,98 +286,43 @@ function Swap() {
                   <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Dest.</div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
-                    <div className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full">
-                      <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
-                      <div className="hidden md:inline-block lg:inline-block">
-                        <div className="mr-2 text-sm text-white">Ethereum</div>
-                      </div>
-                    </div>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/abt.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Arbitrum" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Arbitrum
-                            </div>
+                    {networksItems.map((item: any) =>
+                      item.name === destToken ?
+                        <div
+                          className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
+                          key={`${item.name}-${item.token}`}
+                        >
+                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <div className="hidden md:inline-block lg:inline-block">
+                            <div className="mr-2 text-sm text-white">Ethereum</div>
                           </div>
                         </div>
-                      </div>
-                    </button>
+                        :
+                        <button
+                          className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
+                          key={`${item.name}-${item.token}`}
+                          onClick={() => { setModal("connectWallet") }}
+                        >
+                          <div className="inline-block">
+                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
+                          </div>
 
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/avax.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Avalanche" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Avalanche
+                          <div className="absolute overflow-visible top-[2.5rem] z-[2]">
+                            <div className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                              <div>
+                                <div className="p-3 text-white">
+                                  {item.name}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/bnb.svg" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="BNB Chain" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              BNB Chain
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/opt.png" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Optimism" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-black border-0 mt-3 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Optimism
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full" onClick={() => { setModal("connectWallet") }}>
-                      <div className="inline-block">
-                        <Image src="/tokenIcons/pol.jfif" width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt="Polygon" />
-                      </div>
-
-                      <div className="overflow-visible">
-                        <div className="bg-blackborder-0 mt-3 z-50 font-normal leading-normaltext-sm max-w-xs text-left o-underline  break-words rounded-lg hidden" data-popper-placement="bottom">
-                          <div>
-                            <div className="p-3 font-light text-white">
-                              Polygon
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-
-                    <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
+                        </button>
+                    )}
+                    {/* <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                       </svg>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
 

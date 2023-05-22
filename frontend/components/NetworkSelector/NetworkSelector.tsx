@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { useAtom } from "jotai/react"
+import { useAccount, useBalance } from 'wagmi'
 
 import Jazzicon, { jsNumberForAddress } from "react-jazzicon"
 
@@ -13,9 +14,18 @@ import { originTokenAtom } from "../../store/token"
 import { networksItems } from "../../utils/data"
 
 function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpen: () => void }) {
+  const { address, isConnected } = useAccount()
+  const { data } = useBalance({ address })
+
+  const [isMounted, setIsMounted] = useState(false)
+
   const { userAddress, username, network, connect, disconnect } = useContext(WalletContext)
   const [originToken, setOriginToken] = useAtom(originTokenAtom)
   const [tokenIcon, setTokenIcon] = useState<string>("")
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     let icon = networksItems.filter(item => item.name === originToken)[0].icon
@@ -26,12 +36,12 @@ function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpe
     networkSelectorModalOpen()
   }
 
-  if (!userAddress) {
+  if (isConnected || !userAddress) {
     return (
       <div className={`lg:flex hidden ${styles.container}`}>
         <button className={styles.connect_button} onClick={open}>
           <div className={styles.text}>
-            0.0 ETH
+            {isMounted && `${Number(data?.formatted).toFixed(3)} ${data?.symbol}`}
             <Image src={`/tokenIcons/${tokenIcon}`} alt="Switch Network" className="w-5 h-5 ml-2 rounded-full" width={20} height={20} />
           </div>
         </button>

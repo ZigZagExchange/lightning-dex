@@ -13,7 +13,7 @@ contract BTCBridge {
   }
 
   function depositETH() public payable {
-    beneficiary.transfer(msg.value);
+    payable(beneficiary).transfer(msg.value);
     emit Deposit(msg.sender, address(0), msg.value);
   }
 

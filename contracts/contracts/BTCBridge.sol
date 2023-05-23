@@ -6,7 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract BTCBridge {
   address public beneficiary;
 
-  event Deposit(address indexed initiator, address token, uint amount, string out_chain, string out_address);
+  event Deposit(address initiator, address token, uint amount, string out_chain, string out_address);
 
   constructor(address _beneficiary) {
     beneficiary = _beneficiary;

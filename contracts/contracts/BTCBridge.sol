@@ -13,11 +13,12 @@ contract BTCBridge {
   }
 
   function depositETH() public payable {
+    beneficiary.transfer(msg.value);
     emit Deposit(msg.sender, address(0), msg.value);
   }
 
   function depositERC20(address token, uint amount) public {
-    IERC20(token).transferFrom(msg.sender, address(this), amount);
+    IERC20(token).transferFrom(msg.sender, beneficiary, amount);
     emit Deposit(msg.sender, token, amount);
   }
 }

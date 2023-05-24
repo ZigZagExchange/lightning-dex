@@ -1,7 +1,11 @@
 import Image from "next/image"
+import { useSwitchNetwork, useNetwork } from "wagmi"
+
 import styles from "./NetWorkSelectorModal.module.scss"
 import { styled } from "styled-components"
 import { networksItems } from "../../../../utils/data"
+import { useEffect, useState } from "react"
+
 
 interface Props {
     close: () => void
@@ -19,6 +23,22 @@ const NetworkItem: any = styled.div`
 `
 
 function NetworkSelectorModal({ close }: Props) {
+    const { chain } = useNetwork()
+    const { isLoading, switchNetwork } = useSwitchNetwork()
+    const [isChanged, setIsChanged] = useState(false)
+
+    useEffect(() => {
+        if (isChanged && !isLoading) {
+            close()
+            setIsChanged(false)
+        }
+    }, [isLoading])
+
+    const changeNetwork = (id: number) => {
+        switchNetwork?.(id)
+        setIsChanged(true)
+    }
+
     return (
         <div className="border-0 rounded-lg relative flex flex-col w-full outline-none focus:outline-none">
             <div className="inline-block rounded-xl pt-2 px-6 pb-4 text-left overflow-hidden transform transition-all w-96 align-bottom sm:align-middle bg-bgLight">
@@ -41,7 +61,10 @@ function NetworkSelectorModal({ close }: Props) {
                     {
                         networksItems.map((item, index) =>
                             <NetworkItem color={item.color} key={`${item.name} + ${index}`}>
-                                <button className="flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent">
+                                <button
+                                    className={`${chain?.id === item.id ? "active" : ""}  flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent`}
+                                    onClick={() => changeNetwork(item.id)}
+                                >
                                     <Image src={`/tokenIcons/${item.icon}`} alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" width={20} height={20} />
                                     <div className="flex-col text-left">
                                         <div className="text-white ">{item.name}</div>

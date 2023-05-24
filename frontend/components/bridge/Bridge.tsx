@@ -1,11 +1,7 @@
 import { useState, useContext, useMemo, useEffect } from "react"
 
 import styles from "./Bridge.module.css"
-import SellInput from "./sellInput/SellInput"
-import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
-import TransactionSettings from "./transactionSettings/TransactionSettings"
-import SwapButton from "./swapButton/SwapButton"
 import NetworkSelector from "./networkSelector/NetworkSelector"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
@@ -14,15 +10,13 @@ import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
 import { SwapContext, ZZOrder } from "../../contexts/SwapContext"
 import { prettyBalance, prettyBalanceUSD } from "../../utils/utils"
-import { constants, ethers } from "ethers"
-import Separator from "./separator/Separator"
 import useTranslation from "next-translate/useTranslation"
-import { NetworkType } from "../../data/networks"
 import Image from "next/image"
 import { networksItems } from "../../utils/data"
-import { useAtom } from "jotai"
-import { destTokenAtom, originTokenAtom } from "../../store/token"
-import { useAccount, useBalance, useSwitchNetwork, useNetwork } from 'wagmi'
+import { useSwitchNetwork, useNetwork, useAccount } from 'wagmi'
+import { ethers } from "ethers"
+import { NetworkType } from "../../data/networks"
+import constants from "../../helpers/constants"
 
 export enum SellValidationState {
   OK,
@@ -67,31 +61,25 @@ function Swap() {
   }, [])
 
   useEffect(() => {
-    if (!isLoading) {
-      const id = chain ? chain.id : 1
+    const id = chain ? chain.id : 1
 
-      if (actionType === "set-origin") {
-        if (id === destTokenID) {
-          setDestTokenID(originTokenID)
-        }
-
-        setOriginTokenID(id)
-      }
-
-      if (actionType === "set-dest") {
+    if (actionType === "set-origin") {
+      if (id === destTokenID) {
         setDestTokenID(originTokenID)
-        setOriginTokenID(id)
       }
-
-      if (actionType === "swap") {
-        const origin = originTokenID
-        setOriginTokenID(destTokenID)
-        setDestTokenID(origin)
-      }
-
-      setActionType("")
     }
-  }, [isLoading])
+
+    if (actionType === "set-dest") {
+      setDestTokenID(originTokenID)
+    }
+
+    if (actionType === "swap") {
+      setDestTokenID(originTokenID)
+    }
+
+    setOriginTokenID(id)
+    setActionType("")
+  }, [chain])
 
   const getBalanceReadable = (tokenAddress: string | null) => {
     if (tokenAddress === null) return "0.0"
@@ -516,17 +504,17 @@ function Swap() {
 
 export default Swap
 
-function ExplorerButton({ network, token }: { network: NetworkType | null; token: ZZTokenInfo | null }) {
-  const { t } = useTranslation("common")
+// function ExplorerButton({ network, token }: { network: NetworkType | null; token: ZZTokenInfo | null }) {
+//   const { t } = useTranslation("common")
 
-  if (network && token) {
-    if (token.address === constants.AddressZero) {
-      return <a className={styles.native_token}>{t("native_token")}</a>
-    }
-    return (
-      <a className={styles.see_in_explorer_link} href={`${network.explorerUrl}/token/${token.address}`} target="_blank" rel="noopener noreferrer">
-        {t("view_in_explorer")}
-      </a>
-    )
-  } else return null
-}
+//   if (network && token) {
+//     if (token.address === constants.AddressZero) {
+//       return <a className={styles.native_token}>{t("native_token")}</a>
+//     }
+//     return (
+//       <a className={styles.see_in_explorer_link} href={`${network.explorerUrl}/token/${token.address}`} target="_blank" rel="noopener noreferrer">
+//         {t("view_in_explorer")}
+//       </a>
+//     )
+//   } else return null
+// }

@@ -302,18 +302,17 @@ function Swap() {
                     <div className="flex space-x-2">
                       <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                         <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                          <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700  hover:border-orange-300" onClick={() => setFirstCount(firstCount + 1)}>
+                          <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300" onClick={() => setSecondCount(secondCount + 1)}>
                             <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                               <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                                 <div className="relative flex p-1 rounded-full">
-                                  <Image alt="dai" src="/tokenIcons/dai.svg" width={28} height={28} />
+                                  <Image alt="usdc" width={40} height={40} className="w-7 h-7" src="/tokenIcons/usdc.svg" />
                                 </div>
                               </div>
 
                               <div className="text-left cursor-pointer">
                                 <h4 className="text-lg font-medium text-gray-300 ">
-                                  <span>DAI</span>
-
+                                  <span>USDC</span>
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                   </svg>
@@ -324,13 +323,8 @@ function Swap() {
                         </button>
 
                         <div className="flex flex-grow items-center w-full h-16 border-none">
-                          <input type="number" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
-                          <label htmlFor="inputRow" className="absolute hidden pt-3 mt-8 ml-4 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer">0.0
-                            <span className="text-opacity-50 text-secondaryTextColor"> available</span>
-                          </label>
-                          <div className="hidden mr-2 sm:inline-block">
-                            <button className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest">Max</button>
-                          </div>
+                          <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
                         </div>
                       </div>
                     </div>

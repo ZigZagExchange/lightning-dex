@@ -265,7 +265,7 @@ function ExchangeProvider({ children }: Props) {
   const _updateBalances = async (reqTokens: string[] = getTokens()) => {
     updateWalletBalance(reqTokens)
     if (!reqTokens || !ethersProvider || !userAddress || !network) {
-      console.warn("_updateBalances: Missing ethers provider, network or userAddress")
+      // console.warn("_updateBalances: Missing ethers provider, network or userAddress")
       setBalances({})
       return
     }

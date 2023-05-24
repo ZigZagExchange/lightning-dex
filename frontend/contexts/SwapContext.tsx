@@ -147,8 +147,6 @@ function SwapProvider({ children }: Props) {
   }, [network, signer])
 
   useEffect(() => {
-    console.log("quoteOrderRoutingArray,swapPrice recomputed")
-
     let newQuoteOrderArray: ZZOrder[] = []
     let newSwapPrice: number = 0
     if (!buyTokenInfo) {
@@ -347,7 +345,7 @@ function SwapProvider({ children }: Props) {
         const estimatedFee = ethers.utils.formatUnits(estimatedFeeBigNumber, network.nativeCurrency.decimals)
         setEstimatedGasFee(Number(estimatedFee))
       } catch (err: any) {
-        console.warn("Failed to estimate gasFee:", err.message)
+        // console.warn("Failed to estimate gasFee:", err.message)
         // Some estimate
         setEstimatedGasFee(0.0001 * quoteOrderRoutingArray.length)
       }
@@ -364,7 +362,6 @@ function SwapProvider({ children }: Props) {
   }, [network, markets, buyTokenInfo, sellTokenInfo, isFrozen])
 
   async function getOrderBook() {
-    console.log("Getting orderbook....")
     if (!network) {
       console.warn("getOrderBook: Missing network")
       return

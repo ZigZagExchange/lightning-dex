@@ -50,6 +50,7 @@ function Swap() {
   const [swapOrder, setSwapOrder] = useState<string>("order-0")
   const { address, isConnected } = useAccount()
   const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork()
+  const [actionType, setActionType] = useState("set-origin")
   const { chain } = useNetwork()
   const [originTokenID, setOriginTokenID] = useState(1)
   const [destTokenID, setDestTokenID] = useState(42161)
@@ -64,6 +65,33 @@ function Swap() {
     setOriginTokenID(origin)
     setDestTokenID(dest)
   }, [])
+
+  useEffect(() => {
+    if (!isLoading) {
+      const id = chain ? chain.id : 1
+
+      if (actionType === "set-origin") {
+        if (id === destTokenID) {
+          setDestTokenID(originTokenID)
+        }
+
+        setOriginTokenID(id)
+      }
+
+      if (actionType === "set-dest") {
+        setDestTokenID(originTokenID)
+        setOriginTokenID(id)
+      }
+
+      if (actionType === "swap") {
+        const origin = originTokenID
+        setOriginTokenID(destTokenID)
+        setDestTokenID(origin)
+      }
+
+      setActionType("")
+    }
+  }, [isLoading])
 
   const getBalanceReadable = (tokenAddress: string | null) => {
     if (tokenAddress === null) return "0.0"
@@ -157,29 +185,22 @@ function Swap() {
   }
 
   const changeOriginTokenID = (id: number) => {
-    if (id === destTokenID) {
-      setDestTokenID(originTokenID)
-    }
-
     onSwitchNetwork(id)
-    setOriginTokenID(id)
+    setActionType("set-origin")
   }
 
   const changeDestTokenID = (id: number) => {
     if (id === originTokenID) {
       switchNetwork?.(destTokenID)
-      setOriginTokenID(destTokenID)
-      setDestTokenID(id)
+      setActionType("set-dest")
     } else {
       setDestTokenID(id)
     }
   }
 
-  const swapToken = () => {
-    const origin = originTokenID
-    setOriginTokenID(destTokenID)
-    setDestTokenID(origin)
-    switchNetwork?.(origin)
+  const swapNetwork = () => {
+    switchNetwork?.(destTokenID)
+    setActionType("swap")
   }
 
   return (
@@ -329,7 +350,7 @@ function Swap() {
                 </div>
               </div>
 
-              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapToken}>
+              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapNetwork}>
                 <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
                   <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">

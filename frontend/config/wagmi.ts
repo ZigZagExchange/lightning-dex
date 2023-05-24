@@ -5,13 +5,13 @@ import { publicProvider } from 'wagmi/providers/public'
 
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-import { arbitrum } from 'viem/chains'
+import { arbitrum, bsc, optimism, polygon } from 'viem/chains'
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string
 const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY as string
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet, sepolia, arbitrum],
+  [mainnet, sepolia, arbitrum, bsc, optimism, polygon],
   [alchemyProvider({ apiKey: alchemyApiKey }), publicProvider()],
 )
 

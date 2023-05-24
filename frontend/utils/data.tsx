@@ -141,6 +141,44 @@ export const networksItems1 = [
     },
 ]
 
+// export const networksItems = [
+//     {
+//         id: 1,
+//         name: "Ethereum",
+//         layer: "Layer 1",
+//         color: "#5170ad",
+//         icon: "eth.svg"
+//     },
+//     {
+//         id: 42161,
+//         name: "Arbitrum",
+//         layer: "Layer 2",
+//         color: "#58535B",
+//         icon: "abt.jfif"
+//     },
+//     {
+//         id: 2,
+//         name: "Solana",
+//         layer: "Layer 1",
+//         color: "#58535B",
+//         icon: "sol.svg"
+//     },
+//     {
+//         id: 3,
+//         name: "Bitcoin",
+//         layer: "Layer 1",
+//         color: "#58535B",
+//         icon: "btc.svg"
+//     },
+//     {
+//         id: 4,
+//         name: "Lightning",
+//         layer: "Layer 2",
+//         color: "#58535B",
+//         icon: "ln.jfif"
+//     },
+// ]
+
 export const networksItems = [
     {
         id: 1,
@@ -157,24 +195,24 @@ export const networksItems = [
         icon: "abt.jfif"
     },
     {
-        id: 2,
-        name: "Solana",
+        id: 56,
+        name: "BNB Chain",
         layer: "Layer 1",
-        color: "#58535B",
-        icon: "sol.svg"
+        color: "#ecae0b",
+        icon: "bnb.svg",
     },
     {
-        id: 3,
-        name: "Bitcoin",
-        layer: "Layer 1",
-        color: "#58535B",
-        icon: "btc.svg"
-    },
-    {
-        id: 4,
-        name: "Lightning",
+        id: 10,
+        name: "Optimism",
         layer: "Layer 2",
-        color: "#58535B",
-        icon: "ln.jfif"
+        color: "#ef4444",
+        icon: "opt.png"
+    },
+    {
+        id: 137,
+        name: "Polygon",
+        layer: "Layer 2",
+        color: "#a855f7",
+        icon: "pol.jfif",
     },
 ]

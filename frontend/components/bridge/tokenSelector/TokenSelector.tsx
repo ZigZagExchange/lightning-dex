@@ -6,14 +6,25 @@ interface props {
   count: number
 }
 
+//: ETH, WBTC, USDC, and USDT
+
 const tokenItems = [
+  // {
+  //   name: "DAI",
+  //   base: "Dai",
+  //   network: "Ethereum",
+  //   bg: "#f97316",
+  //   border: "#fdba74",
+  //   icon: "dai.svg",
+  //   networkIcon: "eth.svg"
+  // },
   {
-    name: "DAI",
-    base: "Dai",
+    name: "ETH",
+    base: "USD Circle",
     network: "Ethereum",
-    bg: "#f97316",
-    border: "#fdba74",
-    icon: "dai.svg",
+    bg: "#0ea5e9",
+    border: "#7dd3fc",
+    icon: "eth.svg",
     networkIcon: "eth.svg"
   },
   {
@@ -32,6 +43,15 @@ const tokenItems = [
     bg: "#22c55e",
     border: "#86efb6",
     icon: "usdt.svg",
+    networkIcon: "eth.svg"
+  },
+  {
+    name: "WBTC",
+    base: "USD Tether",
+    network: "Ethereum",
+    bg: "#EAB308",
+    border: "#EAB308",
+    icon: "wbtc.svg",
     networkIcon: "eth.svg"
   },
 ]

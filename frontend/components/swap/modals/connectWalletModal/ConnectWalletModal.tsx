@@ -8,7 +8,7 @@ interface Props {
 
 function ConnectWalletModal({ close }: Props) {
     const { connect, connectors, isLoading } = useConnect()
- 
+
     return (
         <div className="rounded-lg relative flex flex-col w-full overflow-hidden outline-none focus:outline-none">
             <div className="inline-block px-6 pt-2 pb-4 overflow-hidden text-left align-bottom transition-all transform  rounded-lg shadow-xl sm:align-middle w-96 " role="dialog" aria-modal="true" aria-labelledby="modal-headline">

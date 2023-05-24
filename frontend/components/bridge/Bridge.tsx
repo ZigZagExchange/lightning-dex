@@ -1,4 +1,4 @@
-import { useState, useContext, useMemo } from "react"
+import { useState, useContext, useMemo, useEffect } from "react"
 
 import styles from "./Bridge.module.css"
 import SellInput from "./sellInput/SellInput"
@@ -22,6 +22,7 @@ import Image from "next/image"
 import { networksItems } from "../../utils/data"
 import { useAtom } from "jotai"
 import { destTokenAtom, originTokenAtom } from "../../store/token"
+import { useAccount, useBalance, useSwitchNetwork, useNetwork } from 'wagmi'
 
 export enum SellValidationState {
   OK,
@@ -47,12 +48,22 @@ function Swap() {
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder, setSwapOrder] = useState<string>("order-0")
-  const [originToken, setOriginToken] = useAtom(originTokenAtom)
-  const [destToken, setDestToken] = useAtom(destTokenAtom)
+  const { address, isConnected } = useAccount()
+  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork()
+  const { chain } = useNetwork()
+  const [originTokenID, setOriginTokenID] = useState(1)
+  const [destTokenID, setDestTokenID] = useState(42161)
 
   const [modal, setModal] = useState<ModalMode>(null)
 
   const { t } = useTranslation("swap")
+
+  useEffect(() => {
+    const origin = chain && chain.id ? chain.id : 1
+    const dest = origin === 1 ? 42161 : 1
+    setOriginTokenID(origin)
+    setDestTokenID(dest)
+  }, [])
 
   const getBalanceReadable = (tokenAddress: string | null) => {
     if (tokenAddress === null) return "0.0"
@@ -136,6 +147,41 @@ function Swap() {
     return
   }, [sellTokenInfo, buyTokenInfo, sellAmount, buyAmount, sellTokenUsdPrice, buyTokenUsdPrice])
 
+  // Switch network
+  const onSwitchNetwork = (id: number) => {
+    if (isConnected) {
+      switchNetwork?.(id)
+    } else {
+      setModal("connectWallet")
+    }
+  }
+
+  const changeOriginTokenID = (id: number) => {
+    if (id === destTokenID) {
+      setDestTokenID(originTokenID)
+    }
+
+    onSwitchNetwork(id)
+    setOriginTokenID(id)
+  }
+
+  const changeDestTokenID = (id: number) => {
+    if (id === originTokenID) {
+      switchNetwork?.(destTokenID)
+      setOriginTokenID(destTokenID)
+      setDestTokenID(id)
+    } else {
+      setDestTokenID(id)
+    }
+  }
+
+  const swapToken = () => {
+    const origin = originTokenID
+    setOriginTokenID(destTokenID)
+    setDestTokenID(origin)
+    switchNetwork?.(origin)
+  }
+
   return (
     <>
       <div className="pb-3 place-self-center">
@@ -196,24 +242,36 @@ function Swap() {
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.name === originToken ?
+                      item.id === originTokenID ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
-                          key={`${item.name}-${item.token}`}
+                          key={`${item.name}-${item.token}-active`}
                         >
-                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <Image
+                            src={`/tokenIcons/${item.icon}`}
+                            alt="ether"
+                            width={22}
+                            height={22}
+                            className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
+                          />
                           <div className="hidden md:inline-block lg:inline-block">
-                            <div className="mr-2 text-sm text-white">Ethereum</div>
+                            <div className="mr-2 text-sm text-white">{item.name}</div>
                           </div>
                         </div>
                         :
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => { setModal("connectWallet") }}
+                          onClick={() => changeOriginTokenID(item.id)}
                         >
                           <div className="inline-block">
-                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
+                            <Image
+                              src={`/tokenIcons/${item.icon}`}
+                              width={22}
+                              height={22}
+                              className="duration-300 rounded-full hover:scale-125"
+                              alt={item.name}
+                            />
                           </div>
 
                           <div className="absolute overflow-visible top-[2.5rem] z-[2]">
@@ -271,7 +329,7 @@ function Swap() {
                 </div>
               </div>
 
-              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={() => setSwapOrder(v => v === "order-1" ? "order-0" : "order-1")}>
+              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapToken}>
                 <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
                   <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
@@ -287,21 +345,21 @@ function Swap() {
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.name === destToken ?
+                      item.id === destTokenID ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
                           key={`${item.name}-${item.token}`}
                         >
-                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <Image src={`/tokenIcons/${item.icon}`} alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
                           <div className="hidden md:inline-block lg:inline-block">
-                            <div className="mr-2 text-sm text-white">Ethereum</div>
+                            <div className="mr-2 text-sm text-white">{item.name}</div>
                           </div>
                         </div>
                         :
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => { setModal("connectWallet") }}
+                          onClick={() => changeDestTokenID(item.id)}
                         >
                           <div className="inline-block">
                             <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
@@ -318,11 +376,6 @@ function Swap() {
                           </div>
                         </button>
                     )}
-                    {/* <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                      </svg>
-                    </button> */}
                   </div>
                 </div>
 

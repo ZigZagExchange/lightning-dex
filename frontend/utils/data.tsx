@@ -143,30 +143,35 @@ export const networksItems1 = [
 
 export const networksItems = [
     {
+        id: 1,
         name: "Ethereum",
         layer: "Layer 1",
         color: "#5170ad",
         icon: "eth.svg"
     },
     {
+        id: 42161,
         name: "Arbitrum",
         layer: "Layer 2",
         color: "#58535B",
         icon: "abt.jfif"
     },
     {
+        id: 2,
         name: "Solana",
         layer: "Layer 1",
         color: "#58535B",
         icon: "sol.svg"
     },
     {
+        id: 3,
         name: "Bitcoin",
         layer: "Layer 1",
         color: "#58535B",
         icon: "btc.svg"
     },
     {
+        id: 4,
         name: "Lightning",
         layer: "Layer 2",
         color: "#58535B",

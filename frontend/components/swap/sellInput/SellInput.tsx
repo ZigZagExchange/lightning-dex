@@ -3,7 +3,7 @@ import { useContext } from "react"
 import { ethers, utils } from "ethers"
 
 import input_styles from "../Input.module.css"
-import TokenSelector from "../../swap copy/tokenSelector/TokenSelector"
+// import TokenSelector from "../../swap copy/tokenSelector/TokenSelector"
 import { SwapContext } from "../../../contexts/SwapContext"
 import { ExchangeContext } from "../../../contexts/ExchangeContext"
 import { truncateDecimals } from "../../../utils/utils"
@@ -35,7 +35,7 @@ export default function SellInput({ openSellTokenSelectModal }: Props) {
 
   return (
     <div className={input_styles.container}>
-      <TokenSelector selectedToken={sellTokenInfo} openTokenSelectModal={openSellTokenSelectModal} />
+      {/* <TokenSelector selectedToken={sellTokenInfo} openTokenSelectModal={openSellTokenSelectModal} /> */}
       <button className={input_styles.max_button} onClick={maximize}>
         MAX
       </button>

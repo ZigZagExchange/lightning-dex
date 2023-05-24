@@ -2,7 +2,7 @@ import { useContext } from "react"
 
 import input_styles from "../Input.module.css"
 
-import TokenSelector from "../../swap copy/tokenSelector/TokenSelector"
+// import TokenSelector from "../../swap copy/tokenSelector/TokenSelector"
 import { SwapContext } from "../../../contexts/SwapContext"
 import { ExchangeContext } from "../../../contexts/ExchangeContext"
 import { truncateDecimals } from "../../../utils/utils"
@@ -23,7 +23,7 @@ export default function BuyInput({ openBuyTokenSelectModal }: Props) {
 
   return (
     <div className={input_styles.container}>
-      <TokenSelector selectedToken={buyTokenInfo} openTokenSelectModal={openBuyTokenSelectModal} />
+      {/* <TokenSelector selectedToken={buyTokenInfo} openTokenSelectModal={openBuyTokenSelectModal} /> */}
       <input
         className={input_styles.input}
         onInput={p => safeSetBuyAmount(p.currentTarget.value)}

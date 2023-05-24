@@ -7,7 +7,8 @@ const config: HardhatUserConfig = {
   solidity: "0.8.17",
   etherscan: {
     apiKey: {
-      arbitrumOne: ""
+      arbitrumOne: "",
+      goerli: ""
     }
   },
   networks: {

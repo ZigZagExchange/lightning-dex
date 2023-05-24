@@ -1,6 +1,7 @@
 import { ethers } from 'ethers'
 import dotenv from 'dotenv'
 import fs from 'fs'
+import { db } from 'db'
 
 dotenv.config()
 

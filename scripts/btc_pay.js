@@ -30,6 +30,9 @@ async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
   const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
 
+  const feeCheck = await exec(`bitcoin-core.cli -testnet estimatesmartfee 2`);
+  const network_fee = JSON.parse(feeCheck.stdout).feerate;
+
   for (let bridge of result.rows) {
     const btc_price = prices[gmx_tokens.BTC] / 1e30;
     const eth_price = prices[gmx_tokens.ETH] / 1e30;
@@ -39,11 +42,17 @@ async function makePayments() {
 
     const balanceCheck = await exec(`bitcoin-core.cli -testnet getwalletinfo`);
     const walletInfo = JSON.parse(balanceCheck.stdout);
-    const outgoing_amount = Number((bridge.deposit_amount * eth_btc_price).toFixed(8));
+    let outgoing_amount = (bridge.deposit_amount * 0.998 * eth_btc_price) - (network_fee * 2);
+    outgoing_amount = Number(outgoing_amount.toFixed(8));
     if (walletInfo.balance < outgoing_amount) continue;
 
     const update_paid = await db.query("UPDATE bridges SET paid=true WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (update_paid.rowCount !== 1) throw new Error("Weird failure in paid update");
+
+    if (outgoing_amount <= 0) {
+      console.log("Payment skipped. Outgoing amount would be negative");
+      continue;
+    }
 
     const btc_payment = await exec(`bitcoin-core.cli -testnet sendtoaddress ${bridge.outgoing_address} ${outgoing_amount}`);
     const outgoing_txid = btc_payment.stdout.trim();
@@ -52,5 +61,7 @@ async function makePayments() {
       "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW() WHERE deposit_txid = $3", 
       [outgoing_txid, outgoing_amount, bridge.deposit_txid]
     );
+
+    console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${outgoing_amount} BTC. Price ${eth_btc_price}. TXID: ${outgoing_txid}`);
   }
 }

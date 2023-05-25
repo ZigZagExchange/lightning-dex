@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const beneficiary = "0x5D735e9fFA69d0a77eE18363B5B8ce05e2f9eE2d";
+  const beneficiary = "0x6f457Ce670D18FF8bda00E1B5D9654833e7D91BB";
   const Bridge = await ethers.getContractFactory("BTCBridge");
   const bridge = await Bridge.deploy(beneficiary);
 

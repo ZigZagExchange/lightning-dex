@@ -1,5 +1,10 @@
-import { useRef, useEffect } from "react"
+import { useRef, useContext, useState, useMemo, useEffect } from "react"
 import styles from "./Modal.module.css"
+import TokenListEntry from "../modals/tokenSelectModal/tokenListEntry/TokenListEntry"
+
+import { prettyBalance, prettyBalanceUSD } from "../../../utils/utils"
+import { ExchangeContext } from "../../../contexts/ExchangeContext"
+import useTranslation from "next-translate/useTranslation"
 import TokenSelectModal from "../modals/tokenSelectModal/TokenSelectModal"
 import ApproveModal from "../modals/approveModal/ApproveModal"
 import SwapModal from "../modals/swapModal/SwapModal"

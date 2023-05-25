@@ -1,14 +1,21 @@
 import { useAccount, useBalance } from 'wagmi'
 import styles from "./NetworkSelector.module.css"
+import { useEffect, useState } from 'react'
 
 function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpen: () => void }) {
+  const [userBalance, setUserBalance] = useState<any>(null)
   const account = useAccount()
 
   const balance = useBalance({
     address: account.address
   })
 
+  useEffect(() => {
+    setUserBalance(balance)
+  }, [balance])
+
   if (!account.address) return <></>
+
 
   function open() {
     networkSelectorModalOpen()
@@ -18,15 +25,15 @@ function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpe
   if (balance.isError) return <div>Error fetching balance</div>
 
   return (
-    <div className={`lg:flex hidden ${styles.container}`}>
-      <button className={styles.connect_button} onClick={open}>
+    userBalance ? <div className={`lg:flex hidden ${styles.container}`}>
+      <div className={styles.connect_button} onClick={open}>
         <div className={styles.text}>
-          {parseFloat(balance.data?.formatted as string).toFixed(2)}&nbsp;
+          {parseFloat(userBalance?.data?.formatted as string).toFixed(2)}&nbsp;
 
-          {balance.data?.symbol}
+          {userBalance?.data?.symbol}
         </div>
-      </button>
-    </div>
+      </div>
+    </div> : <></>
   )
 }
 export default NetworkSelector

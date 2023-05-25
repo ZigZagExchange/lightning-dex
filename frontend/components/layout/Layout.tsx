@@ -19,7 +19,7 @@ import MobileMenu from "../MobileMenu/MobileMenu"
 import GroupButtonDropdown from "../GroupButtonDropdown/GroupButtonDropdown"
 import HeaderSocials from "../HeaderSocials/HeaderSocials"
 import NavBar from "../navBar/NavBar"
-import Modal, { ModalMode } from "../swap/modal/Modal"
+import Modal, { ModalMode } from "../bridge/modal/Modal"
 
 
 interface Props {

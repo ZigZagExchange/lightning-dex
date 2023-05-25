@@ -1,12 +1,7 @@
-import { ethers } from 'ethers'
-import dotenv from 'dotenv'
-import fs from 'fs'
 import pg from 'pg'
 import fetch from 'node-fetch'
 import nodeChildProcess from 'node:child_process'
 import util from 'node:util'
-
-dotenv.config()
 
 const exec = util.promisify(nodeChildProcess.exec);
 

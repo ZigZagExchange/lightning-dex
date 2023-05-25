@@ -18,7 +18,7 @@ setInterval(updateDeposits, 5000);
 async function updateDeposits () {
   const { stdout, stderr } = await exec(`bitcoin-core.cli -testnet listtransactions`);
   const transactions = JSON.parse(stdout);
-  const deposits = transactions.filter(t => t.category === "receive");
+  const deposits = transactions.filter(t => t.category === "receive" && t.confirmations >= 1);
   for (let deposit of deposits) {
     const deposit_address_result = await db.query("SELECT * FROM deposit_addresses WHERE deposit_address=$1 AND deposit_currency='BTC'", [deposit.address]);
     if (deposit_address_result.rows.length != 1) continue;

@@ -7,9 +7,9 @@ function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () 
   const [text, setText] = useState("Connect Wallet")
 
   useEffect(() => {
-    // if (account.address) {
-    //   setText(formatAddress(account.address))
-    // }
+    if (account.address) {
+      setText(formatAddress(account.address))
+    }
   }, [account])
 
   function open() {

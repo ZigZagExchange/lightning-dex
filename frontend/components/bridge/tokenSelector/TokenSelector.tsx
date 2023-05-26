@@ -3,7 +3,8 @@ import Image from "next/image"
 import styled from "styled-components"
 
 interface props {
-  count: number
+  count: number,
+  onSelect?: (item: any) => void
 }
 
 //: ETH, WBTC, USDC, and USDT
@@ -68,7 +69,7 @@ const TokenItem: any = styled.div`
   }
 `
 
-function TokenSelector({ count }: props) {
+function TokenSelector({ count, onSelect }: props) {
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
 
@@ -79,6 +80,13 @@ function TokenSelector({ count }: props) {
   const closeDroplist = () => {
     setSearch("")
     setActive(false)
+  }
+
+  const onActive = (item: any) => {
+    if (onSelect) {
+      onSelect(item)
+      setActive(false)
+    }
   }
 
   return (
@@ -106,7 +114,9 @@ function TokenSelector({ count }: props) {
             tokenItems.map((item, index) =>
               item.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()) &&
               <TokenItem key={`${item.name} - ${index}`} bg={item.bg} border={item.border}>
-                <div className="flex items-center transition-all bg-opacity-40 duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:border-orange-300 hover:bg-orange-50 focus:bg-orange-50 active:bg-orange-50 dark:hover:bg-opacity-20 dark:focus:bg-opacity-20 dark:active:bg-opacity-20  dark:hover:bg-orange-500 dark:focus:bg-orange-500 dark:active:bg-orange-500 bg-[#58535B]">
+                <div className="flex items-center transition-all bg-opacity-40 duration-75 w-full rounded-xl px-2 py-3 cursor-pointer border border-transparent hover:border-orange-300 hover:bg-orange-50 focus:bg-orange-50 active:bg-orange-50 dark:hover:bg-opacity-20 dark:focus:bg-opacity-20 dark:active:bg-opacity-20  dark:hover:bg-orange-500 dark:focus:bg-orange-500 dark:active:bg-orange-500 bg-[#58535B]"
+                  onClick={() => onActive(item)}
+                >
                   <div className="flex items-center w-full">
                     <Image alt="token" className="w-10 h-10 ml-2 mr-4 rounded-full" src={`/tokenIcons/${item.icon}`} width={40} height={40} />
                     <div className="flex-col text-left">

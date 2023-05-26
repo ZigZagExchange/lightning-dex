@@ -12,7 +12,7 @@ function NetworkSelector({ networkSelectorModalOpen }: { networkSelectorModalOpe
 
   useEffect(() => {
     setUserBalance(balance)
-  }, [balance])
+  }, [balance.isLoading])
 
   if (!account.address) return <></>
 

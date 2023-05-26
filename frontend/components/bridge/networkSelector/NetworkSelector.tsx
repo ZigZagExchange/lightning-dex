@@ -16,7 +16,7 @@ const NetworkItem: any = styled.div`
     &:hover, &.active {
       background-color: ${(props: any) => props.color + "50"};
       border-color: ${(props: any) => props.color};
-    }
+    }f
   }
 `
 

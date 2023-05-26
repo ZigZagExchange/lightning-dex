@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import styled from "styled-components"
+import { useNetwork } from "wagmi"
 
 interface props {
   count: number,
@@ -21,7 +22,7 @@ const tokenItems = [
   // },
   {
     name: "ETH",
-    base: "USD Circle",
+    base: "Ethereum",
     network: "Ethereum",
     bg: "#0ea5e9",
     border: "#7dd3fc",
@@ -57,6 +58,11 @@ const tokenItems = [
   },
 ]
 
+const tokenIcons = {
+  1: "eth.svg",
+  42161: "abt.jfif"
+}
+
 const TokenItem: any = styled.div`
   > div {
     background-color: #58535B80;
@@ -72,10 +78,18 @@ const TokenItem: any = styled.div`
 function TokenSelector({ count, onSelect }: props) {
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
+  const { chain } = useNetwork()
+  const [network, setNetwork] = useState("Ethereum")
+  const [tokenIcon, setTokenIcon] = useState("eth.svg")
 
   useEffect(() => {
     count > 0 && setActive(true)
   }, [count])
+
+  useEffect(() => {
+    setNetwork(chain?.name as string)
+    setTokenIcon(tokenIcons[chain?.id as 1 | 42161])
+  }, [chain])
 
   const closeDroplist = () => {
     setSearch("")
@@ -125,8 +139,8 @@ function TokenSelector({ count, onSelect }: props) {
                         <div className="mr-1 opacity-70">{item.base}</div>
                         <div className="opacity-60">on</div>
 
-                        <Image alt="token" src={`/tokenIcons/${item.networkIcon}`} className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
-                        <div className="hidden md:inline-block opacity-70">{item.network}</div>
+                        <Image alt="token" src={`/tokenIcons/${tokenIcon}`} className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
+                        <div className="hidden md:inline-block opacity-70">{network}</div>
                       </div>
                     </div>
 

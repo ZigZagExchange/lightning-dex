@@ -181,11 +181,15 @@ function Swap() {
   }
 
   const changeDestNetworkID = (id: number) => {
-    if (id === originNetworkID) {
-      switchNetwork?.(destNetworkID)
-      setActionType("set-dest")
+    if (!isConnected) {
+      setModal("connectWallet")
     } else {
-      setDestNetworkID(id)
+      if (id === originNetworkID) {
+        switchNetwork?.(destNetworkID)
+        setActionType("set-dest")
+      } else {
+        setDestNetworkID(id)
+      }
     }
   }
 
@@ -259,11 +263,13 @@ function Swap() {
               count={firstCount}
               onSelect={setOriginToken}
               key="token-selector-1"
+              networkID={originNetworkID}
             />
             <TokenSelector
               count={secondCount}
               onSelect={setDestToken}
               key="token-selector-2"
+              networkID={destNetworkID}
             />
             <SettingsDropdown show={showSettings} onClick={(val) => setShowSettings(val)} />
 

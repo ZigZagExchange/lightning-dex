@@ -2,10 +2,14 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import styled from "styled-components"
 import { useNetwork } from "wagmi"
+import { useAtom } from "jotai"
+import { originTokenAtom } from "../../../store/token"
+import { networksItems } from "../../../utils/data"
 
 interface props {
   count: number,
-  onSelect?: (item: any) => void
+  onSelect?: (item: any) => void,
+  networkID?: number
 }
 
 //: ETH, WBTC, USDC, and USDT
@@ -75,19 +79,19 @@ const TokenItem: any = styled.div`
   }
 `
 
-function TokenSelector({ count, onSelect }: props) {
+function TokenSelector({ count, onSelect, networkID }: props) {
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
   const { chain } = useNetwork()
-  const [network, setNetwork] = useState("Ethereum")
   const [tokenIcon, setTokenIcon] = useState("eth.svg")
+  const network = networksItems.find(item => item.id === networkID) as any
 
   useEffect(() => {
     count > 0 && setActive(true)
   }, [count])
 
   useEffect(() => {
-    setNetwork(chain?.name as string)
+    // setNetwork(network)
     setTokenIcon(tokenIcons[chain?.id as 1 | 42161])
   }, [chain])
 
@@ -134,13 +138,13 @@ function TokenSelector({ count, onSelect }: props) {
                   <div className="flex items-center w-full">
                     <Image alt="token" className="w-10 h-10 ml-2 mr-4 rounded-full" src={`/tokenIcons/${item.icon}`} width={40} height={40} />
                     <div className="flex-col text-left">
-                      <div className="text-lg font-medium text-white">{item.name}</div><
-                        div className="flex items-center text-sm text-white">
+                      <div className="text-lg font-medium text-white">{item.name}</div>
+                      <div className="flex items-center text-sm text-white">
                         <div className="mr-1 opacity-70">{item.base}</div>
                         <div className="opacity-60">on</div>
 
-                        <Image alt="token" src={`/tokenIcons/${tokenIcon}`} className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
-                        <div className="hidden md:inline-block opacity-70">{network}</div>
+                        <Image alt="token" src={`/tokenIcons/${network.icon}`} className="w-4 h-4 ml-2 mr-2 rounded-full" width={16} height={16} />
+                        <div className="hidden md:inline-block opacity-70">{network.name}</div>
                       </div>
                     </div>
 

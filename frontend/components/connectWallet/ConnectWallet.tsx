@@ -9,6 +9,8 @@ function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () 
   useEffect(() => {
     if (account.address) {
       setText(formatAddress(account.address))
+    } else {
+      setText("Connect Wallet")
     }
   }, [account])
 

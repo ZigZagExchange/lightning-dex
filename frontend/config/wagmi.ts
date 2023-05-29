@@ -5,6 +5,7 @@ import { publicProvider } from 'wagmi/providers/public'
 
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+import { PhantomConnector } from '../utils/phantom-wagmi-connector'
 import { arbitrum, bsc, optimism, polygon } from 'viem/chains'
 
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string
@@ -25,6 +26,7 @@ const configWagmi = createConfig({
         projectId,
       },
     }),
+    new PhantomConnector({ chains }),
   ],
   publicClient,
   webSocketPublicClient,

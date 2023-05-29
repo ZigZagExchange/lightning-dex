@@ -38,7 +38,13 @@ function ConnectWalletModal({ close }: Props) {
                                 }}
                             >
                                 <Image
-                                    src={id === 0 ? "/wallets/metamask.svg" : "/wallets/walletconnect.svg"}
+                                    src={
+                                        id === 0
+                                            ? "/wallets/metamask.svg"
+                                            : id === 1
+                                                ? "/wallets/walletconnect.svg"
+                                                : "/wallets/phantom.svg"
+                                    }
                                     alt="icon"
                                     className="w-8 mr-3 rounded-lg"
                                     width={20}

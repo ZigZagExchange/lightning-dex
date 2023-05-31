@@ -20,14 +20,20 @@ const ethersProvider = new ethers.providers.InfuraProvider(
     process.env.INFURA_PROJECT_ID,
 );
 
-const BRIDGE_ADDRESS = "0x428Fe4d080A62127E6Bf167E05b05cF30079d3f2";
-const Bridge = new ethers.Contract(BRIDGE_ADDRESS, bridgeAbi, ethersProvider);
+const Bridge = new ethers.Contract(process.env.ETH_DEPOSIT_CONTRACT, bridgeAbi, ethersProvider);
 
 updateBridges();
 setInterval(updateBridges, 5000);
 
 async function updateBridges() {
-  const deposits = await Bridge.queryFilter(Bridge.filters.Deposit(), 0, "latest");
+  let deposits;
+  try {
+    deposits = await Bridge.queryFilter(Bridge.filters.Deposit(), -100, -2);
+  } catch (e) {
+    console.error("Error while getting ETH deposits");
+    console.error(e);
+    return;
+  }
 
   for (let deposit of deposits) {
     let deposit_currency;

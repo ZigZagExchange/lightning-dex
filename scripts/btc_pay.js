@@ -2,6 +2,9 @@ import pg from 'pg'
 import fetch from 'node-fetch'
 import nodeChildProcess from 'node:child_process'
 import util from 'node:util'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const exec = util.promisify(nodeChildProcess.exec);
 

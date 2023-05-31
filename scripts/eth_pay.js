@@ -30,7 +30,15 @@ async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'ETH' AND outgoing_address IS NOT NULL AND deposit_currency='BTC'");
   const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
 
-  const feeData = await ethersProvider.getFeeData();
+  let feeData; 
+  try {
+    feeData = await ethersProvider.getFeeData();
+  } catch (e) {
+    console.error("Error getting ETH fee data");
+    console.error(e);
+    setTimeout(makePayments, 5000);
+    return;
+  }
   const network_fee = feeData.gasPrice.mul(21000).mul(2);
 
   for (let bridge of result.rows) {
@@ -40,7 +48,14 @@ async function makePayments() {
     if (typeof eth_btc_price !== "number" || isNaN(eth_btc_price)) throw new Error("ethbtc price is invalid");
     if (eth_btc_price > 0.1 || eth_btc_price < 0.04) throw new Error("ethbtc price failed sanity check");
 
-    const makerBalance = await ethersProvider.getBalance(ethWallet.address);
+    let makerBalance;
+    try {
+      makerBalance = await ethersProvider.getBalance(ethWallet.address);
+    } catch (e) {
+      console.error("Error getting maker balance")
+      console.error(e);
+      break;
+    }
 
     const outgoing_amount = ethers.BigNumber.from((bridge.deposit_amount * 0.998 * btc_price / eth_price * 1e18).toFixed(0)).sub(network_fee)
     if (makerBalance.lt(outgoing_amount)) continue;

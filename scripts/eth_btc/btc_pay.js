@@ -28,8 +28,8 @@ async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
   const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
 
-  const feeCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} estimatesmartfee 2`);
-  const network_fee = JSON.parse(feeCheck.stdout).feerate / 3;
+  const feeCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} estimatesmartfee 1`);
+  const network_fee = JSON.parse(feeCheck.stdout).feerate / 3; // Estimated 333 vB
 
   for (let bridge of result.rows) {
     const btc_price = prices[gmx_tokens.BTC] / 1e30;
@@ -40,7 +40,7 @@ async function makePayments() {
 
     const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
     const walletInfo = JSON.parse(balanceCheck.stdout);
-    let outgoing_amount = (bridge.deposit_amount * 0.998 * eth_btc_price) - (network_fee * 2);
+    let outgoing_amount = (bridge.deposit_amount * 0.998 * eth_btc_price) - network_fee;
     outgoing_amount = Number(outgoing_amount.toFixed(8));
     if (walletInfo.balance < outgoing_amount) continue;
 
@@ -52,7 +52,7 @@ async function makePayments() {
       continue;
     }
 
-    const btc_payment = await exec(`${process.env.BITCOIN_CLI_PREFIX} sendtoaddress ${bridge.outgoing_address} ${outgoing_amount}`);
+    const btc_payment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${outgoing_amount} conf_target=1`);
     const outgoing_txid = btc_payment.stdout.trim();
 
     const update_outgoing_txid = await db.query(

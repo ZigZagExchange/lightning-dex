@@ -28,11 +28,17 @@ const gmx_tokens = {
 
 async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'ETH' AND outgoing_address IS NOT NULL AND deposit_currency='BTC'");
+  if (result.rows.length === 0) {
+    setTimeout(makePayments, 5000);
+    return;
+  }
+
   const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
 
   let feeData; 
   try {
     feeData = await ethersProvider.getFeeData();
+    if (!feeData.gasPrice) throw new Error(feeData)
   } catch (e) {
     console.error("Error getting ETH fee data");
     console.error(e);

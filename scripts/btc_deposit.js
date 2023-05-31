@@ -1,6 +1,9 @@
 import nodeChildProcess from 'node:child_process'
 import util from 'node:util'
 import pg from 'pg'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const db = new pg.Pool({
   host: 'localhost',

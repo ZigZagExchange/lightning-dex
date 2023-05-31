@@ -13,7 +13,7 @@ const db = new pg.Pool({
   password: 'postgres'
 });
 
-const bridgeAbi = JSON.parse(fs.readFileSync('BTCBridge.json', "utf-8")).abi;
+const bridgeAbi = JSON.parse(fs.readFileSync('../BTCBridge.json', "utf-8")).abi;
 
 const ethersProvider = new ethers.providers.InfuraProvider(
     process.env.ETH_NETWORK,

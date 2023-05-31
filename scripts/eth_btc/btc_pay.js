@@ -29,7 +29,7 @@ async function makePayments() {
   const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
 
   const feeCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} estimatesmartfee 2`);
-  const network_fee = JSON.parse(feeCheck.stdout).feerate;
+  const network_fee = JSON.parse(feeCheck.stdout).feerate / 3;
 
   for (let bridge of result.rows) {
     const btc_price = prices[gmx_tokens.BTC] / 1e30;

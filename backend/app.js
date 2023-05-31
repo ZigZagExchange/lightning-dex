@@ -5,6 +5,9 @@ const { Pool } = require('pg');
 const crypto = require('crypto');
 const nodeChildProcess = require('node:child_process');
 const util = require('node:util');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const exec = util.promisify(nodeChildProcess.exec);
 
@@ -44,7 +47,7 @@ app.get('/deposit_address', async (req, res, next) => {
 
   if (deposit_address.rows.length > 0) return res.status(200).json(deposit_address.rows[0]);
   else {
-    const addressgen = await exec(`bitcoin-core.cli -testnet getnewaddress`);
+    const addressgen = await exec(`${process.env.BITCOIN_CLI_PREFIX} getnewaddress`);
     const deposit_address = addressgen.stdout.trim();
     try {
       await db.query("INSERT INTO deposit_addresses (deposit_currency, deposit_address, outgoing_currency, outgoing_address) VALUES ($1,$2,$3,$4)", [deposit_currency, deposit_address, outgoing_currency, outgoing_address]);

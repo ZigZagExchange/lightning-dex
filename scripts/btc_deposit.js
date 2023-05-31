@@ -16,7 +16,7 @@ updateDeposits();
 setInterval(updateDeposits, 5000);
 
 async function updateDeposits () {
-  const { stdout, stderr } = await exec(`bitcoin-core.cli -testnet listtransactions`);
+  const { stdout, stderr } = await exec(`${process.env.BITCOIN_CLI_PREFIX} listtransactions`);
   const transactions = JSON.parse(stdout);
   const deposits = transactions.filter(t => t.category === "receive" && t.confirmations >= 1);
   for (let deposit of deposits) {

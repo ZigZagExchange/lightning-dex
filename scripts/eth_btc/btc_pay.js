@@ -52,7 +52,14 @@ async function makePayments() {
       continue;
     }
 
-    const btc_payment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${outgoing_amount} conf_target=1`);
+    let btc_payment;
+    try {
+      btc_payment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${outgoing_amount} conf_target=1`);
+    } catch (e) {
+      console.error("Trade failed");
+      console.error(e);
+      continue;
+    }
     const outgoing_txid = btc_payment.stdout.trim();
 
     const update_outgoing_txid = await db.query(

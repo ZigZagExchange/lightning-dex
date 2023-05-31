@@ -74,11 +74,18 @@ async function makePayments() {
       continue;
     }
 
-    const eth_payment = await ethWallet.sendTransaction({
-        to: bridge.outgoing_address,
-        value: outgoing_amount
-    });
-    await eth_payment.wait();
+    let eth_payment;
+    try {
+      eth_payment = await ethWallet.sendTransaction({
+          to: bridge.outgoing_address,
+          value: outgoing_amount
+      });
+      await eth_payment.wait();
+    } catch (e) {
+      console.error("Trade failed");
+      console.error(e);
+      continue;
+    }
     const outgoing_txid = eth_payment.hash;
 
     const readable_outgoing_amount = outgoing_amount.toString() / 1e18;

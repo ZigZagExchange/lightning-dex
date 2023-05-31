@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const nodeChildProcess = require('node:child_process');
 const util = require('node:util');
 const dotenv = require('dotenv');
+const { ethers } = require('ethers');
 
 dotenv.config();
 
@@ -41,7 +42,8 @@ app.get('/deposit_address', async (req, res, next) => {
   const valid_outgoing_currencies = ["ETH"];
   if (!valid_deposit_currencies.includes(deposit_currency)) return next("Bad deposit_currency")
   if (!valid_outgoing_currencies.includes(outgoing_currency)) return next("Bad outgoing_currency")
-  if (!outgoing_address) return next("Bad outgoing_address")
+  if (!outgoing_address) return next("Must set outgoing_address")
+  if (!ethers.isAddress(outgoing_address)) return next("Invalid outgoing_address")
 
   const deposit_address = await db.query("SELECT * FROM deposit_addresses WHERE deposit_currency=$1 AND outgoing_currency=$2 AND outgoing_address=$3 LIMIT 1", [deposit_currency, outgoing_currency, outgoing_address]);
 

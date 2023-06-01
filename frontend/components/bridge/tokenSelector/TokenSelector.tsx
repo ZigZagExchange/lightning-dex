@@ -107,6 +107,8 @@ function TokenSelector({ count, onSelect, networkID }: props) {
     }
   }
 
+  if (!network) return null
+
   return (
     <div className={`droplist origin-bottom absolute w-full h-full md:w-[95%] md:h-[95%] -ml-0 md:-ml-3 md:mt-3 bg-bgBase z-20 rounded-3xl ${active ? "active" : ""}`}>
       <div className="max-h-full pb-4 -mt-3 overflow-auto scrollbar-hide rounded-3xl">

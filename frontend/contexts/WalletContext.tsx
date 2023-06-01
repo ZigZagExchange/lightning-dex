@@ -17,6 +17,14 @@ interface Props {
   children: React.ReactNode
 }
 
+export enum Chain {
+  all = 'ALL',
+  evm = 'EVM',
+  solana = 'SOLANA',
+}
+
+export type CurrentAction = 'None' | 'Origin' | 'Destination' | 'Swap'
+
 export type WalletContextType = {
   username: string | null
   signer: ethers.Signer | null
@@ -24,11 +32,19 @@ export type WalletContextType = {
   ethersProvider: ethers.providers.BaseProvider
   network: NetworkType | null
   isLoading: boolean
+  chain: Chain
+  orgChainId: number
+  destChainId: number
+  currentAction: CurrentAction,
 
   connect: () => void
   disconnect: () => void
   switchNetwork: (network: number) => Promise<boolean>
   updateWalletBalance: (tokenAddressList: string[]) => void
+  updateChain: (_chain: Chain) => void
+  updateOrgChainId: (_chainId: number) => void
+  updateDestChainId: (_chainId: number) => void
+  updateCurrentAction: (_action: CurrentAction) => void
 }
 
 export const WalletContext = createContext<WalletContextType>({
@@ -38,6 +54,10 @@ export const WalletContext = createContext<WalletContextType>({
   ethersProvider: _getDefaultProvider(),
   network: _getDefaultNetwork(),
   isLoading: false,
+  chain: Chain.all,
+  orgChainId: 1,
+  destChainId: 42161,
+  currentAction: 'None',
 
   connect: () => { },
   disconnect: () => { },
@@ -45,6 +65,10 @@ export const WalletContext = createContext<WalletContextType>({
     return false
   },
   updateWalletBalance: (tokenAddressList: string[]) => { },
+  updateChain: (_chain: Chain) => { },
+  updateOrgChainId: (_chainId: number) => { },
+  updateDestChainId: (_chainId: number) => { },
+  updateCurrentAction: (_action: CurrentAction) => { }
 })
 
 const wallets = [
@@ -96,6 +120,26 @@ function WalletProvider({ children }: Props) {
   const [signer, setSigner] = useState<ethers.Signer | null>(null)
   const [userAddress, setUserAddress] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [chain, setChain] = useState<Chain>(Chain.evm)
+  const [orgChainId, setOrgChainId] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('orgChainId')
+        ? Number(localStorage.getItem('orgChainId'))
+        : 1
+    } else {
+      return 1
+    }
+  })
+  const [destChainId, setDestChainId] = useState(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('destChainId')
+        ? Number(localStorage.getItem('destChainId'))
+        : 42161
+    } else {
+      return 42161
+    }
+  })
+  const [currentAction, setCurrentAction] = useState<CurrentAction>('Origin')
 
   const walletsSub = onboard.state.select("wallets")
   walletsSub.subscribe(wallets => {
@@ -207,6 +251,22 @@ function WalletProvider({ children }: Props) {
     }
   }
 
+  const updateChain = (_chain: Chain) => {
+    setChain(_chain)
+  }
+
+  const updateOrgChainId = (_chainId: number) => {
+    setOrgChainId(_chainId)
+  }
+
+  const updateDestChainId = (_chainId: number) => {
+    setDestChainId(_chainId)
+  }
+
+  const updateCurrentAction = (_action: CurrentAction) => {
+    setCurrentAction(_action)
+  }
+
   return (
     <WalletContext.Provider
       value={{
@@ -216,11 +276,19 @@ function WalletProvider({ children }: Props) {
         ethersProvider: ethersProvider,
         network: network,
         isLoading: isLoading,
+        chain,
+        orgChainId,
+        destChainId,
+        currentAction,
 
         connect: connectWallet,
         disconnect: disconnectWallet,
         switchNetwork: _switchNetwork,
         updateWalletBalance: updateWalletBalance,
+        updateChain,
+        updateOrgChainId,
+        updateDestChainId,
+        updateCurrentAction
       }}
     >
       {children}

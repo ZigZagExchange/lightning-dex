@@ -1,7 +1,8 @@
 import { useState, useContext, useMemo, useEffect } from "react"
+import { toast } from 'react-toastify'
 import { ethers } from "ethers"
 import Image from "next/image"
-import { useSwitchNetwork, useNetwork, useAccount, useBalance } from 'wagmi'
+import { useSwitchNetwork, useNetwork, useAccount, useBalance, useDisconnect } from 'wagmi'
 import useTranslation from "next-translate/useTranslation"
 
 import styles from "./Bridge.module.css"
@@ -17,6 +18,7 @@ import { prettyBalance, prettyBalanceUSD } from "../../utils/utils"
 import { networksItems } from "../../utils/data"
 import { useAtom } from "jotai"
 import { destTokenAtom, originTokenAtom } from "../../store/token"
+import { Chain } from "../../contexts/WalletContext"
 
 export enum SellValidationState {
   OK,
@@ -34,7 +36,8 @@ export enum BuyValidationState {
 }
 
 function Swap() {
-  const { network, userAddress } = useContext(WalletContext)
+  const { disconnect } = useDisconnect()
+  const { chain: walletChain, orgChainId, destChainId, currentAction, userAddress, updateChain, updateOrgChainId, updateDestChainId, updateCurrentAction } = useContext(WalletContext)
   const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
   const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
   const [showNetworkSelector, setShowNetworkSelector] = useState(0)
@@ -44,45 +47,51 @@ function Swap() {
   const [swapOrder, setSwapOrder] = useState<string>("order-0")
   const { address, isConnected } = useAccount()
   const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork()
-  const [actionType, setActionType] = useState("set-origin")
   const { chain } = useNetwork()
-  const [originNetworkID, setOriginNetworkID] = useState(1)
-  const [destNetworkID, setDestNetworkID] = useState(42161)
   const [originToken, setOriginTokenAtom] = useAtom(originTokenAtom)
   const [destToken, setDestTokenAtom] = useAtom(destTokenAtom)
-
 
   const [modal, setModal] = useState<ModalMode>(null)
 
   const { t } = useTranslation("swap")
 
-  useEffect(() => {
-    const origin = chain && chain.id ? chain.id : 1
-    const dest = origin === 1 ? 42161 : 1
-    setOriginNetworkID(origin)
-    setDestNetworkID(dest)
-  }, [])
+  console.log(orgChainId)
+  console.log(walletChain)
 
   useEffect(() => {
-    const id = chain ? chain.id : 1
+    // If Chain is "EVM", please switch Network
+    if (isConnected && walletChain === 'EVM')
+      onSwitchNetwork(orgChainId)
+  }, [isConnected, orgChainId, walletChain])
 
-    if (actionType === "set-origin") {
-      if (id === destNetworkID) {
-        setDestNetworkID(originNetworkID)
+  useEffect(() => {
+    if (destChainId === orgChainId) {
+      if (currentAction === 'Destination') {
+        updateChain(Chain.evm)
+
+        if (walletChain === Chain.solana || destChainId !== 1) {
+          // Update origin chain
+          updateOrgChainId(1)
+          onSwitchNetwork(1)
+        } else {
+          updateOrgChainId(42161)
+        }
+      }
+
+      if (currentAction === 'Origin') {
+        if (destChainId === 1) {
+          onSwitchNetwork(42161)
+          updateDestChainId(42161)
+        } else if (destChainId === 42161) {
+          onSwitchNetwork(1)
+          updateDestChainId(1)
+        } else {
+          updateDestChainId(1)
+        }
       }
     }
+  }, [destChainId, orgChainId])
 
-    if (actionType === "set-dest") {
-      setDestNetworkID(originNetworkID)
-    }
-
-    if (actionType === "swap") {
-      setDestNetworkID(originNetworkID)
-    }
-
-    setOriginNetworkID(id)
-    setActionType("")
-  }, [chain])
 
   const getBalanceReadable = (tokenAddress: string | null) => {
     if (tokenAddress === null) return "0.0"
@@ -170,32 +179,115 @@ function Swap() {
   const onSwitchNetwork = (id: number) => {
     if (isConnected) {
       switchNetwork?.(id)
-    } else {
-      setModal("connectWallet")
     }
+    // else {
+    //   setModal("connectWallet")
+    // }
   }
 
-  const changeOriginNetworkID = (id: number) => {
-    onSwitchNetwork(id)
-    setActionType("set-origin")
-  }
+  const changeOriginNetworkID = (id: number, _chain: string) => {
+    // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+    if (_chain === 'Bitcoin' || _chain === 'Lightning') return
 
-  const changeDestNetworkID = (id: number) => {
+    const chain =
+      _chain === 'Solana'
+        ? Chain.solana
+        : Chain.evm
+
+    updateChain(chain)
+
+    // Update origin chain
+    updateOrgChainId(id)
+    localStorage.setItem('orgChainId', id.toString())
+
+    // Check if wallet is connected or not
     if (!isConnected) {
       setModal("connectWallet")
+      return
+    }
+
+    updateCurrentAction('Origin')
+
+    // Check if an origin chain corresponds to wallet chain
+    if (walletChain !== chain) {
+      // Disconnect wallet
+      disconnect()
+      // updateChain(chain)
+      setModal("connectWallet")
     } else {
-      if (id === originNetworkID) {
-        switchNetwork?.(destNetworkID)
-        setActionType("set-dest")
+      // Check what wallet has been connected to Dapp
+      if (chain === 'EVM') {
+        // Check if MetaMask is installed and connected
+        // updateChain(chain)
+
+        // @ts-ignore
+        if (typeof window.ethereum !== 'undefined') {
+          // @ts-ignore
+          if (window.ethereum.isConnected()) {
+            console.log('MetaMask is connected!')
+          } else {
+            // Other wallet is connected
+            disconnect()
+            setModal("connectWallet")
+          }
+        } else {
+          toast.error('No MetaMask Wallet detected. Please install MetaMask Wallet!')
+        }
       } else {
-        setDestNetworkID(id)
+        // @ts-ignore
+        if (typeof window.solana !== 'undefined') {
+          // Wallet is installed, so you can access the connected wallet information
+          // updateChain(chain)
+
+          // @ts-ignore
+          const { isPhantom } = window.solana
+
+          if (isPhantom) {
+            // Phantom wallet is connected
+            console.log('Connected wallet: Phantom')
+          } else {
+            // Other Solana wallet is connected
+            disconnect()
+            setModal("connectWallet")
+          }
+        } else {
+          toast.error('No Phantom Wallet detected. Please install Phantom Wallet!')
+        }
       }
     }
   }
 
+  const changeDestNetworkID = (id: number, _chain: string) => {
+    // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+    if (_chain === 'Bitcoin' || _chain === 'Lightning') return
+
+    const chain =
+      _chain === 'Solana'
+        ? Chain.solana
+        : Chain.evm
+
+    if (!isConnected) {
+      setModal("connectWallet")
+      return
+    }
+
+    // Update destination chain to selected chain
+    updateDestChainId(id)
+    localStorage.setItem('destChainId', id.toString())
+
+    updateCurrentAction('Destination')
+
+    if (orgChainId === 2 && chain === Chain.solana) {
+      updateOrgChainId(1)
+      updateChain(Chain.evm)
+      disconnect()
+      setModal("connectWallet")
+    }
+  }
+
   const swapNetwork = () => {
-    switchNetwork?.(destNetworkID)
-    setActionType("swap")
+    // switchNetwork?.(destNetworkID)
+    updateCurrentAction('Swap')
   }
 
   const setOriginToken = (val: any) => {
@@ -263,24 +355,24 @@ function Swap() {
               count={firstCount}
               onSelect={setOriginToken}
               key="token-selector-1"
-              networkID={originNetworkID}
+              networkID={orgChainId}
             />
             <TokenSelector
               count={secondCount}
               onSelect={setDestToken}
               key="token-selector-2"
-              networkID={destNetworkID}
+              networkID={destChainId}
             />
             <SettingsDropdown show={showSettings} onClick={(val) => setShowSettings(val)} />
 
             <div className="grid grid-cols-1 gap-4  place-content-center">
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
-                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Origin</div>
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.id === originNetworkID ?
+                      item.id === orgChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
                           key={`${item.name}-${item.token}-active`}
@@ -300,7 +392,7 @@ function Swap() {
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => changeOriginNetworkID(item.id)}
+                          onClick={() => changeOriginNetworkID(item.id, item.name)}
                         >
                           <div className="inline-block">
                             <Image
@@ -396,7 +488,7 @@ function Swap() {
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.id === destNetworkID ?
+                      item.id === destChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
                           key={`${item.name}-${item.token}`}
@@ -410,7 +502,7 @@ function Swap() {
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => changeDestNetworkID(item.id)}
+                          onClick={() => changeDestNetworkID(item.id, item.name)}
                         >
                           <div className="inline-block">
                             <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />

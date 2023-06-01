@@ -1,5 +1,7 @@
 import Image from "next/image"
-import { useConnect } from 'wagmi'
+import { useContext } from "react"
+import { useConnect, useDisconnect } from 'wagmi'
+import { Chain, WalletContext } from "../../../../contexts/WalletContext"
 import styles from "./ConnectWalletModal.module.scss"
 
 interface Props {
@@ -8,6 +10,14 @@ interface Props {
 
 function ConnectWalletModal({ close }: Props) {
     const { connect, connectors, isLoading } = useConnect()
+    const { disconnect } = useDisconnect()
+    const { chain, updateCurrentAction } = useContext(WalletContext)
+
+    const handleClose = () => {
+        disconnect()
+        close()
+        updateCurrentAction('None')
+    }
 
     return (
         <div className="rounded-lg relative flex flex-col w-full overflow-hidden outline-none focus:outline-none">
@@ -18,7 +28,7 @@ function ConnectWalletModal({ close }: Props) {
                             <p className="mb-3 text-opacity-50 text-xl text-white font-bold">Connect a wallet</p>
                         </h3>
 
-                        <div className="ml-auto cursor-pointer" onClick={close}>
+                        <div className="ml-auto cursor-pointer" onClick={handleClose}>
                             <div className="float-right text-sm text-red-500 hover:underline">Clear</div>
                         </div>
                     </div>
@@ -28,33 +38,44 @@ function ConnectWalletModal({ close }: Props) {
 
                 <div className={styles.button_group}>
                     <div className="flex flex-col pt-4">
-                        {connectors.map((connector, id) => (
-                            <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
-                                disabled={!connector.ready || isLoading}
-                                key={connector.id}
-                                onClick={() => {
-                                    connect({ connector })
-                                    close()
-                                }}
-                            >
-                                <Image
-                                    src={
-                                        id === 0
-                                            ? "/wallets/metamask.svg"
-                                            : id === 1
-                                                ? "/wallets/walletconnect.svg"
-                                                : "/wallets/phantom.svg"
-                                    }
-                                    alt="icon"
-                                    className="w-8 mr-3 rounded-lg"
-                                    width={20}
-                                    height={20}
-                                />
-                                <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
-                                    {connector.name}
-                                </span>
-                            </button>
-                        ))}
+                        {connectors.map((connector, id) => {
+                            const _chain =
+                                connector.name === 'Phantom'
+                                    ? Chain.solana
+                                    : connector.name === 'MetaMask' || connector.name === 'WalletConnect'
+                                        ? Chain.evm
+                                        : Chain.all
+
+                            return (
+                                (chain === Chain.all || _chain === chain) && (
+                                    <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
+                                        disabled={!connector.ready || isLoading}
+                                        key={connector.id}
+                                        onClick={() => {
+                                            connect({ connector })
+                                            close()
+                                        }}
+                                    >
+                                        <Image
+                                            src={
+                                                id === 0
+                                                    ? "/wallets/metamask.svg"
+                                                    : id === 1
+                                                        ? "/wallets/walletconnect.svg"
+                                                        : "/wallets/phantom.svg"
+                                            }
+                                            alt="icon"
+                                            className="w-8 mr-3 rounded-lg"
+                                            width={20}
+                                            height={20}
+                                        />
+                                        <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
+                                            {connector.name}
+                                        </span>
+                                    </button>
+                                )
+                            )
+                        })}
                     </div>
                 </div>
             </div>

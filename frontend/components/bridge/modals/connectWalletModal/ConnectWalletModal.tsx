@@ -1,20 +1,77 @@
 import Image from "next/image"
-import { useContext } from "react"
-import { useConnect, useDisconnect } from 'wagmi'
+import { useContext, useState } from "react"
+import { useAccount, useConnect, useDisconnect, Connector } from 'wagmi'
+import usePhantom from "../../../../hooks/usePhantom"
 import { Chain, WalletContext } from "../../../../contexts/WalletContext"
 import styles from "./ConnectWalletModal.module.scss"
+import { toast } from "react-toastify"
 
 interface Props {
     close: () => void
 }
 
+interface WalletItemProps {
+    disabled: boolean
+    icon: string
+    name: string
+    handleConnect: () => void
+}
+
+const WalletItem = ({ disabled, icon, name, handleConnect }: WalletItemProps) => (
+    <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
+        disabled={disabled}
+        onClick={handleConnect}
+    >
+        <Image
+            src={icon}
+            alt="icon"
+            className="w-8 mr-3 rounded-lg"
+            width={20}
+            height={20}
+        />
+        <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
+            {name}
+        </span>
+    </button>
+)
+
 function ConnectWalletModal({ close }: Props) {
-    const { connect, connectors, isLoading } = useConnect()
     const { disconnect } = useDisconnect()
+    const { isConnected } = useAccount()
+    const { connect, connectors, isLoading } = useConnect()
     const { chain, updateCurrentAction } = useContext(WalletContext)
+    const { phantomProvider } = usePhantom()
+
+    const [loading, setLoading] = useState(false)
+
+    const handleConnectMetaMask = (connector: Connector) => {
+        connect({ connector })
+        close()
+    }
+
+    const handleConnectPhantom = () => {
+        if (!phantomProvider) {
+            toast.error('Please install Phantom Wallet!')
+            return
+        }
+
+        if (isConnected) disconnect()
+
+        setLoading(true)
+
+        phantomProvider.connect({ onlyIfTrusted: true })
+            .then(({ publicKey }: any) => {
+                console.log(publicKey.toString())
+                setLoading(false)
+                close()
+            })
+            .catch(() => {
+                setLoading(false)
+                close()
+            })
+    }
 
     const handleClose = () => {
-        disconnect()
         close()
         updateCurrentAction('None')
     }
@@ -38,44 +95,30 @@ function ConnectWalletModal({ close }: Props) {
 
                 <div className={styles.button_group}>
                     <div className="flex flex-col pt-4">
-                        {connectors.map((connector, id) => {
-                            const _chain =
-                                connector.name === 'Phantom'
-                                    ? Chain.solana
-                                    : connector.name === 'MetaMask' || connector.name === 'WalletConnect'
-                                        ? Chain.evm
-                                        : Chain.all
-
-                            return (
-                                (chain === Chain.all || _chain === chain) && (
-                                    <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
-                                        disabled={!connector.ready || isLoading}
-                                        key={connector.id}
-                                        onClick={() => {
-                                            connect({ connector })
-                                            close()
-                                        }}
-                                    >
-                                        <Image
-                                            src={
-                                                id === 0
-                                                    ? "/wallets/metamask.svg"
-                                                    : id === 1
-                                                        ? "/wallets/walletconnect.svg"
-                                                        : "/wallets/phantom.svg"
-                                            }
-                                            alt="icon"
-                                            className="w-8 mr-3 rounded-lg"
-                                            width={20}
-                                            height={20}
-                                        />
-                                        <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
-                                            {connector.name}
-                                        </span>
-                                    </button>
-                                )
-                            )
-                        })}
+                        {chain === Chain.evm ? (
+                            connectors.map((connector, id) => (
+                                <WalletItem
+                                    key={connector.id}
+                                    icon={
+                                        id === 0
+                                            ? "/wallets/metamask.svg"
+                                            : id === 1
+                                                ? "/wallets/walletconnect.svg"
+                                                : "/wallets/phantom.svg"
+                                    }
+                                    name={connector.name}
+                                    disabled={!connector.ready || isLoading}
+                                    handleConnect={() => handleConnectMetaMask(connector)}
+                                />
+                            ))
+                        ) : (
+                            <WalletItem
+                                icon="/wallets/phantom.svg"
+                                name='Phantom'
+                                disabled={loading}
+                                handleConnect={handleConnectPhantom}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

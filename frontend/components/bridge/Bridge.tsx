@@ -306,7 +306,6 @@ function Bridge() {
 
         <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
-            {/* <NetworkSelector count={showNetworkSelector} /> */}
             <TokenSelector
               count={firstCount}
               onSelect={setOriginToken}
@@ -596,18 +595,3 @@ function Bridge() {
 }
 
 export default Bridge
-
-// function ExplorerButton({ network, token }: { network: NetworkType | null; token: ZZTokenInfo | null }) {
-//   const { t } = useTranslation("common")
-
-//   if (network && token) {
-//     if (token.address === constants.AddressZero) {
-//       return <a className={styles.native_token}>{t("native_token")}</a>
-//     }
-//     return (
-//       <a className={styles.see_in_explorer_link} href={`${network.explorerUrl}/token/${token.address}`} target="_blank" rel="noopener noreferrer">
-//         {t("view_in_explorer")}
-//       </a>
-//     )
-//   } else return null
-// }

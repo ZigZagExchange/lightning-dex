@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import styled from "styled-components"
-import { useNetwork } from "wagmi"
-import { useAtom } from "jotai"
-import { originTokenAtom } from "../../../store/token"
 import { networksItems } from "../../../utils/data"
 
 interface props {
@@ -11,8 +8,6 @@ interface props {
   onSelect?: (item: any) => void,
   networkID?: number
 }
-
-//: ETH, WBTC, USDC, and USDT
 
 export const evmTokenItems = [
   // {
@@ -92,11 +87,6 @@ export const solTokenItems = [
   },
 ]
 
-const tokenIcons = {
-  1: "eth.svg",
-  42161: "abt.jfif"
-}
-
 const TokenItem: any = styled.div`
   > div {
     background-color: #58535B80;
@@ -113,8 +103,6 @@ function TokenSelector({ count, onSelect, networkID }: props) {
   const [tokenItems, setTokenItems] = useState(evmTokenItems)
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
-  const { chain } = useNetwork()
-  const [tokenIcon, setTokenIcon] = useState("eth.svg")
   const network = networksItems.find(item => item.id === networkID) as any
 
   useEffect(() => {
@@ -128,11 +116,6 @@ function TokenSelector({ count, onSelect, networkID }: props) {
   useEffect(() => {
     count > 0 && setActive(true)
   }, [count])
-
-  useEffect(() => {
-    // setNetwork(network)
-    setTokenIcon(tokenIcons[chain?.id as 1 | 42161])
-  }, [chain])
 
   const closeDroplist = () => {
     setSearch("")

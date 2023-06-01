@@ -1,8 +1,7 @@
-import { useState, useContext, useMemo, useEffect } from "react"
+import { useState, useContext, useEffect } from "react"
 import { toast } from 'react-toastify'
-import { ethers } from "ethers"
 import Image from "next/image"
-import { useSwitchNetwork, useNetwork, useAccount, useBalance, useDisconnect } from 'wagmi'
+import { useSwitchNetwork, useAccount, useDisconnect } from 'wagmi'
 import useTranslation from "next-translate/useTranslation"
 
 import styles from "./Bridge.module.css"
@@ -11,10 +10,7 @@ import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 
 import { WalletContext } from "../../contexts/WalletContext"
-import { prettyBalance, prettyBalanceUSD } from "../../utils/utils"
 import { networksItems } from "../../utils/data"
-import { useAtom } from "jotai"
-import { destTokenAtom, originTokenAtom } from "../../store/token"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems } from "./tokenSelector/TokenSelector"
 
@@ -35,18 +31,25 @@ export enum BuyValidationState {
 
 function Bridge() {
   const { disconnect } = useDisconnect()
-  const { chain: walletChain, orgChainId, destChainId, currentAction, userAddress, updateChain, updateOrgChainId, updateDestChainId, updateCurrentAction } = useContext(WalletContext)
-  const [showNetworkSelector, setShowNetworkSelector] = useState(0)
+  const { isConnected } = useAccount()
+  const { switchNetwork } = useSwitchNetwork()
+  const {
+    chain: walletChain,
+    orgChainId,
+    destChainId,
+    currentAction,
+    updateChain,
+    updateOrgChainId,
+    updateDestChainId,
+    updateCurrentAction
+  } = useContext(WalletContext)
+
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
-  const [swapOrder, setSwapOrder] = useState<string>("order-0")
-  const { address, isConnected } = useAccount()
-  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork()
-  const { chain } = useNetwork()
+  const [swapOrder] = useState<string>("order-0")
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
-
   const [modal, setModal] = useState<ModalMode>(null)
 
   const { t } = useTranslation("swap")
@@ -116,9 +119,6 @@ function Bridge() {
     if (isConnected) {
       switchNetwork?.(id)
     }
-    // else {
-    //   setModal("connectWallet")
-    // }
   }
 
   const changeOriginNetworkID = (id: number, _chain: string) => {

@@ -60,6 +60,16 @@ app.get('/deposit_address', async (req, res, next) => {
   }
 });
 
+app.get("/history/:address", async (req, res, next) => {
+    if (!req.params.address) return next("GET /history/:address. Missing address");
+    try {
+      const bridges = await db.query("SELECT * FROM bridges WHERE LOWER(deposit_address)=$1 OR LOWER(outgoing_address)=$1", [req.params.address.toLowerCase()]);
+      return res.status(200).json(bridges.rows);
+    } catch (e) {
+      return next(e);
+    }
+});
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err })

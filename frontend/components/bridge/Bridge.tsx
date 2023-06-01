@@ -49,10 +49,8 @@ function Swap() {
   const { address, isConnected } = useAccount()
   const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork()
   const { chain } = useNetwork()
-  const [originToken, setOriginTokenAtom] = useAtom(originTokenAtom)
-  const [destToken, setDestTokenAtom] = useAtom(destTokenAtom)
-  const [orgTokenItems, setOrgTokenItems] = useState(evmTokenItems)
-  const [destTokenItems, setDestTokenItems] = useState(evmTokenItems)
+  const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
+  const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
 
   const [modal, setModal] = useState<ModalMode>(null)
 
@@ -100,17 +98,17 @@ function Swap() {
 
   useEffect(() => {
     if (orgChainId !== 2) {
-      setOrgTokenItems(evmTokenItems)
+      setOrgTokenItem(evmTokenItems[0])
     } else {
-      setOrgTokenItems(solTokenItems)
+      setOrgTokenItem(solTokenItems[0])
     }
   }, [orgChainId])
 
   useEffect(() => {
     if (destChainId !== 2) {
-      setDestTokenItems(evmTokenItems)
+      setDestTokenItem(evmTokenItems[0])
     } else {
-      setDestTokenItems(solTokenItems)
+      setDestTokenItem(solTokenItems[0])
     }
   }, [destChainId])
 
@@ -332,7 +330,7 @@ function Swap() {
   }
 
   const setOriginToken = (val: any) => {
-    setOriginTokenAtom(val)
+    setOrgTokenItem(val)
     // let maxValue = useBalance({
     //   address: address,
     //   token: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
@@ -340,7 +338,7 @@ function Swap() {
   }
 
   const setDestToken = (val: any) => {
-    setDestTokenAtom(val)
+    setDestTokenItem(val)
   }
 
   return (
@@ -474,13 +472,13 @@ function Swap() {
                             <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                               <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                                 <div className="relative flex p-1 rounded-full">
-                                  <Image alt={orgTokenItems[0].name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${orgTokenItems[0].icon}`} />
+                                  <Image alt={orgTokenItem.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${orgTokenItem.icon}`} />
                                 </div>
                               </div>
 
                               <div className="text-left cursor-pointer">
                                 <h4 className="text-lg font-medium text-gray-300 ">
-                                  <span>{orgTokenItems[0].name}</span>
+                                  <span>{orgTokenItem.name}</span>
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                   </svg>
@@ -574,13 +572,13 @@ function Swap() {
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                               <div className="relative flex p-1 rounded-full">
-                                <Image alt={destTokenItems[0].name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${destTokenItems[0].icon}`} />
+                                <Image alt={destTokenItem.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${destTokenItem.icon}`} />
                               </div>
                             </div>
 
                             <div className="text-left cursor-pointer">
                               <h4 className="text-lg font-medium text-gray-300 ">
-                                <span>{destTokenItems[0].name}</span>
+                                <span>{destTokenItem.name}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>

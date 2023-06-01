@@ -19,6 +19,7 @@ import { networksItems } from "../../utils/data"
 import { useAtom } from "jotai"
 import { destTokenAtom, originTokenAtom } from "../../store/token"
 import { Chain } from "../../contexts/WalletContext"
+import { evmTokenItems, solTokenItems } from "./tokenSelector/TokenSelector"
 
 export enum SellValidationState {
   OK,
@@ -50,13 +51,12 @@ function Swap() {
   const { chain } = useNetwork()
   const [originToken, setOriginTokenAtom] = useAtom(originTokenAtom)
   const [destToken, setDestTokenAtom] = useAtom(destTokenAtom)
+  const [orgTokenItems, setOrgTokenItems] = useState(evmTokenItems)
+  const [destTokenItems, setDestTokenItems] = useState(evmTokenItems)
 
   const [modal, setModal] = useState<ModalMode>(null)
 
   const { t } = useTranslation("swap")
-
-  console.log(orgChainId)
-  console.log(walletChain)
 
   useEffect(() => {
     // If Chain is "EVM", please switch Network
@@ -92,6 +92,27 @@ function Swap() {
     }
   }, [destChainId, orgChainId])
 
+  useEffect(() => {
+    if (isConnected && currentAction === 'Swap') {
+      onSwitchNetwork(orgChainId)
+    }
+  }, [isConnected, currentAction, orgChainId])
+
+  useEffect(() => {
+    if (orgChainId !== 2) {
+      setOrgTokenItems(evmTokenItems)
+    } else {
+      setOrgTokenItems(solTokenItems)
+    }
+  }, [orgChainId])
+
+  useEffect(() => {
+    if (destChainId !== 2) {
+      setDestTokenItems(evmTokenItems)
+    } else {
+      setDestTokenItems(solTokenItems)
+    }
+  }, [destChainId])
 
   const getBalanceReadable = (tokenAddress: string | null) => {
     if (tokenAddress === null) return "0.0"
@@ -286,8 +307,28 @@ function Swap() {
   }
 
   const swapNetwork = () => {
-    // switchNetwork?.(destNetworkID)
+    if (!isConnected) {
+      setModal("connectWallet")
+      return
+    }
+
     updateCurrentAction('Swap')
+
+    const current = [...[orgChainId], ...[destChainId]]
+
+    if (current[1] === 2) {
+      updateChain(Chain.solana)
+      disconnect()
+      setModal("connectWallet")
+    } else {
+      updateChain(Chain.evm)
+      if (current[0] === 2) {
+        disconnect()
+        setModal("connectWallet")
+      }
+    }
+    updateOrgChainId(current[1])
+    updateDestChainId(current[0])
   }
 
   const setOriginToken = (val: any) => {
@@ -433,13 +474,13 @@ function Swap() {
                             <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                               <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                                 <div className="relative flex p-1 rounded-full">
-                                  <Image alt={originToken.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${originToken.icon}`} />
+                                  <Image alt={orgTokenItems[0].name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${orgTokenItems[0].icon}`} />
                                 </div>
                               </div>
 
                               <div className="text-left cursor-pointer">
                                 <h4 className="text-lg font-medium text-gray-300 ">
-                                  <span>{originToken.name}</span>
+                                  <span>{orgTokenItems[0].name}</span>
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                   </svg>
@@ -533,13 +574,13 @@ function Swap() {
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                               <div className="relative flex p-1 rounded-full">
-                                <Image alt={destToken.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${destToken.icon}`} />
+                                <Image alt={destTokenItems[0].name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${destTokenItems[0].icon}`} />
                               </div>
                             </div>
 
                             <div className="text-left cursor-pointer">
                               <h4 className="text-lg font-medium text-gray-300 ">
-                                <span>{destToken.name}</span>
+                                <span>{destTokenItems[0].name}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>

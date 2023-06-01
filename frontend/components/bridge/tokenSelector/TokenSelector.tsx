@@ -14,7 +14,7 @@ interface props {
 
 //: ETH, WBTC, USDC, and USDT
 
-const tokenItems = [
+export const evmTokenItems = [
   // {
   //   name: "DAI",
   //   base: "Dai",
@@ -62,6 +62,36 @@ const tokenItems = [
   },
 ]
 
+export const solTokenItems = [
+  {
+    name: "SOL",
+    base: "Solana",
+    network: "Solana",
+    bg: "#0ea5e9",
+    border: "#7dd3fc",
+    icon: "sol.svg",
+    networkIcon: "sol.svg"
+  },
+  {
+    name: "USDC",
+    base: "USD Circle",
+    network: "Solana",
+    bg: "#3b82f6",
+    border: "#93c5fd",
+    icon: "usdc.svg",
+    networkIcon: "eth.svg"
+  },
+  {
+    name: "USDT",
+    base: "USD Tether",
+    network: "Solana",
+    bg: "#22c55e",
+    border: "#86efb6",
+    icon: "usdt.svg",
+    networkIcon: "eth.svg"
+  },
+]
+
 const tokenIcons = {
   1: "eth.svg",
   42161: "abt.jfif"
@@ -80,11 +110,20 @@ const TokenItem: any = styled.div`
 `
 
 function TokenSelector({ count, onSelect, networkID }: props) {
+  const [tokenItems, setTokenItems] = useState(evmTokenItems)
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
   const { chain } = useNetwork()
   const [tokenIcon, setTokenIcon] = useState("eth.svg")
   const network = networksItems.find(item => item.id === networkID) as any
+
+  useEffect(() => {
+    if (networkID !== 2) {
+      setTokenItems(evmTokenItems)
+    } else {
+      setTokenItems(solTokenItems)
+    }
+  }, [networkID])
 
   useEffect(() => {
     count > 0 && setActive(true)

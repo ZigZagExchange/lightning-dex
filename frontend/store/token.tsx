@@ -10,5 +10,5 @@ const initial = {
     networkIcon: "eth.svg"
 }
 
-export const originTokenAtom = atom(initial);
-export const destTokenAtom = atom(initial);
+export const originTokenAtom = atom(initial)
+export const destTokenAtom = atom(initial)

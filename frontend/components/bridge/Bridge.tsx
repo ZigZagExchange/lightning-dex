@@ -7,13 +7,10 @@ import useTranslation from "next-translate/useTranslation"
 
 import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
-// import NetworkSelector from "./networkSelector/NetworkSelector"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 
-import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
-import { SwapContext, ZZOrder } from "../../contexts/SwapContext"
 import { prettyBalance, prettyBalanceUSD } from "../../utils/utils"
 import { networksItems } from "../../utils/data"
 import { useAtom } from "jotai"
@@ -36,11 +33,9 @@ export enum BuyValidationState {
   InternalError,
 }
 
-function Swap() {
+function Bridge() {
   const { disconnect } = useDisconnect()
   const { chain: walletChain, orgChainId, destChainId, currentAction, userAddress, updateChain, updateOrgChainId, updateDestChainId, updateCurrentAction } = useContext(WalletContext)
-  const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
-  const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
   const [showNetworkSelector, setShowNetworkSelector] = useState(0)
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
@@ -112,87 +107,9 @@ function Swap() {
     }
   }, [destChainId])
 
-  const getBalanceReadable = (tokenAddress: string | null) => {
-    if (tokenAddress === null) return "0.0"
-    const tokenBalance = balances[tokenAddress]
-    if (tokenBalance === undefined) return "0.0"
-    return prettyBalance(tokenBalance.valueReadable)
-  }
-
-  const validationStateSell = useMemo((): SellValidationState => {
-    if (!userAddress) return SellValidationState.OK
-    if (!sellTokenInfo) return SellValidationState.InternalError
-    if (!swapPrice) return SellValidationState.MissingLiquidity
-
-    const firstQuoteOrder: ZZOrder | undefined = quoteOrderRoutingArray[0]
-    if (!firstQuoteOrder || sellAmount.gt(firstQuoteOrder.order.buyAmount)) {
-      return SellValidationState.MissingLiquidity
-    }
-
-    const sellTokenBalance = balances[sellTokenInfo.address]
-    const balance = sellTokenBalance ? sellTokenBalance.value : ethers.constants.Zero
-    if (balance === null) return SellValidationState.InsufficientBalance
-    if (sellAmount.gt(balance)) return SellValidationState.InsufficientBalance
-
-    const allowance = allowances[sellTokenInfo.address] ? allowances[sellTokenInfo.address] : ethers.constants.Zero
-    if (allowance !== null && allowance !== undefined && sellAmount.gt(allowance)) {
-      return SellValidationState.ExceedsAllowance
-    }
-
-    return SellValidationState.OK
-  }, [userAddress, swapPrice, sellAmount, allowances, balances, sellTokenInfo])
-
-  const validationStateBuy = useMemo((): BuyValidationState => {
-    if (!userAddress) return BuyValidationState.OK
-    if (!buyTokenInfo) return BuyValidationState.InternalError
-
-    return BuyValidationState.OK
-  }, [userAddress, buyTokenInfo])
-
   const handleTokenClick = (newTokenAddress: string) => {
-    if (modal === "selectSellToken") {
-      selectSellToken(newTokenAddress)
-    } else if (modal === "selectBuyToken") {
-      selectBuyToken(newTokenAddress)
-    }
     setModal(null)
   }
-
-  const sellTokenUsdPrice = sellTokenInfo ? tokenPricesUSD[sellTokenInfo.address] : undefined
-  const buyTokenUsdPrice = buyTokenInfo ? tokenPricesUSD[buyTokenInfo.address] : undefined
-
-  // Estimated sell token value
-  const sellTokenEstimatedValue = useMemo(() => {
-    if (sellTokenUsdPrice !== undefined) {
-      if (!sellTokenInfo) return
-      const sellAmountFormated = Number(ethers.utils.formatUnits(sellAmount, sellTokenInfo.decimals))
-      if (sellAmountFormated === 0) return
-      return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(sellAmountFormated * sellTokenUsdPrice)}`}</div>
-    }
-  }, [sellTokenInfo, sellAmount, sellTokenUsdPrice])
-
-  // Estimated buy token value
-  const buyTokenEstimatedValue = useMemo(() => {
-    if (!buyTokenInfo) return
-    if (buyTokenUsdPrice !== undefined) {
-      const buyAmountFormated = Number(ethers.utils.formatUnits(buyAmount, buyTokenInfo.decimals))
-      if (buyAmountFormated === 0) return
-
-      const buyTokenValue = buyAmountFormated * buyTokenUsdPrice
-      let percent
-      if (sellTokenUsdPrice !== undefined) {
-        if (!sellTokenInfo) return
-        const sellAmountFormated = Number(ethers.utils.formatUnits(sellAmount, sellTokenInfo.decimals))
-        if (sellAmountFormated === 0) {
-          return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(buyTokenValue)}`}</div>
-        }
-        const sellTokenValue = sellAmountFormated * sellTokenUsdPrice
-        percent = `(${prettyBalanceUSD((buyTokenValue - sellTokenValue) * 100 / sellTokenValue)}%)`
-      }
-      return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(buyTokenValue)} ${percent}`}</div>
-    }
-    return
-  }, [sellTokenInfo, buyTokenInfo, sellAmount, buyAmount, sellTokenUsdPrice, buyTokenUsdPrice])
 
   // Switch network
   const onSwitchNetwork = (id: number) => {
@@ -678,7 +595,7 @@ function Swap() {
   )
 }
 
-export default Swap
+export default Bridge
 
 // function ExplorerButton({ network, token }: { network: NetworkType | null; token: ZZTokenInfo | null }) {
 //   const { t } = useTranslation("common")

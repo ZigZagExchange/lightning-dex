@@ -17,7 +17,7 @@ const db = new pg.Pool({
 });
 
 makePayments();
-setInterval(makePayments, 5000);
+setInterval(makePayments, 10000);
 
 const gmx_tokens = {
   "BTC": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
@@ -26,7 +26,15 @@ const gmx_tokens = {
 
 async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
-  const prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
+
+  let prices;
+  try {
+    prices = await fetch("https://api.gmx.io/prices").then(response => response.json());
+  } catch(e) {
+      console.error("Failed to fetch prices");
+      console.error(e);
+      return;
+  }
 
   const feeCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} estimatesmartfee 1`);
   const network_fee = JSON.parse(feeCheck.stdout).feerate / 3; // Estimated 333 vB

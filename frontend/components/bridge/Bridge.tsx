@@ -35,7 +35,7 @@ function Bridge() {
   const { switchNetwork } = useSwitchNetwork()
   const {
     chain: walletChain,
-    orgChainId,
+    orgChainId: _orgChainId,
     destChainId,
     currentAction,
     updateChain,
@@ -51,6 +51,13 @@ function Bridge() {
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
+  const [orgChainId, setOrgChainId] = useState(1)
+
+  useEffect(() => {
+    if (_orgChainId) {
+      setOrgChainId(_orgChainId)
+    }
+  }, [_orgChainId])
 
   const { t } = useTranslation("swap")
 
@@ -257,6 +264,7 @@ function Bridge() {
   const setDestToken = (val: any) => {
     setDestTokenItem(val)
   }
+
 
   return (
     <>

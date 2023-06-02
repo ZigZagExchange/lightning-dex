@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
+import { WalletContext } from "../../contexts/WalletContext"
+import formatAddress from "../../utils/formatAddress"
 import styles from "./ConnectWallet.module.css"
-import { useAccount } from 'wagmi'
 
-function ConnectWallet({ openConnectWalletModal }: { openConnectWalletModal: () => void }) {
-  const account = useAccount()
+function ConnectWallet(
+  { openConnectWalletModal }: { openConnectWalletModal: () => void }
+) {
+  const { address, isConnected } = useContext(WalletContext)
   const [text, setText] = useState("Connect Wallet")
 
   useEffect(() => {
-    if (account.address) {
-      setText(formatAddress(account.address))
+    if (address && isConnected) {
+      setText(formatAddress(address))
     } else {
       setText("Connect Wallet")
     }
-  }, [account])
+  }, [address, isConnected])
 
   function open() {
     openConnectWalletModal()
-  }
-
-  function formatAddress(address: string) {
-    return address.substring(0, 6) + '...' + address.substring(address.length - 4, address.length)
   }
 
   return (

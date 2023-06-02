@@ -1,12 +1,14 @@
 import Image from "next/image"
 import { useContext, useState } from "react"
-import { useAccount, useConnect, useDisconnect, Connector } from 'wagmi'
+import { toast } from "react-toastify"
+import { useConnect, useDisconnect, Connector } from 'wagmi'
+import { PublicKey } from '@solana/web3.js'
 import usePhantom from "../../../../hooks/usePhantom"
 import { Chain, WalletContext } from "../../../../contexts/WalletContext"
+import getSolanaBalance from "../../../../utils/getSolanaBalance"
 import styles from "./ConnectWalletModal.module.scss"
-import { toast } from "react-toastify"
 
-interface Props {
+interface ConnectWalletModalProps {
     close: () => void
 }
 
@@ -35,12 +37,18 @@ const WalletItem = ({ disabled, icon, name, handleConnect }: WalletItemProps) =>
     </button>
 )
 
-function ConnectWalletModal({ close }: Props) {
+function ConnectWalletModal({ close }: ConnectWalletModalProps) {
     const { disconnect } = useDisconnect()
-    const { isConnected } = useAccount()
-    const { connect, connectors, isLoading } = useConnect()
-    const { chain, updateCurrentAction } = useContext(WalletContext)
     const { phantomProvider } = usePhantom()
+    const { connect, connectors, isLoading } = useConnect()
+    const {
+        chain,
+        isConnected,
+        updateAddress,
+        updateBalance,
+        updateIsConnected,
+        updateCurrentAction
+    } = useContext(WalletContext)
 
     const [loading, setLoading] = useState(false)
 
@@ -49,7 +57,7 @@ function ConnectWalletModal({ close }: Props) {
         close()
     }
 
-    const handleConnectPhantom = () => {
+    const handleConnectPhantom = async () => {
         if (!phantomProvider) {
             toast.error('Please install Phantom Wallet!')
             return
@@ -59,16 +67,18 @@ function ConnectWalletModal({ close }: Props) {
 
         setLoading(true)
 
-        phantomProvider.connect({ onlyIfTrusted: true })
-            .then(({ publicKey }: any) => {
-                console.log(publicKey.toString())
-                setLoading(false)
-                close()
-            })
-            .catch(() => {
-                setLoading(false)
-                close()
-            })
+        try {
+            const { publicKey }: { publicKey: PublicKey } = await phantomProvider.connect()
+            const balance = await getSolanaBalance(publicKey)
+            updateIsConnected(true)
+            updateAddress(publicKey.toString())
+            updateBalance(`${balance.toFixed(2)} SOL`)
+        } catch (err: any) {
+            toast.error(err?.message || err)
+        } finally {
+            setLoading(false)
+            close()
+        }
     }
 
     const handleClose = () => {

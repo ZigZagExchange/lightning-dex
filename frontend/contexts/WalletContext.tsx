@@ -13,13 +13,16 @@ export enum Chain {
 
 export type CurrentAction = 'None' | 'Origin' | 'Destination' | 'Swap'
 
+export type Connected = 'MataMask' | 'Phantom' | null
+
 export type WalletContextType = {
   chain: Chain
   address: string
   balance: string
   orgChainId: number
   destChainId: number
-  isConnected: boolean
+  isLoading: boolean
+  isConnected: Connected
   currentAction: CurrentAction
 
   updateChain: (_chain: Chain) => void
@@ -27,7 +30,8 @@ export type WalletContextType = {
   updateBalance: (_balance: string) => void
   updateOrgChainId: (_chainId: number) => void
   updateDestChainId: (_chainId: number) => void
-  updateIsConnected: (_isConnected: boolean) => void
+  updateIsLoading: (_loading: boolean) => void
+  updateIsConnected: (_isConnected: Connected) => void
   updateCurrentAction: (_action: CurrentAction) => void
 }
 
@@ -37,7 +41,8 @@ export const WalletContext = createContext<WalletContextType>({
   balance: '0.00 ETH',
   orgChainId: 1,
   destChainId: 42161,
-  isConnected: false,
+  isLoading: false,
+  isConnected: null,
   currentAction: 'None',
 
   updateChain: (_chain: Chain) => { },
@@ -45,20 +50,23 @@ export const WalletContext = createContext<WalletContextType>({
   updateBalance: (_balance: string) => { },
   updateOrgChainId: (_chainId: number) => { },
   updateDestChainId: (_chainId: number) => { },
-  updateIsConnected: (_isConnected: boolean) => { },
+  updateIsLoading: (_loading: boolean) => { },
+  updateIsConnected: (_isConnected: Connected) => { },
   updateCurrentAction: (_action: CurrentAction) => { },
 })
 
 function WalletProvider({ children }: Props) {
-  const [chain, setChain] = useState<Chain>(Chain.evm)
-  const [address, setAddress] = useState('')
+  const [chain, setChain] = useState<Chain>(getLocalStorage('chain', Chain.evm))
+  const [address, setAddress] = useState<string>('')
   const [balance, setBalance] = useState('0.00 ETH')
-  const [isConnected, setIsConnected] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isConnected, setIsConnected] = useState<Connected>(null)
   const [currentAction, setCurrentAction] = useState<CurrentAction>('Origin')
-  const [orgChainId, setOrgChainId] = useState(getLocalStorage('orgChainId', 1))
-  const [destChainId, setDestChainId] = useState(getLocalStorage('destChainId', 42161))
+  const [orgChainId, setOrgChainId] = useState(Number(getLocalStorage('orgChainId', 1)))
+  const [destChainId, setDestChainId] = useState(Number(getLocalStorage('destChainId', 42161)))
 
   const updateChain = (_chain: Chain) => {
+    localStorage.setItem('chain', _chain)
     setChain(_chain)
   }
 
@@ -70,7 +78,11 @@ function WalletProvider({ children }: Props) {
     setBalance(_balance)
   }
 
-  const updateIsConnected = (_isConnected: boolean) => {
+  const updateIsLoading = (_loading: boolean) => {
+    setIsLoading(_loading)
+  }
+
+  const updateIsConnected = (_isConnected: Connected) => {
     setIsConnected(_isConnected)
   }
 
@@ -94,6 +106,7 @@ function WalletProvider({ children }: Props) {
         balance,
         orgChainId,
         destChainId,
+        isLoading,
         isConnected,
         currentAction,
 
@@ -102,6 +115,7 @@ function WalletProvider({ children }: Props) {
         updateBalance,
         updateOrgChainId,
         updateDestChainId,
+        updateIsLoading,
         updateIsConnected,
         updateCurrentAction
       }}

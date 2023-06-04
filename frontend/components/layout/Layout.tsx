@@ -1,9 +1,10 @@
 import { ReactNode, useState, useEffect, useContext } from "react"
-
+import { toast } from 'react-toastify'
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Image from "next/image"
-import { useAccount, useBalance } from "wagmi"
+import { useAccount, useBalance, useConnect, useDisconnect, Connector } from "wagmi"
+import { PublicKey } from '@solana/web3.js'
 
 import logo from "../../public/img/zz.svg"
 import styles from "./Layout.module.css"
@@ -16,6 +17,8 @@ import NavBar from "../navBar/NavBar"
 import Modal, { ModalMode } from "../bridge/modal/Modal"
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
+import { Chain } from "../../contexts/WalletContext"
+import usePhantom from "../../hooks/usePhantom"
 
 interface Balance {
   address: `0x${string}` | undefined
@@ -28,8 +31,19 @@ interface LayoutProps {
 
 function Layout(props: LayoutProps) {
   const router = useRouter()
-  const { isConnected, address } = useAccount()
-  const { orgChainId, updateAddress, updateBalance, updateIsConnected } = useContext(WalletContext)
+  const { isConnected: isConnectedMetaMask, address } = useAccount()
+  const { connectAsync, connectors } = useConnect()
+  const { phantomProvider } = usePhantom()
+
+  const {
+    chain,
+    isConnected,
+    orgChainId,
+    updateAddress,
+    updateBalance,
+    updateIsLoading,
+    updateIsConnected,
+  } = useContext(WalletContext)
 
   const token = networksItems.filter((item) => item.id === orgChainId)
 
@@ -38,21 +52,46 @@ function Layout(props: LayoutProps) {
     chainId: orgChainId,
   } : {
     address,
-    token: `0x${token[0].token}`
+    token: `0x${token[0].token}`,
   }
 
-  const { data } = useBalance(option)
+  const { data, isSuccess } = useBalance(option)
 
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ModalMode>(null)
 
   useEffect(() => {
-    if (isConnected && address && data) {
-      updateIsConnected(true)
+    // @ts-ignore
+    if (typeof window.ethereum !== 'undefined') {
+      // @ts-ignore
+      if (window.ethereum.isConnected() && chain === Chain.evm && !isConnected) {
+        handleConnectMetaMask(connectors[0])
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isConnectedMetaMask && address && data && isSuccess) {
       updateAddress(address)
       updateBalance(`${parseFloat(data.formatted).toFixed(2)} ${data.symbol}`)
     }
-  }, [address, data, isConnected])
+  }, [address, data, isConnectedMetaMask, isSuccess])
+
+  const handleConnectMetaMask = async (connector: Connector) => {
+    try {
+      updateIsLoading(true)
+      if (isConnected === 'Phantom' && phantomProvider) {
+        await phantomProvider.disconnect()
+      }
+      await connectAsync({ connector })
+      updateIsConnected('MataMask')
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+      close()
+    }
+  }
 
   const handleTokenClick = (newTokenAddress: string) => {
     setModal(null)

@@ -10,19 +10,12 @@ interface props {
 }
 
 export const evmTokenItems = [
-  // {
-  //   name: "DAI",
-  //   base: "Dai",
-  //   network: "Ethereum",
-  //   bg: "#f97316",
-  //   border: "#fdba74",
-  //   icon: "dai.svg",
-  //   networkIcon: "eth.svg"
-  // },
   {
     name: "ETH",
     base: "Ethereum",
     network: "Ethereum",
+    address: ['', ''],
+    numOfDecimals: 18,
     bg: "#0ea5e9",
     border: "#7dd3fc",
     icon: "eth.svg",
@@ -32,6 +25,11 @@ export const evmTokenItems = [
     name: "USDC",
     base: "USD Circle",
     network: "Ethereum",
+    address: [
+      '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+      '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'
+    ],
+    numOfDecimals: 18,
     bg: "#3b82f6",
     border: "#93c5fd",
     icon: "usdc.svg",
@@ -41,6 +39,11 @@ export const evmTokenItems = [
     name: "USDT",
     base: "USD Tether",
     network: "Ethereum",
+    address: [
+      '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9'
+    ],
+    numOfDecimals: 6,
     bg: "#22c55e",
     border: "#86efb6",
     icon: "usdt.svg",
@@ -48,8 +51,13 @@ export const evmTokenItems = [
   },
   {
     name: "WBTC",
-    base: "USD Tether",
+    base: "Wrapped Bitcoin",
     network: "Ethereum",
+    address: [
+      '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
+      '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+    ],
+    numOfDecimals: 8,
     bg: "#EAB308",
     border: "#EAB308",
     icon: "wbtc.svg",
@@ -62,6 +70,11 @@ export const solTokenItems = [
     name: "SOL",
     base: "Solana",
     network: "Solana",
+    address: [
+      '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+      '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
+    ],
+    numOfDecimals: 18,
     bg: "#0ea5e9",
     border: "#7dd3fc",
     icon: "sol.svg",
@@ -71,6 +84,11 @@ export const solTokenItems = [
     name: "USDC",
     base: "USD Circle",
     network: "Solana",
+    address: [
+      'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr',
+      'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr',
+    ],
+    numOfDecimals: 18,
     bg: "#3b82f6",
     border: "#93c5fd",
     icon: "usdc.svg",
@@ -80,6 +98,11 @@ export const solTokenItems = [
     name: "USDT",
     base: "USD Tether",
     network: "Solana",
+    address: [
+      'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr',
+      'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr',
+    ],
+    numOfDecimals: 18,
     bg: "#22c55e",
     border: "#86efb6",
     icon: "usdt.svg",

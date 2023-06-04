@@ -5,14 +5,14 @@ import styles from "./NetworkSelector.module.css"
 function NetworkSelector(
   { networkSelectorModalOpen }: { networkSelectorModalOpen: () => void }
 ) {
-  const { balance } = useContext(WalletContext)
+  const { balance, isConnected } = useContext(WalletContext)
 
   function open() {
     networkSelectorModalOpen()
   }
 
   return (
-    balance ? (
+    isConnected !== null && balance ? (
       <div className={`lg:flex hidden ${styles.container}`}>
         <div className={styles.connect_button} onClick={open}>
           <div className={styles.text}>

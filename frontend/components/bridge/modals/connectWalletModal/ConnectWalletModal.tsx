@@ -1,11 +1,11 @@
 import Image from "next/image"
-import { useContext, useState } from "react"
+import { useContext } from "react"
 import { toast } from "react-toastify"
 import { useConnect, useDisconnect, Connector } from 'wagmi'
 import { PublicKey } from '@solana/web3.js'
 import usePhantom from "../../../../hooks/usePhantom"
 import { Chain, WalletContext } from "../../../../contexts/WalletContext"
-import getSolanaBalance from "../../../../utils/getSolanaBalance"
+import { getSOLTokenBalance } from "../../../../utils/getTokenBalance"
 import styles from "./ConnectWalletModal.module.scss"
 
 interface ConnectWalletModalProps {
@@ -38,45 +38,57 @@ const WalletItem = ({ disabled, icon, name, handleConnect }: WalletItemProps) =>
 )
 
 function ConnectWalletModal({ close }: ConnectWalletModalProps) {
-    const { disconnect } = useDisconnect()
     const { phantomProvider } = usePhantom()
-    const { connect, connectors, isLoading } = useConnect()
+    const { connectAsync, connectors } = useConnect()
+    const { disconnectAsync } = useDisconnect()
     const {
         chain,
+        isLoading,
         isConnected,
         updateAddress,
         updateBalance,
+        updateIsLoading,
         updateIsConnected,
         updateCurrentAction
     } = useContext(WalletContext)
 
-    const [loading, setLoading] = useState(false)
-
-    const handleConnectMetaMask = (connector: Connector) => {
-        connect({ connector })
-        close()
-    }
-
-    const handleConnectPhantom = async () => {
-        if (!phantomProvider) {
-            toast.error('Please install Phantom Wallet!')
-            return
-        }
-
-        if (isConnected) disconnect()
-
-        setLoading(true)
-
+    const handleConnectMetaMask = async (connector: Connector) => {
         try {
-            const { publicKey }: { publicKey: PublicKey } = await phantomProvider.connect()
-            const balance = await getSolanaBalance(publicKey)
-            updateIsConnected(true)
-            updateAddress(publicKey.toString())
-            updateBalance(`${balance.toFixed(2)} SOL`)
+            updateIsLoading(true)
+            if (isConnected === 'Phantom' && phantomProvider) {
+                await phantomProvider.disconnect()
+            }
+            await connectAsync({ connector })
+            updateIsConnected('MataMask')
         } catch (err: any) {
             toast.error(err?.message || err)
         } finally {
-            setLoading(false)
+            updateIsLoading(false)
+            close()
+        }
+    }
+
+    const handleConnectPhantom = async () => {
+        try {
+            if (!phantomProvider) {
+                toast.error('Please install Phantom Wallet!')
+                return
+            }
+
+            updateIsLoading(true)
+
+            if (isConnected === 'MataMask') await disconnectAsync()
+
+            const { publicKey }: { publicKey: PublicKey } = await phantomProvider.connect()
+            const balance = await getSOLTokenBalance(publicKey)
+
+            updateIsConnected('Phantom')
+            updateAddress(publicKey.toString())
+            updateBalance(`${(balance / Math.pow(10, 9)).toFixed(2)} SOL`)
+        } catch (err: any) {
+            toast.error(err?.message || err)
+        } finally {
+            updateIsLoading(false)
             close()
         }
     }
@@ -125,7 +137,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
                             <WalletItem
                                 icon="/wallets/phantom.svg"
                                 name='Phantom'
-                                disabled={loading}
+                                disabled={isLoading}
                                 handleConnect={handleConnectPhantom}
                             />
                         )}

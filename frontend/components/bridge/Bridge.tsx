@@ -1,8 +1,7 @@
 import { useState, useContext, useEffect } from "react"
 import { toast } from 'react-toastify'
 import Image from "next/image"
-import { useSwitchNetwork, useAccount, useDisconnect } from 'wagmi'
-import useTranslation from "next-translate/useTranslation"
+import { useNetwork, useSwitchNetwork, useDisconnect } from 'wagmi'
 
 import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
@@ -13,6 +12,8 @@ import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems } from "./tokenSelector/TokenSelector"
+import usePhantom from "../../hooks/usePhantom"
+import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 
 export enum SellValidationState {
   OK,
@@ -30,19 +31,26 @@ export enum BuyValidationState {
 }
 
 function Bridge() {
-  const { disconnect } = useDisconnect()
-  const { isConnected } = useAccount()
-  const { switchNetwork } = useSwitchNetwork()
+  const { disconnectAsync } = useDisconnect()
+  const { switchNetworkAsync } = useSwitchNetwork()
+  const { chain } = useNetwork()
   const {
+    address,
+    balance: nativeBalance,
+    isLoading,
+    isConnected,
     chain: walletChain,
     orgChainId: _orgChainId,
-    destChainId,
+    destChainId: _destChainId,
     currentAction,
     updateChain,
     updateOrgChainId,
     updateDestChainId,
+    updateIsLoading,
+    updateIsConnected,
     updateCurrentAction
   } = useContext(WalletContext)
+  const { phantomProvider } = usePhantom()
 
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
@@ -52,6 +60,9 @@ function Bridge() {
   const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
   const [orgChainId, setOrgChainId] = useState(1)
+  const [destChainId, setDestChainId] = useState(42161)
+  const [balance, setBalance] = useState('0.00')
+  const [amount, setAmount] = useState('')
 
   useEffect(() => {
     if (_orgChainId) {
@@ -59,13 +70,17 @@ function Bridge() {
     }
   }, [_orgChainId])
 
-  const { t } = useTranslation("swap")
+  useEffect(() => {
+    if (_destChainId) {
+      setDestChainId(_destChainId)
+    }
+  }, [_destChainId])
 
   useEffect(() => {
     // If Chain is "EVM", please switch Network
-    if (isConnected && walletChain === 'EVM')
+    if (isConnected === 'MataMask' && chain?.id !== orgChainId)
       onSwitchNetwork(orgChainId)
-  }, [isConnected, orgChainId, walletChain])
+  }, [isConnected, orgChainId])
 
   useEffect(() => {
     if (destChainId === orgChainId) {
@@ -96,7 +111,7 @@ function Bridge() {
   }, [destChainId, orgChainId])
 
   useEffect(() => {
-    if (isConnected && currentAction === 'Swap') {
+    if (isConnected === 'MataMask' && currentAction === 'Swap') {
       onSwitchNetwork(orgChainId)
     }
   }, [isConnected, currentAction, orgChainId])
@@ -117,154 +132,252 @@ function Bridge() {
     }
   }, [destChainId])
 
+  // Fetch SPL Token balance
+  const fetchSPLTokenBalance = async () => {
+    try {
+      if (isConnected === 'Phantom' && address && !isLoading) {
+        if (orgTokenItem.name === 'SOL') {
+          const _balance = nativeBalance.split(' ')
+          setBalance(_balance[0])
+        } else {
+          const _balance = await getSPLTokenBalance(address.toString(), orgTokenItem.address[0])
+          setBalance(_balance)
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    }
+  }
+
+  // Fetch EVM Token Balance
+  const fetchEVMTokenBalance = async () => {
+    try {
+      if (isConnected === 'MataMask' && address && !isLoading) {
+        if (orgTokenItem.name === 'ETH') {
+          const _balance = nativeBalance.split(' ')
+          setBalance(_balance[0])
+        } else {
+          const _balance = await getEVMTokenBalance(
+            address,
+            orgTokenItem.address[orgChainId === 1 ? 0 : 1],
+            orgChainId,
+            orgTokenItem.numOfDecimals
+          )
+          setBalance(_balance)
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    }
+  }
+
+  useEffect(() => {
+    if (isConnected !== null) {
+      fetchSPLTokenBalance()
+      fetchEVMTokenBalance()
+    }
+  }, [address, isConnected, isLoading, orgChainId, orgTokenItem])
+
+  const handleDisconnectPhantom = async () => {
+    updateIsLoading(true)
+
+    try {
+      await phantomProvider?.disconnect()
+      updateIsConnected(null)
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
+
   const handleTokenClick = (newTokenAddress: string) => {
     setModal(null)
   }
 
   // Switch network
-  const onSwitchNetwork = (id: number) => {
-    if (isConnected) {
-      switchNetwork?.(id)
+  const onSwitchNetwork = async (id: number) => {
+    try {
+      if (isConnected === 'MataMask') {
+        updateIsLoading(true)
+        await switchNetworkAsync?.(id)
+      }
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
     }
   }
 
-  const changeOriginNetworkID = (id: number, _chain: string) => {
-    // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
-    if (_chain === 'Bitcoin' || _chain === 'Lightning') return
+  const changeOriginNetworkID = async (id: number, _chain: string) => {
+    updateIsLoading(true)
 
-    const chain =
-      _chain === 'Solana'
-        ? Chain.solana
-        : Chain.evm
+    try {
+      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
 
-    updateChain(chain)
+      const chain =
+        _chain === 'Solana'
+          ? Chain.solana
+          : Chain.evm
 
-    // Update origin chain
-    updateOrgChainId(id)
-    localStorage.setItem('orgChainId', id.toString())
+      updateChain(chain)
 
-    // Check if wallet is connected or not
-    if (!isConnected) {
-      setModal("connectWallet")
-      return
-    }
+      // Update origin chain
+      updateOrgChainId(id)
+      localStorage.setItem('orgChainId', id.toString())
 
-    updateCurrentAction('Origin')
+      // Check if wallet is connected or not
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
 
-    // Check if an origin chain corresponds to wallet chain
-    if (walletChain !== chain) {
-      // Disconnect wallet
-      disconnect()
-      // updateChain(chain)
-      setModal("connectWallet")
-    } else {
-      // Check what wallet has been connected to Dapp
-      if (chain === 'EVM') {
-        // Check if MetaMask is installed and connected
-        // updateChain(chain)
+      updateCurrentAction('Origin')
 
-        // @ts-ignore
-        if (typeof window.ethereum !== 'undefined') {
-          // @ts-ignore
-          if (window.ethereum.isConnected()) {
-            console.log('MetaMask is connected!')
-          } else {
-            // Other wallet is connected
-            disconnect()
-            setModal("connectWallet")
-          }
+      // Check if an origin chain corresponds to wallet chain
+      if (walletChain !== chain) {
+        if (walletChain === Chain.evm) {
+          // Disconnect wallet
+          await disconnectAsync()
+          updateIsConnected(null)
         } else {
-          toast.error('No MetaMask Wallet detected. Please install MetaMask Wallet!')
+          await handleDisconnectPhantom()
         }
+
+        setModal("connectWallet")
       } else {
-        // @ts-ignore
-        if (typeof window.solana !== 'undefined') {
-          // Wallet is installed, so you can access the connected wallet information
-          // updateChain(chain)
+        // Check what wallet has been connected to Dapp
+        if (chain === 'EVM') {
+          // Check if MetaMask is installed and connected
 
           // @ts-ignore
-          const { isPhantom } = window.solana
-
-          if (isPhantom) {
-            // Phantom wallet is connected
-            console.log('Connected wallet: Phantom')
+          if (typeof window.ethereum !== 'undefined') {
+            // @ts-ignore
+            if (window.ethereum.isConnected()) {
+              console.log('MetaMask is connected!')
+            } else {
+              // Other wallet is connected
+              await handleDisconnectPhantom()
+              setModal("connectWallet")
+            }
           } else {
-            // Other Solana wallet is connected
-            disconnect()
-            setModal("connectWallet")
+            toast.error('No MetaMask Wallet detected. Please install MetaMask Wallet!')
           }
         } else {
-          toast.error('No Phantom Wallet detected. Please install Phantom Wallet!')
+          // @ts-ignore
+          if (typeof window.solana !== 'undefined') {
+            // Wallet is installed, so you can access the connected wallet information
+
+            // @ts-ignore
+            const { isPhantom } = window.solana
+
+            if (isPhantom) {
+              // Phantom wallet is connected
+              console.log('Connected wallet: Phantom')
+            } else {
+              // Other Solana wallet is connected
+              await disconnectAsync()
+              updateIsConnected(null)
+              setModal("connectWallet")
+            }
+          } else {
+            toast.error('No Phantom Wallet detected. Please install Phantom Wallet!')
+          }
         }
       }
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
     }
   }
 
-  const changeDestNetworkID = (id: number, _chain: string) => {
-    // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
-    if (_chain === 'Bitcoin' || _chain === 'Lightning') return
+  const changeDestNetworkID = async (id: number, _chain: string) => {
+    updateIsLoading(true)
 
-    const chain =
-      _chain === 'Solana'
-        ? Chain.solana
-        : Chain.evm
+    try {
+      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
 
-    if (!isConnected) {
-      setModal("connectWallet")
-      return
-    }
+      const chain =
+        _chain === 'Solana'
+          ? Chain.solana
+          : Chain.evm
 
-    // Update destination chain to selected chain
-    updateDestChainId(id)
-    localStorage.setItem('destChainId', id.toString())
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
 
-    updateCurrentAction('Destination')
+      // Update destination chain to selected chain
+      updateDestChainId(id)
+      localStorage.setItem('destChainId', id.toString())
 
-    if (orgChainId === 2 && chain === Chain.solana) {
-      updateOrgChainId(1)
-      updateChain(Chain.evm)
-      disconnect()
-      setModal("connectWallet")
-    }
-  }
+      updateCurrentAction('Destination')
 
-  const swapNetwork = () => {
-    if (!isConnected) {
-      setModal("connectWallet")
-      return
-    }
-
-    updateCurrentAction('Swap')
-
-    const current = [...[orgChainId], ...[destChainId]]
-
-    if (current[1] === 2) {
-      updateChain(Chain.solana)
-      disconnect()
-      setModal("connectWallet")
-    } else {
-      updateChain(Chain.evm)
-      if (current[0] === 2) {
-        disconnect()
+      if (orgChainId === 2 && chain === Chain.solana) {
+        await handleDisconnectPhantom()
+        updateOrgChainId(1)
+        updateChain(Chain.evm)
         setModal("connectWallet")
       }
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
     }
-    updateOrgChainId(current[1])
-    updateDestChainId(current[0])
+  }
+
+  const swapNetwork = async () => {
+    try {
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
+
+      updateIsLoading(true)
+
+      updateCurrentAction('Swap')
+
+      const current = [...[orgChainId], ...[destChainId]]
+
+      if (current[1] === 2) {
+        await disconnectAsync()
+        updateIsConnected(null)
+        updateChain(Chain.solana)
+        setModal("connectWallet")
+      } else {
+        updateChain(Chain.evm)
+        if (current[0] === 2) {
+          await handleDisconnectPhantom()
+          setModal("connectWallet")
+        }
+      }
+      updateOrgChainId(current[1])
+      updateDestChainId(current[0])
+    } catch (err: any) {
+      toast.error(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
   }
 
   const setOriginToken = (val: any) => {
     setOrgTokenItem(val)
-    // let maxValue = useBalance({
-    //   address: address,
-    //   token: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9"
-    // })
   }
 
   const setDestToken = (val: any) => {
     setDestTokenItem(val)
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(e.target.value)
+  }
+
+  const handleMax = () => {
+    setAmount(balance)
+  }
 
   return (
     <>
@@ -413,19 +526,28 @@ function Bridge() {
                         </button>
 
                         <div className="flex flex-grow items-center w-full h-16 border-none">
-                          <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
-                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
+                          <input
+                            pattern="[0-9.]+"
+                            className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium"
+                            placeholder="0.0000"
+                            value={amount}
+                            onChange={handleChange}
+                          />
                         </div>
                         <label
                           htmlFor="inputRow"
                           className="absolute hidden pt-1 pl-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer">
-                          0.0
+                          {balance}
 
                           <span className="text-opacity-50 text-secondaryTextColor"> available</span>
                         </label>
 
                         <div className="hidden mr-2 sm:inline-block">
-                          <button className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest">
+                          <button
+                            className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest"
+                            onClick={handleMax}
+                          >
                             Max
                           </button>
                         </div>

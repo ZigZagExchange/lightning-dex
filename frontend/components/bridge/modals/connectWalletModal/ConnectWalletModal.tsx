@@ -1,11 +1,13 @@
 import Image from "next/image"
-import { useContext } from "react"
+import { useState, useContext } from "react"
 import { toast } from "react-toastify"
 import { useConnect, useDisconnect, Connector } from 'wagmi'
 import { PublicKey } from '@solana/web3.js'
 import usePhantom from "../../../../hooks/usePhantom"
 import { Chain, WalletContext } from "../../../../contexts/WalletContext"
 import { getSOLTokenBalance } from "../../../../utils/getTokenBalance"
+import FlexBox from "../../../FlexBox"
+import Loader from "../../../loader"
 import styles from "./ConnectWalletModal.module.scss"
 
 interface ConnectWalletModalProps {
@@ -16,25 +18,29 @@ interface WalletItemProps {
     disabled: boolean
     icon: string
     name: string
+    isLoading?: boolean
     handleConnect: () => void
 }
 
-const WalletItem = ({ disabled, icon, name, handleConnect }: WalletItemProps) => (
-    <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
-        disabled={disabled}
-        onClick={handleConnect}
-    >
-        <Image
-            src={icon}
-            alt="icon"
-            className="w-8 mr-3 rounded-lg"
-            width={20}
-            height={20}
-        />
-        <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
-            {name}
-        </span>
-    </button>
+const WalletItem = ({ disabled, icon, name, isLoading, handleConnect }: WalletItemProps) => (
+    <FlexBox style={{ justifyContent: 'space-between' }}>
+        <button className="inline-flex items-center py-2 px-6 my-4 rounded-xl mt-2 shadow-sm border border-transparent  group transition-all duration-75 hover:!border-orange-500  hover:bg-[#5397F7] hover:bg-opacity-30"
+            disabled={disabled}
+            onClick={handleConnect}
+        >
+            <Image
+                src={icon}
+                alt="icon"
+                className="w-8 mr-3 rounded-lg"
+                width={20}
+                height={20}
+            />
+            <span className="text-lg font-medium mt-0.5 transition-all duration-75 text-white">
+                {name}
+            </span>
+        </button>
+        {isLoading && <Loader />}
+    </FlexBox>
 )
 
 function ConnectWalletModal({ close }: ConnectWalletModalProps) {
@@ -52,8 +58,11 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
         updateCurrentAction
     } = useContext(WalletContext)
 
+    const [network, setNetwork] = useState('metaMask')
+
     const handleConnectMetaMask = async (connector: Connector) => {
         try {
+            setNetwork(connector.id)
             updateIsLoading(true)
             if (isConnected === 'Phantom' && phantomProvider) {
                 await phantomProvider.disconnect()
@@ -129,6 +138,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
                                                 : "/wallets/phantom.svg"
                                     }
                                     name={connector.name}
+                                    isLoading={isLoading && network === connector.id}
                                     disabled={!connector.ready || isLoading}
                                     handleConnect={() => handleConnectMetaMask(connector)}
                                 />
@@ -137,6 +147,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
                             <WalletItem
                                 icon="/wallets/phantom.svg"
                                 name='Phantom'
+                                isLoading={isLoading}
                                 disabled={isLoading}
                                 handleConnect={handleConnectPhantom}
                             />

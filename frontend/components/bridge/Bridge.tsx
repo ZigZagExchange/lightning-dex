@@ -176,7 +176,7 @@ function Bridge() {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
-  }, [address, isConnected, isLoading, orgChainId, orgTokenItem])
+  }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleDisconnectPhantom = async () => {
     updateIsLoading(true)

@@ -1,10 +1,15 @@
+import { useContext } from "react"
+import { toast } from 'react-toastify'
 import Image from "next/image"
-import { useSwitchNetwork, useNetwork } from "wagmi"
+import { useConnect, useDisconnect, Connector, useSwitchNetwork, useNetwork } from "wagmi"
+import { PublicKey } from '@solana/web3.js'
+import { styled } from "styled-components"
 
 import styles from "./NetWorkSelectorModal.module.scss"
-import { styled } from "styled-components"
+import usePhantom from "../../../../hooks/usePhantom"
 import { networksItems } from "../../../../utils/data"
-import { useEffect, useState } from "react"
+import { Chain, WalletContext } from "../../../../contexts/WalletContext"
+import { getSOLTokenBalance } from "../../../../utils/getTokenBalance"
 
 
 interface Props {
@@ -23,20 +28,88 @@ const NetworkItem: any = styled.div`
 `
 
 function NetworkSelectorModal({ close }: Props) {
-    const { chain } = useNetwork()
-    const { isLoading, switchNetwork } = useSwitchNetwork()
-    const [isChanged, setIsChanged] = useState(false)
+    const { switchNetworkAsync } = useSwitchNetwork()
+    const { orgChainId } = useContext(WalletContext)
+    const { phantomProvider } = usePhantom()
+    const { connectAsync, connectors } = useConnect()
+    const { disconnectAsync } = useDisconnect()
+    const {
+        isLoading,
+        isConnected,
+        updateAddress,
+        updateBalance,
+        updateChain,
+        updateIsLoading,
+        updateIsConnected,
+        updateOrgChainId,
+    } = useContext(WalletContext)
 
-    useEffect(() => {
-        if (isChanged && !isLoading) {
+    const handleConnectMetaMask = async (connector: Connector) => {
+        try {
+            updateIsLoading(true)
+            if (isConnected === 'Phantom' && phantomProvider) {
+                await phantomProvider.disconnect()
+            }
+            await connectAsync({ connector })
+            updateIsConnected('MataMask')
+            updateChain(Chain.evm)
+        } catch (err: any) {
+            toast.error(err?.message || err)
+        } finally {
+            updateIsLoading(false)
             close()
-            setIsChanged(false)
         }
-    }, [isLoading])
+    }
 
-    const changeNetwork = (id: number) => {
-        switchNetwork?.(id)
-        setIsChanged(true)
+    const handleConnectPhantom = async () => {
+        try {
+            if (!phantomProvider) {
+                toast.error('Please install Phantom Wallet!')
+                return
+            }
+
+            updateIsLoading(true)
+
+            if (isConnected === 'MataMask') await disconnectAsync()
+
+            const { publicKey }: { publicKey: PublicKey } = await phantomProvider.connect()
+            const balance = await getSOLTokenBalance(publicKey)
+
+            updateIsConnected('Phantom')
+            updateChain(Chain.solana)
+            updateOrgChainId(2)
+            updateAddress(publicKey.toString())
+            updateBalance(`${(balance / Math.pow(10, 9)).toFixed(2)} SOL`)
+        } catch (err: any) {
+            toast.error(err?.message || err)
+        } finally {
+            updateIsLoading(false)
+            close()
+        }
+    }
+
+    const changeNetwork = async (id: number) => {
+        if (id === 3 || id === 4) return
+
+        try {
+            updateIsLoading(true)
+            if (id === 2) {
+                await handleConnectPhantom()
+            } else {
+                if (isConnected !== 'MataMask') {
+                    await handleConnectMetaMask(connectors[0])
+                }
+
+                updateOrgChainId(id)
+                updateChain(Chain.evm)
+                await switchNetworkAsync?.(id)
+            }
+        } catch (err: any) {
+            console.log(err?.message)
+        } finally {
+            updateIsLoading(false)
+            close()
+        }
     }
 
     return (
@@ -62,7 +135,8 @@ function NetworkSelectorModal({ close }: Props) {
                         networksItems.map((item, index) =>
                             <NetworkItem color={item.color} key={`${item.name} + ${index}`}>
                                 <button
-                                    className={`${chain?.id === item.id ? "active" : ""}  flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent`}
+                                    className={`${orgChainId === item.id ? "active" : ""}  flex items-center transition-all duration-75 rounded-lg px-1 py-1 cursor-pointer border border-transparent`}
+                                    disabled={item.id === orgChainId}
                                     onClick={() => changeNetwork(item.id)}
                                 >
                                     <Image src={`/tokenIcons/${item.icon}`} alt="Switch Network" className="w-6 h-6 mr-3 rounded-full" width={20} height={20} />

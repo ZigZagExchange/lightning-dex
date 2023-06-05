@@ -1,4 +1,4 @@
 # ETH - SOL Bridge
 For a mulitude of reasons we are not using a solana program / smart contract for SOL deposits. This is something we should probably add later.
 For now SOL deposits work similar to BTC deposits. When a request is made to the `/deposit_address` endpoint a new keypair is derived from the master private key (priv key for liquidity pool) and an ID assigned to the deposit address.
-This means that private keys for the deposit wallet are not stored in our DB. When the sol_deposit script detects a transaction into that deposit wallet it will send the deposits SOL back into the liqudity pool wallet and create a row in the `bridges` table.
+This means that private keys for the deposit wallet are not stored in our DB. When the sol_deposit script detects a transaction into that deposit wallet it will send the deposited SOL back into the liqudity pool wallet and create a row in the `bridges` table.

@@ -33,6 +33,7 @@ function Layout(props: LayoutProps) {
   const router = useRouter()
   const { isConnected: isConnectedMetaMask, address } = useAccount()
   const { connectAsync, connectors } = useConnect()
+  const { disconnectAsync } = useDisconnect()
   const { phantomProvider } = usePhantom()
 
   const {
@@ -60,38 +61,46 @@ function Layout(props: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ModalMode>(null)
 
-  useEffect(() => {
-    // @ts-ignore
-    if (typeof window.ethereum !== 'undefined') {
-      // @ts-ignore
-      if (window.ethereum.isConnected() && chain === Chain.evm && !isConnected) {
-        handleConnectMetaMask(connectors[0])
-      }
-    }
-  }, [])
+  // useEffect(() => {
+  //   // @ts-ignore
+  //   if (typeof window.ethereum !== 'undefined') {
+  //     // @ts-ignore
+  //     if (window.ethereum.isConnected() && chain === Chain.evm && !isConnected) {
+  //       handleAutoConnectMetaMask(connectors[0])
+  //     }
+  //   }
+  // }, [])
 
   useEffect(() => {
     if (isConnectedMetaMask && address && data && isSuccess) {
+      updateIsConnected('MataMask')
       updateAddress(address)
       updateBalance(`${parseFloat(data.formatted).toFixed(2)} ${data.symbol}`)
     }
   }, [address, data, isConnectedMetaMask, isSuccess])
 
-  const handleConnectMetaMask = async (connector: Connector) => {
-    try {
-      updateIsLoading(true)
-      if (isConnected === 'Phantom' && phantomProvider) {
-        await phantomProvider.disconnect()
-      }
-      await connectAsync({ connector })
-      updateIsConnected('MataMask')
-    } catch (err: any) {
-      console.log(err?.message || err)
-    } finally {
-      updateIsLoading(false)
-      close()
-    }
-  }
+  // const handleAutoConnectMetaMask = async (connector: Connector) => {
+  //   try {
+  //     updateIsLoading(true)
+  //     if (phantomProvider) {
+  //       await phantomProvider.disconnect()
+  //     }
+  //     // @ts-ignore
+  //     if (typeof window.ethereum !== 'undefined') {
+  //       // @ts-ignore
+  //       if (window.ethereum.isConnected()) {
+  //         await disconnectAsync()
+  //         await connectAsync({ connector })
+  //       }
+  //     }
+  //     updateIsConnected('MataMask')
+  //   } catch (err: any) {
+  //     console.log(err?.message || err)
+  //   } finally {
+  //     updateIsLoading(false)
+  //     close()
+  //   }
+  // }
 
   const handleTokenClick = (newTokenAddress: string) => {
     setModal(null)

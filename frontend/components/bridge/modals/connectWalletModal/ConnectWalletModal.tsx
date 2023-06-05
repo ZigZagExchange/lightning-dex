@@ -70,7 +70,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
             await connectAsync({ connector })
             updateIsConnected('MataMask')
         } catch (err: any) {
-            toast.error(err?.message || err)
+            console.log(err?.message || err)
         } finally {
             updateIsLoading(false)
             close()
@@ -80,7 +80,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
     const handleConnectPhantom = async () => {
         try {
             if (!phantomProvider) {
-                toast.error('Please install Phantom Wallet!')
+                console.log('Please install Phantom Wallet!')
                 return
             }
 
@@ -95,7 +95,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
             updateAddress(publicKey.toString())
             updateBalance(`${(balance / Math.pow(10, 9)).toFixed(2)} SOL`)
         } catch (err: any) {
-            toast.error(err?.message || err)
+            console.log(err?.message || err)
         } finally {
             updateIsLoading(false)
             close()

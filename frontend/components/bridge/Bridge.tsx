@@ -145,7 +145,7 @@ function Bridge() {
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     }
   }
 
@@ -167,7 +167,7 @@ function Bridge() {
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     }
   }
 
@@ -185,7 +185,7 @@ function Bridge() {
       await phantomProvider?.disconnect()
       updateIsConnected(null)
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
     }
@@ -203,7 +203,7 @@ function Bridge() {
         await switchNetworkAsync?.(id)
       }
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
     }
@@ -262,7 +262,7 @@ function Bridge() {
               setModal("connectWallet")
             }
           } else {
-            toast.error('No MetaMask Wallet detected. Please install MetaMask Wallet!')
+            console.log('No MetaMask Wallet detected. Please install MetaMask Wallet!')
           }
         } else {
           // @ts-ignore
@@ -282,12 +282,12 @@ function Bridge() {
               setModal("connectWallet")
             }
           } else {
-            toast.error('No Phantom Wallet detected. Please install Phantom Wallet!')
+            console.log('No Phantom Wallet detected. Please install Phantom Wallet!')
           }
         }
       }
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
     }
@@ -323,7 +323,7 @@ function Bridge() {
         setModal("connectWallet")
       }
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
     }
@@ -357,7 +357,7 @@ function Bridge() {
       updateOrgChainId(current[1])
       updateDestChainId(current[0])
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
     }

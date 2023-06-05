@@ -86,7 +86,7 @@ function Layout(props: LayoutProps) {
       await connectAsync({ connector })
       updateIsConnected('MataMask')
     } catch (err: any) {
-      toast.error(err?.message || err)
+      console.log(err?.message || err)
     } finally {
       updateIsLoading(false)
       close()

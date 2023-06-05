@@ -54,7 +54,7 @@ function NetworkSelectorModal({ close }: Props) {
             updateIsConnected('MataMask')
             updateChain(Chain.evm)
         } catch (err: any) {
-            toast.error(err?.message || err)
+            console.log(err?.message || err)
         } finally {
             updateIsLoading(false)
             close()
@@ -64,7 +64,7 @@ function NetworkSelectorModal({ close }: Props) {
     const handleConnectPhantom = async () => {
         try {
             if (!phantomProvider) {
-                toast.error('Please install Phantom Wallet!')
+                console.log('Please install Phantom Wallet!')
                 return
             }
 
@@ -81,7 +81,7 @@ function NetworkSelectorModal({ close }: Props) {
             updateAddress(publicKey.toString())
             updateBalance(`${(balance / Math.pow(10, 9)).toFixed(2)} SOL`)
         } catch (err: any) {
-            toast.error(err?.message || err)
+            console.log(err?.message || err)
         } finally {
             updateIsLoading(false)
             close()

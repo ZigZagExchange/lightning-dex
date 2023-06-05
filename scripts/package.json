@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@node-lightning/invoice": "^0.28.0",
+    "@solana/web3.js": "^1.77.3",
     "better-sqlite3": "^8.4.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",

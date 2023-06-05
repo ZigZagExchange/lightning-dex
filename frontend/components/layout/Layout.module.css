@@ -11,6 +11,8 @@
   align-items: center;
   z-index: 1000000;
   /* position: fixed; */
+  position: relative;
+  z-index: 20;
   right: 0;
   left: 0;
   transform: translateZ(1000px);

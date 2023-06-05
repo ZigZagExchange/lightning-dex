@@ -1,27 +1,19 @@
-import { useState, useContext, useMemo } from "react"
+import { useState, useContext, useEffect } from "react"
+import { toast } from 'react-toastify'
+import Image from "next/image"
+import { useNetwork, useSwitchNetwork, useDisconnect } from 'wagmi'
 
 import styles from "./Bridge.module.css"
-import SellInput from "./sellInput/SellInput"
-import BuyInput from "./buyInput/BuyInput"
 import Modal, { ModalMode } from "./modal/Modal"
-import TransactionSettings from "./transactionSettings/TransactionSettings"
-import SwapButton from "./swapButton/SwapButton"
-import NetworkSelector from "./networkSelector/NetworkSelector"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 
-import { ExchangeContext, ZZTokenInfo } from "../../contexts/ExchangeContext"
 import { WalletContext } from "../../contexts/WalletContext"
-import { SwapContext, ZZOrder } from "../../contexts/SwapContext"
-import { prettyBalance, prettyBalanceUSD } from "../../utils/utils"
-import { constants, ethers } from "ethers"
-import Separator from "./separator/Separator"
-import useTranslation from "next-translate/useTranslation"
-import { NetworkType } from "../../data/networks"
-import Image from "next/image"
 import { networksItems } from "../../utils/data"
-import { useAtom } from "jotai"
-import { destTokenAtom, originTokenAtom } from "../../store/token"
+import { Chain } from "../../contexts/WalletContext"
+import { evmTokenItems, solTokenItems } from "./tokenSelector/TokenSelector"
+import usePhantom from "../../hooks/usePhantom"
+import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 
 export enum SellValidationState {
   OK,
@@ -38,103 +30,354 @@ export enum BuyValidationState {
   InternalError,
 }
 
-function Swap() {
-  const { network, userAddress } = useContext(WalletContext)
-  const { allowances, balances, buyTokenInfo, sellTokenInfo, tokenPricesUSD } = useContext(ExchangeContext)
-  const { sellAmount, buyAmount, swapPrice, quoteOrderRoutingArray, selectSellToken, selectBuyToken } = useContext(SwapContext)
-  const [showNetworkSelector, setShowNetworkSelector] = useState(0)
+function Bridge() {
+  const { disconnectAsync } = useDisconnect()
+  const { switchNetworkAsync } = useSwitchNetwork()
+  const { chain } = useNetwork()
+  const {
+    address,
+    balance: nativeBalance,
+    isLoading,
+    isConnected,
+    chain: walletChain,
+    orgChainId: _orgChainId,
+    destChainId: _destChainId,
+    currentAction,
+    updateChain,
+    updateOrgChainId,
+    updateDestChainId,
+    updateIsLoading,
+    updateIsConnected,
+    updateCurrentAction
+  } = useContext(WalletContext)
+  const { phantomProvider } = usePhantom()
+
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
-  const [swapOrder, setSwapOrder] = useState<string>("order-0")
-  const [originToken, setOriginToken] = useAtom(originTokenAtom)
-  const [destToken, setDestToken] = useAtom(destTokenAtom)
-
+  const [swapOrder] = useState<string>("order-0")
+  const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
+  const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
+  const [orgChainId, setOrgChainId] = useState(1)
+  const [destChainId, setDestChainId] = useState(42161)
+  const [balance, setBalance] = useState('0.00')
+  const [amount, setAmount] = useState('')
 
-  const { t } = useTranslation("swap")
+  useEffect(() => {
+    if (_orgChainId) {
+      setOrgChainId(_orgChainId)
+    }
+  }, [_orgChainId])
 
-  const getBalanceReadable = (tokenAddress: string | null) => {
-    if (tokenAddress === null) return "0.0"
-    const tokenBalance = balances[tokenAddress]
-    if (tokenBalance === undefined) return "0.0"
-    return prettyBalance(tokenBalance.valueReadable)
+  useEffect(() => {
+    if (_destChainId) {
+      setDestChainId(_destChainId)
+    }
+  }, [_destChainId])
+
+  useEffect(() => {
+    // If Chain is "EVM", please switch Network
+    if (isConnected === 'MataMask' && chain?.id !== orgChainId)
+      onSwitchNetwork(orgChainId)
+  }, [isConnected, orgChainId])
+
+  useEffect(() => {
+    if (destChainId === orgChainId) {
+      if (currentAction === 'Destination') {
+        updateChain(Chain.evm)
+
+        if (walletChain === Chain.solana || destChainId !== 1) {
+          // Update origin chain
+          updateOrgChainId(1)
+          onSwitchNetwork(1)
+        } else {
+          updateOrgChainId(42161)
+        }
+      }
+
+      if (currentAction === 'Origin') {
+        if (destChainId === 1) {
+          onSwitchNetwork(42161)
+          updateDestChainId(42161)
+        } else if (destChainId === 42161) {
+          onSwitchNetwork(1)
+          updateDestChainId(1)
+        } else {
+          updateDestChainId(1)
+        }
+      }
+    }
+  }, [destChainId, orgChainId])
+
+  useEffect(() => {
+    if (isConnected === 'MataMask' && currentAction === 'Swap') {
+      onSwitchNetwork(orgChainId)
+    }
+  }, [isConnected, currentAction, orgChainId])
+
+  useEffect(() => {
+    if (orgChainId !== 2) {
+      setOrgTokenItem(evmTokenItems[0])
+    } else {
+      setOrgTokenItem(solTokenItems[0])
+    }
+  }, [orgChainId])
+
+  useEffect(() => {
+    if (destChainId !== 2) {
+      setDestTokenItem(evmTokenItems[0])
+    } else {
+      setDestTokenItem(solTokenItems[0])
+    }
+  }, [destChainId])
+
+  // Fetch SPL Token balance
+  const fetchSPLTokenBalance = async () => {
+    try {
+      if (isConnected === 'Phantom' && address && !isLoading) {
+        if (orgTokenItem.name === 'SOL') {
+          const _balance = nativeBalance.split(' ')
+          setBalance(_balance[0])
+        } else {
+          const _balance = await getSPLTokenBalance(address.toString(), orgTokenItem.address[0])
+          setBalance(_balance)
+        }
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
+    }
   }
 
-  const validationStateSell = useMemo((): SellValidationState => {
-    if (!userAddress) return SellValidationState.OK
-    if (!sellTokenInfo) return SellValidationState.InternalError
-    if (!swapPrice) return SellValidationState.MissingLiquidity
-
-    const firstQuoteOrder: ZZOrder | undefined = quoteOrderRoutingArray[0]
-    if (!firstQuoteOrder || sellAmount.gt(firstQuoteOrder.order.buyAmount)) {
-      return SellValidationState.MissingLiquidity
+  // Fetch EVM Token Balance
+  const fetchEVMTokenBalance = async () => {
+    try {
+      if (isConnected === 'MataMask' && address && !isLoading) {
+        if (orgTokenItem.name === 'ETH') {
+          const _balance = nativeBalance.split(' ')
+          setBalance(_balance[0])
+        } else {
+          const _balance = await getEVMTokenBalance(
+            address,
+            orgTokenItem.address[orgChainId === 1 ? 0 : 1],
+            orgChainId,
+            orgTokenItem.numOfDecimals
+          )
+          setBalance(_balance)
+        }
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
     }
+  }
 
-    const sellTokenBalance = balances[sellTokenInfo.address]
-    const balance = sellTokenBalance ? sellTokenBalance.value : ethers.constants.Zero
-    if (balance === null) return SellValidationState.InsufficientBalance
-    if (sellAmount.gt(balance)) return SellValidationState.InsufficientBalance
-
-    const allowance = allowances[sellTokenInfo.address] ? allowances[sellTokenInfo.address] : ethers.constants.Zero
-    if (allowance !== null && allowance !== undefined && sellAmount.gt(allowance)) {
-      return SellValidationState.ExceedsAllowance
+  useEffect(() => {
+    if (isConnected !== null) {
+      fetchSPLTokenBalance()
+      fetchEVMTokenBalance()
     }
+  }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
-    return SellValidationState.OK
-  }, [userAddress, swapPrice, sellAmount, allowances, balances, sellTokenInfo])
+  const handleDisconnectPhantom = async () => {
+    updateIsLoading(true)
 
-  const validationStateBuy = useMemo((): BuyValidationState => {
-    if (!userAddress) return BuyValidationState.OK
-    if (!buyTokenInfo) return BuyValidationState.InternalError
-
-    return BuyValidationState.OK
-  }, [userAddress, buyTokenInfo])
+    try {
+      await phantomProvider?.disconnect()
+      updateIsConnected(null)
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
 
   const handleTokenClick = (newTokenAddress: string) => {
-    if (modal === "selectSellToken") {
-      selectSellToken(newTokenAddress)
-    } else if (modal === "selectBuyToken") {
-      selectBuyToken(newTokenAddress)
-    }
     setModal(null)
   }
 
-  const sellTokenUsdPrice = sellTokenInfo ? tokenPricesUSD[sellTokenInfo.address] : undefined
-  const buyTokenUsdPrice = buyTokenInfo ? tokenPricesUSD[buyTokenInfo.address] : undefined
-
-  // Estimated sell token value
-  const sellTokenEstimatedValue = useMemo(() => {
-    if (sellTokenUsdPrice !== undefined) {
-      if (!sellTokenInfo) return
-      const sellAmountFormated = Number(ethers.utils.formatUnits(sellAmount, sellTokenInfo.decimals))
-      if (sellAmountFormated === 0) return
-      return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(sellAmountFormated * sellTokenUsdPrice)}`}</div>
-    }
-  }, [sellTokenInfo, sellAmount, sellTokenUsdPrice])
-
-  // Estimated buy token value
-  const buyTokenEstimatedValue = useMemo(() => {
-    if (!buyTokenInfo) return
-    if (buyTokenUsdPrice !== undefined) {
-      const buyAmountFormated = Number(ethers.utils.formatUnits(buyAmount, buyTokenInfo.decimals))
-      if (buyAmountFormated === 0) return
-
-      const buyTokenValue = buyAmountFormated * buyTokenUsdPrice
-      let percent
-      if (sellTokenUsdPrice !== undefined) {
-        if (!sellTokenInfo) return
-        const sellAmountFormated = Number(ethers.utils.formatUnits(sellAmount, sellTokenInfo.decimals))
-        if (sellAmountFormated === 0) {
-          return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(buyTokenValue)}`}</div>
-        }
-        const sellTokenValue = sellAmountFormated * sellTokenUsdPrice
-        percent = `(${prettyBalanceUSD((buyTokenValue - sellTokenValue) * 100 / sellTokenValue)}%)`
+  // Switch network
+  const onSwitchNetwork = async (id: number) => {
+    try {
+      if (isConnected === 'MataMask') {
+        updateIsLoading(true)
+        await switchNetworkAsync?.(id)
       }
-      return <div className={styles.estimated_value}>{`~$${prettyBalanceUSD(buyTokenValue)} ${percent}`}</div>
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
     }
-    return
-  }, [sellTokenInfo, buyTokenInfo, sellAmount, buyAmount, sellTokenUsdPrice, buyTokenUsdPrice])
+  }
+
+  const changeOriginNetworkID = async (id: number, _chain: string) => {
+    updateIsLoading(true)
+
+    try {
+      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
+
+      const chain =
+        _chain === 'Solana'
+          ? Chain.solana
+          : Chain.evm
+
+      updateChain(chain)
+
+      // Update origin chain
+      updateOrgChainId(id)
+      localStorage.setItem('orgChainId', id.toString())
+
+      // Check if wallet is connected or not
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
+
+      updateCurrentAction('Origin')
+
+      // Check if an origin chain corresponds to wallet chain
+      if (walletChain !== chain) {
+        if (walletChain === Chain.evm) {
+          // Disconnect wallet
+          await disconnectAsync()
+          updateIsConnected(null)
+        } else {
+          await handleDisconnectPhantom()
+        }
+
+        setModal("connectWallet")
+      } else {
+        // Check what wallet has been connected to Dapp
+        if (chain === 'EVM') {
+          // Check if MetaMask is installed and connected
+
+          // @ts-ignore
+          if (typeof window.ethereum !== 'undefined') {
+            // @ts-ignore
+            if (window.ethereum.isConnected()) {
+              console.log('MetaMask is connected!')
+            } else {
+              // Other wallet is connected
+              await handleDisconnectPhantom()
+              setModal("connectWallet")
+            }
+          } else {
+            console.log('No MetaMask Wallet detected. Please install MetaMask Wallet!')
+          }
+        } else {
+          // @ts-ignore
+          if (typeof window.solana !== 'undefined') {
+            // Wallet is installed, so you can access the connected wallet information
+
+            // @ts-ignore
+            const { isPhantom } = window.solana
+
+            if (isPhantom) {
+              // Phantom wallet is connected
+              console.log('Connected wallet: Phantom')
+            } else {
+              // Other Solana wallet is connected
+              await disconnectAsync()
+              updateIsConnected(null)
+              setModal("connectWallet")
+            }
+          } else {
+            console.log('No Phantom Wallet detected. Please install Phantom Wallet!')
+          }
+        }
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
+
+  const changeDestNetworkID = async (id: number, _chain: string) => {
+    updateIsLoading(true)
+
+    try {
+      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
+      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
+
+      const chain =
+        _chain === 'Solana'
+          ? Chain.solana
+          : Chain.evm
+
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
+
+      // Update destination chain to selected chain
+      updateDestChainId(id)
+      localStorage.setItem('destChainId', id.toString())
+
+      updateCurrentAction('Destination')
+
+      if (orgChainId === 2 && chain === Chain.solana) {
+        await handleDisconnectPhantom()
+        updateOrgChainId(1)
+        updateChain(Chain.evm)
+        setModal("connectWallet")
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
+
+  const swapNetwork = async () => {
+    try {
+      if (!isConnected) {
+        setModal("connectWallet")
+        return
+      }
+
+      updateIsLoading(true)
+
+      updateCurrentAction('Swap')
+
+      const current = [...[orgChainId], ...[destChainId]]
+
+      if (current[1] === 2) {
+        await disconnectAsync()
+        updateIsConnected(null)
+        updateChain(Chain.solana)
+        setModal("connectWallet")
+      } else {
+        updateChain(Chain.evm)
+        if (current[0] === 2) {
+          await handleDisconnectPhantom()
+          setModal("connectWallet")
+        }
+      }
+      updateOrgChainId(current[1])
+      updateDestChainId(current[0])
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
+
+  const setOriginToken = (val: any) => {
+    setOrgTokenItem(val)
+  }
+
+  const setDestToken = (val: any) => {
+    setDestTokenItem(val)
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmount(e.target.value)
+  }
+
+  const handleMax = () => {
+    setAmount(balance)
+  }
 
   return (
     <>
@@ -184,40 +427,64 @@ function Swap() {
 
         <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
-            <NetworkSelector count={showNetworkSelector} />
-            <TokenSelector count={firstCount} />
-            <TokenSelector count={secondCount} />
+            <TokenSelector
+              count={firstCount}
+              onSelect={setOriginToken}
+              key="token-selector-1"
+              networkID={orgChainId}
+            />
+            <TokenSelector
+              count={secondCount}
+              onSelect={setDestToken}
+              key="token-selector-2"
+              networkID={destChainId}
+            />
             <SettingsDropdown show={showSettings} onClick={(val) => setShowSettings(val)} />
 
             <div className="grid grid-cols-1 gap-4  place-content-center">
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
-                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Origin</div>
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.name === originToken ?
+                      item.id === orgChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
-                          key={`${item.name}-${item.token}`}
+                          key={`${item.name}-${item.token}-active`}
                         >
-                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <Image
+                            src={`/tokenIcons/${item.icon}`}
+                            alt="ether"
+                            width={22}
+                            height={22}
+                            className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80"
+                          />
                           <div className="hidden md:inline-block lg:inline-block">
-                            <div className="mr-2 text-sm text-white">Ethereum</div>
+                            <div className="mr-2 text-sm text-white">{item.name}</div>
                           </div>
                         </div>
                         :
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => { setModal("connectWallet") }}
+                          onClick={() => changeOriginNetworkID(item.id, item.name)}
                         >
                           <div className="inline-block">
-                            <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
+                            <Image
+                              src={`/tokenIcons/${item.icon}`}
+                              width={22}
+                              height={22}
+                              className="duration-300 rounded-full hover:scale-125"
+                              alt={item.name}
+                            />
                           </div>
 
                           <div className="absolute overflow-visible top-[2.5rem] z-[2]">
-                            <div className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden" data-popper-placement="bottom">
+                            <div
+                              className="bg-black border-0 z-50 font-normal leading-normal text-sm max-w-xs text-left  no-underline break-words rounded-lg hidden"
+                              data-popper-placement="bottom"
+                            >
                               <div>
                                 <div className="p-3 text-white">
                                   {item.name}
@@ -235,18 +502,20 @@ function Swap() {
                     <div className="flex space-x-2">
                       <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                         <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                          <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-orange-100 dark:hover:bg-opacity-20 dark:hover:bg-orange-700  hover:border-orange-300" onClick={() => setFirstCount(firstCount + 1)}>
+                          <div
+                            className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300"
+                            onClick={() => setFirstCount(v => v + 1)}
+                          >
                             <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                               <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                                 <div className="relative flex p-1 rounded-full">
-                                  <Image alt="dai" src="/tokenIcons/dai.svg" width={28} height={28} />
+                                  <Image alt={orgTokenItem.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${orgTokenItem.icon}`} />
                                 </div>
                               </div>
 
                               <div className="text-left cursor-pointer">
                                 <h4 className="text-lg font-medium text-gray-300 ">
-                                  <span>DAI</span>
-
+                                  <span>{orgTokenItem.name}</span>
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                   </svg>
@@ -257,13 +526,30 @@ function Swap() {
                         </button>
 
                         <div className="flex flex-grow items-center w-full h-16 border-none">
-                          <input type="number" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
-                          <label htmlFor="inputRow" className="absolute hidden pt-3 mt-8 ml-4 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer">0.0
-                            <span className="text-opacity-50 text-secondaryTextColor"> available</span>
-                          </label>
-                          <div className="hidden mr-2 sm:inline-block">
-                            <button className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest">Max</button>
-                          </div>
+                          <input
+                            pattern="[0-9.]+"
+                            className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium"
+                            placeholder="0.0000"
+                            value={amount}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <label
+                          htmlFor="inputRow"
+                          className="absolute hidden pt-1 pl-1 mt-8 ml-40 text-xs text-white transition-all duration-150 md:block transform-gpu hover:text-opacity-70 hover:cursor-pointer">
+                          {balance}
+
+                          <span className="text-opacity-50 text-secondaryTextColor"> available</span>
+                        </label>
+
+                        <div className="hidden mr-2 sm:inline-block">
+                          <button
+                            className="group cursor-pointer text-white outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu pt-1 pb-1 pl-2 pr-2 mr-2 rounded-md text-sm font-medium bg-bgLighter hover:bg-bgLightest active:bg-bgLightest"
+                            onClick={handleMax}
+                          >
+                            Max
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -271,7 +557,7 @@ function Swap() {
                 </div>
               </div>
 
-              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={() => setSwapOrder(v => v === "order-1" ? "order-0" : "order-1")}>
+              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapNetwork}>
                 <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
                   <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
@@ -287,21 +573,21 @@ function Swap() {
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
-                      item.name === destToken ?
+                      item.id === destChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
                           key={`${item.name}-${item.token}`}
                         >
-                          <Image src="/tokenIcons/eth.svg" alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
+                          <Image src={`/tokenIcons/${item.icon}`} alt="ether" width={22} height={22} className="w-5 h-5 my-1 mr-0 rounded-full md:mr-1 opacity-80" />
                           <div className="hidden md:inline-block lg:inline-block">
-                            <div className="mr-2 text-sm text-white">Ethereum</div>
+                            <div className="mr-2 text-sm text-white">{item.name}</div>
                           </div>
                         </div>
                         :
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => { setModal("connectWallet") }}
+                          onClick={() => changeDestNetworkID(item.id, item.name)}
                         >
                           <div className="inline-block">
                             <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />
@@ -318,11 +604,6 @@ function Swap() {
                           </div>
                         </button>
                     )}
-                    {/* <button className="w-8 h-8 px-1.5 py-1.5 bg-[#C4C4C4] bg-opacity-10 rounded-full hover:cursor-pointer group" onClick={() => setShowNetworkSelector(showNetworkSelector + 1)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="text-gray-300 transition transform-gpu group-hover:opacity-50 group-active:rotate-180">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                      </svg>
-                    </button> */}
                   </div>
                 </div>
 
@@ -330,17 +611,20 @@ function Swap() {
                   <div className="flex space-x-2">
                     <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                       <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
-                        <div className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300" onClick={() => setSecondCount(secondCount + 1)}>
+                        <div
+                          className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300"
+                          onClick={() => setSecondCount(v => v + 1)}
+                        >
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                               <div className="relative flex p-1 rounded-full">
-                                <Image alt="usdc" width={40} height={40} className="w-7 h-7" src="/tokenIcons/usdc.svg" />
+                                <Image alt={destTokenItem.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${destTokenItem.icon}`} />
                               </div>
                             </div>
 
                             <div className="text-left cursor-pointer">
                               <h4 className="text-lg font-medium text-gray-300 ">
-                                <span>USDC</span>
+                                <span>{destTokenItem.name}</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
@@ -440,19 +724,4 @@ function Swap() {
   )
 }
 
-export default Swap
-
-function ExplorerButton({ network, token }: { network: NetworkType | null; token: ZZTokenInfo | null }) {
-  const { t } = useTranslation("common")
-
-  if (network && token) {
-    if (token.address === constants.AddressZero) {
-      return <a className={styles.native_token}>{t("native_token")}</a>
-    }
-    return (
-      <a className={styles.see_in_explorer_link} href={`${network.explorerUrl}/token/${token.address}`} target="_blank" rel="noopener noreferrer">
-        {t("view_in_explorer")}
-      </a>
-    )
-  } else return null
-}
+export default Bridge

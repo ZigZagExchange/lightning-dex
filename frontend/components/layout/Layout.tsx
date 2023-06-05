@@ -1,81 +1,144 @@
-/** @format */
-
-import { ReactNode, useState, useContext, useEffect } from "react"
-
+import { ReactNode, useState, useEffect, useContext } from "react"
+import { toast } from 'react-toastify'
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Image from "next/image"
-
-import { WalletContext } from "../../contexts/WalletContext"
+import { useAccount, useBalance, useConnect, useDisconnect, Connector, useNetwork, useSwitchNetwork } from "wagmi"
+import { PublicKey } from '@solana/web3.js'
 
 import logo from "../../public/img/zz.svg"
-// import logo from "./logo.png"
-
 import styles from "./Layout.module.css"
 import FooterSocials from "../footerSocials/FooterSocials"
 import ConnectWallet from "../connectWallet/ConnectWallet"
 import NetworkSelector from "../NetworkSelector/NetworkSelector"
 import MobileMenu from "../MobileMenu/MobileMenu"
 import GroupButtonDropdown from "../GroupButtonDropdown/GroupButtonDropdown"
-import HeaderSocials from "../HeaderSocials/HeaderSocials"
 import NavBar from "../navBar/NavBar"
-import Modal, { ModalMode } from "../swap/modal/Modal"
+import Modal, { ModalMode } from "../bridge/modal/Modal"
+import { WalletContext } from "../../contexts/WalletContext"
+import { networksItems } from "../../utils/data"
+import { Chain } from "../../contexts/WalletContext"
+import usePhantom from "../../hooks/usePhantom"
 
-
-interface Props {
+interface Balance {
+  address: `0x${string}` | undefined
+  token?: `0x${string}`
+  chainId?: number
+}
+interface LayoutProps {
   children?: ReactNode
 }
 
-function Layout(props: Props) {
-  const { userAddress, network, ethersProvider } = useContext(WalletContext)
-  const [headerWarning, setHeaderWarning] = useState<JSX.Element | null>(null)
+function Layout(props: LayoutProps) {
+  const router = useRouter()
+  const { isConnected: isConnectedMetaMask, address } = useAccount()
+  const { connectAsync, connectors } = useConnect()
+  const { disconnectAsync } = useDisconnect()
+  const { phantomProvider } = usePhantom()
+  const { chain: metaMaskChain } = useNetwork()
+  const { chains, error, isLoading, pendingChainId, switchNetworkAsync } =
+    useSwitchNetwork()
+
+  const {
+    chain,
+    isConnected,
+    orgChainId,
+    updateAddress,
+    updateBalance,
+    updateIsLoading,
+    updateIsConnected,
+  } = useContext(WalletContext)
+
+  const token = networksItems.filter((item) => item.id === orgChainId)
+
+  const option: Balance = orgChainId === 1 ? {
+    address,
+    chainId: orgChainId,
+  } : {
+    address,
+    token: `0x${token[0].token}`,
+  }
+
+  const { data, isSuccess } = useBalance(option)
+
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ModalMode>(null)
 
-  const router = useRouter()
+  // useEffect(() => {
+  //   // @ts-ignore
+  //   if (typeof window.ethereum !== 'undefined') {
+  //     // @ts-ignore
+  //     if (window.ethereum.isConnected() && chain === Chain.evm && !isConnected) {
+  //       handleAutoConnectMetaMask(connectors[0])
+  //     }
+  //   }
+  // }, [])
 
   useEffect(() => {
-    if (ethersProvider && network) {
-      ethersProvider.getNetwork().then(proivderNetwork => {
-        if (proivderNetwork.chainId === network.networkId) {
-          setHeaderWarning(null)
-          return
-        }
-      })
+    if (isConnectedMetaMask && address && data && isSuccess) {
+      updateIsConnected('MataMask')
+      updateAddress(address)
+      updateBalance(`${parseFloat(data.formatted).toFixed(2)} ${data.symbol}`)
     }
-    if (userAddress) {
-      setHeaderWarning(
-        <div className={styles.header_warning_container}>
-          <strong>{"Please change the Network"}</strong> <span>{"Please change the Network"}</span>
-        </div>
-      )
+  }, [address, data, isConnectedMetaMask, isSuccess])
+
+  useEffect(() => {
+    if (isConnectedMetaMask && switchNetworkAsync && metaMaskChain?.id !== orgChainId) {
+      handleSwitchNetwork()
     }
-    setHeaderWarning(null)
-  }, [ethersProvider, network])
+  }, [isConnectedMetaMask, switchNetworkAsync, orgChainId, metaMaskChain])
+
+  const handleSwitchNetwork = async () => {
+    try {
+      if (switchNetworkAsync) {
+        updateIsLoading(true)
+        await switchNetworkAsync(orgChainId)
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
+
+  // const handleAutoConnectMetaMask = async (connector: Connector) => {
+  //   try {
+  //     updateIsLoading(true)
+  //     if (phantomProvider) {
+  //       await phantomProvider.disconnect()
+  //     }
+  //     // @ts-ignore
+  //     if (typeof window.ethereum !== 'undefined') {
+  //       // @ts-ignore
+  //       if (window.ethereum.isConnected()) {
+  //         await disconnectAsync()
+  //         await connectAsync({ connector })
+  //       }
+  //     }
+  //     updateIsConnected('MataMask')
+  //   } catch (err: any) {
+  //     console.log(err?.message || err)
+  //   } finally {
+  //     updateIsLoading(false)
+  //     close()
+  //   }
+  // }
 
   const handleTokenClick = (newTokenAddress: string) => {
     setModal(null)
   }
 
-  let headerLeft = (
+  const headerLeft = (
     <nav className={`${styles.header_left} lg:mr-[5rem]`}>
-      {/* <Link href="/"> */}
-      {/* <a className={`${styles.nav_link}`}> */}
       <span className={`${styles.icon}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
         <Image src={logo} alt="logo" width="30" height={"50"} />
       </span>
-      {/* </a> */}
-      {/* </Link> */}
-      <Link href="https://arbitrum.zigzag.exchange/" className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/trade" ? styles.active_nav_link : ""}`}>
+      <Link
+        href="https://arbitrum.zigzag.exchange/"
+        className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/trade" ? styles.active_nav_link : ""}`}
+      >
         Order Book
       </Link>
-      {/* <Link href="/">
-          <a className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/swap" ? styles.active_nav_link : ""}`}>Swap</a>
-        </Link> */}
-
-      {/* Link */}
-      {/* <HeaderSocials /> */}
-      {/* <NetworkSelector /> */}
     </nav>
   )
 
@@ -92,9 +155,10 @@ function Layout(props: Props) {
       </div>
 
       <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 md:px-28`}>
-        {headerWarning}
         {headerLeft}
+
         <NavBar />
+
         <div className={styles.header_right}>
           <NetworkSelector networkSelectorModalOpen={() => { setModal("network") }} />
           <ConnectWallet openConnectWalletModal={() => { setModal("connectWallet") }} />
@@ -104,22 +168,23 @@ function Layout(props: Props) {
 
         <MobileMenu
           networkSelectorModalOpen={() => { setModal("network") }}
-          openConnectWalletModal={() => { setModal("connectWallet") }} />
+          openConnectWalletModal={() => { setModal("connectWallet") }}
+        />
       </header>
-      {/* <div className={styles.mobile_nav}>
-        <Link href="https://arbitrum.zigzag.exchange/">
-          <a className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/trade" ? styles.active_nav_link : ""}`}>Orderbook</a>
-        </Link>
-        <Link href="/">
-          <a className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/swap" ? styles.active_nav_link : ""}`}>Swap</a>
-        </Link>
-      </div> */}
-      <main className={styles.content}>{props.children}</main>
+
+      <main className={styles.content}>
+        {props.children}
+      </main>
+
       <footer className={styles.footer}>
         <FooterSocials />
       </footer>
 
-      <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
+      <Modal
+        selectedModal={modal}
+        onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)}
+        close={() => setModal(null)}
+      />
     </>
   )
 }

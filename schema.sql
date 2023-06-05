@@ -19,3 +19,5 @@ CREATE TABLE IF NOT EXISTS bridges(
     outgoing_timestamp TIMESTAMP,
     paid BOOLEAN DEFAULT FALSE
 );
+
+ALTER TABLE deposit_addresses ADD COLUMN deposit_id TEXT;

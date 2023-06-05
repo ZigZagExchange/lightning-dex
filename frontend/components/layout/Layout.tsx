@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Image from "next/image"
-import { useAccount, useBalance, useConnect, useDisconnect, Connector } from "wagmi"
+import { useAccount, useBalance, useConnect, useDisconnect, Connector, useNetwork, useSwitchNetwork } from "wagmi"
 import { PublicKey } from '@solana/web3.js'
 
 import logo from "../../public/img/zz.svg"
@@ -35,6 +35,9 @@ function Layout(props: LayoutProps) {
   const { connectAsync, connectors } = useConnect()
   const { disconnectAsync } = useDisconnect()
   const { phantomProvider } = usePhantom()
+  const { chain: metaMaskChain } = useNetwork()
+  const { chains, error, isLoading, pendingChainId, switchNetworkAsync } =
+    useSwitchNetwork()
 
   const {
     chain,
@@ -78,6 +81,25 @@ function Layout(props: LayoutProps) {
       updateBalance(`${parseFloat(data.formatted).toFixed(2)} ${data.symbol}`)
     }
   }, [address, data, isConnectedMetaMask, isSuccess])
+
+  useEffect(() => {
+    if (isConnectedMetaMask && switchNetworkAsync && metaMaskChain?.id !== orgChainId) {
+      handleSwitchNetwork()
+    }
+  }, [isConnectedMetaMask, switchNetworkAsync, orgChainId, metaMaskChain])
+
+  const handleSwitchNetwork = async () => {
+    try {
+      if (switchNetworkAsync) {
+        updateIsLoading(true)
+        await switchNetworkAsync(orgChainId)
+      }
+    } catch (err: any) {
+      console.log(err?.message || err)
+    } finally {
+      updateIsLoading(false)
+    }
+  }
 
   // const handleAutoConnectMetaMask = async (connector: Connector) => {
   //   try {

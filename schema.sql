@@ -20,4 +20,12 @@ CREATE TABLE IF NOT EXISTS bridges(
     paid BOOLEAN DEFAULT FALSE
 );
 
-ALTER TABLE deposit_addresses ADD COLUMN deposit_id TEXT;
+CREATE TABLE IF NOT EXISTS deposits (
+  id TEXT,
+  deposit_currency TEXT,
+  deposit_address TEXT,
+  outgoing_currency TEXT,
+  outgoing_address TEXT,
+  completed BOOLEAN DEFAULT FALSE,
+  expiry TIMESTAMP
+)

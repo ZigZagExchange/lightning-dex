@@ -20,10 +20,10 @@ const connection = new Connection(
 );
 
 updateDeposits()
-setInterval(updateDeposits, 5000)
+setInterval(updateDeposits, 30000)
 
 async function updateDeposits () {
-  const {rows: depositRequests} = await db.query("SELECT * FROM deposit_addresses WHERE deposit_currency='SOL'")
+  const {rows: depositRequests} = await db.query("SELECT * FROM deposits WHERE expiry > NOW() AND completed = false AND deposit_currency = 'SOL'")
 
   for (let request of depositRequests) {
     const addressSignatures = await connection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
@@ -41,6 +41,7 @@ async function updateDeposits () {
 
     for (let deposit of newDeposits) {
       console.log(`inserting deposit: ${deposit[3]} - ${deposit[2]} SOL`)
+      await db.query(`UPDATE deposits SET completed = true WHERE id=$1`, [request.id])
       await db.query(
         `INSERT INTO bridges (deposit_currency, deposit_address, deposit_amount, deposit_txid, deposit_timestamp, outgoing_currency, outgoing_address) 
          VALUES ($1,$2,$3,$4,NOW(),$5,$6) 
@@ -79,7 +80,7 @@ async function transferFromDepositAddressToLiquidityPool (depositAddressId) {
     [depositAccount]
   )
 
-  console.log(`traferring ${balance} LAMPORT from ${depositAccount.publicKey.toString()} to liqudity pool (${txid})`)
+  console.log(`traferring ${balance} LAMPORTS from ${depositAccount.publicKey.toString()} to liqudity pool (${txid})`)
 }
 
 function wasTransactionNotSignedByAddress (address) {

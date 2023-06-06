@@ -161,7 +161,11 @@ function Layout(props: LayoutProps) {
 
         <div className={styles.header_right}>
           <NetworkSelector networkSelectorModalOpen={() => { setModal("network") }} />
-          <ConnectWallet openConnectWalletModal={() => { setModal("connectWallet") }} />
+          <ConnectWallet openConnectWalletModal={() => {
+            orgChainId === 1 || orgChainId === 42161 || orgChainId === 2
+              ? setModal("connectWallet")
+              : console.log(111)
+          }} />
           {modal}
           <GroupButtonDropdown />
         </div>

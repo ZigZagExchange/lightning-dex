@@ -9,6 +9,7 @@ export enum Chain {
   all = 'ALL',
   evm = 'EVM',
   solana = 'SOLANA',
+  btc = 'BTC',
 }
 
 export type CurrentAction = 'None' | 'Origin' | 'Destination' | 'Swap'
@@ -88,10 +89,12 @@ function WalletProvider({ children }: Props) {
 
   const updateOrgChainId = (_chainId: number) => {
     setOrgChainId(_chainId)
+    localStorage.setItem('orgChainId', _chainId.toString())
   }
 
   const updateDestChainId = (_chainId: number) => {
     setDestChainId(_chainId)
+    localStorage.setItem('destChainId', _chainId.toString())
   }
 
   const updateCurrentAction = (_action: CurrentAction) => {

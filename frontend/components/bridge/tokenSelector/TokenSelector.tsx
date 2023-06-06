@@ -110,6 +110,20 @@ export const solTokenItems = [
   },
 ]
 
+export const btcTokenItems = [
+  {
+    name: "BTC",
+    base: "Bitcoin",
+    network: "Bitcoin",
+    address: ['', ''],
+    numOfDecimals: 18,
+    bg: "#0ea5e9",
+    border: "#7dd3fc",
+    icon: "btc.svg",
+    networkIcon: "btc.svg"
+  },
+]
+
 const TokenItem: any = styled.div`
   > div {
     background-color: #58535B80;
@@ -129,10 +143,12 @@ function TokenSelector({ count, onSelect, networkID }: props) {
   const network = networksItems.find(item => item.id === networkID) as any
 
   useEffect(() => {
-    if (networkID !== 2) {
+    if (networkID === 1 || networkID === 42161) {
       setTokenItems(evmTokenItems)
-    } else {
+    } else if (networkID === 2) {
       setTokenItems(solTokenItems)
+    } else {
+      setTokenItems(btcTokenItems)
     }
   }, [networkID])
 

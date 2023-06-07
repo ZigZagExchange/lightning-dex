@@ -19,3 +19,13 @@ CREATE TABLE IF NOT EXISTS bridges(
     outgoing_timestamp TIMESTAMP,
     paid BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE IF NOT EXISTS deposits (
+  id TEXT,
+  deposit_currency TEXT,
+  deposit_address TEXT,
+  outgoing_currency TEXT,
+  outgoing_address TEXT,
+  completed BOOLEAN DEFAULT FALSE,
+  expiry TIMESTAMP
+)

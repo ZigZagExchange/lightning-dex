@@ -7,6 +7,8 @@ const nodeChildProcess = require('node:child_process');
 const util = require('node:util');
 const dotenv = require('dotenv');
 const { ethers } = require('ethers');
+const solana = require('@solana/web3.js')
+const {v4: uuid} = require('uuid')
 
 dotenv.config();
 
@@ -69,6 +71,31 @@ app.get("/history/:address", async (req, res, next) => {
       return next(e);
     }
 });
+
+function deriveSolanaDepositAddress (depositId) {
+  const masterPrivateKey = Buffer.from(process.env.SOL_LIQUIDITY_ACCOUNT_PRIV_KEY_BASE58, 'utf-8')
+  const seed = crypto.createHash('sha256').update(masterPrivateKey).update(depositId).digest()
+  return solana.Keypair.fromSeed(seed).publicKey.toString()
+}
+
+const SOL_DEPOSIT_EXPIRY_PERIOD = 3600 // 1 hour
+
+app.get('/sol_deposit', async (req, res, next) => {
+  const outgoingCurrency = req.query.outgoing_currency
+  const outgoingAddress = req.query.outgoing_address
+
+  if (outgoingCurrency !== 'ETH') return next('Only eth bridges supported')
+  if (!ethers.isAddress(outgoingAddress)) return next("Invalid outgoing_address")
+  
+  const depositId = uuid()
+  const depositAddress = deriveSolanaDepositAddress(depositId)
+  const expiry = Math.floor(new Date().getTime() / 1000) + SOL_DEPOSIT_EXPIRY_PERIOD
+  await db.query('INSERT INTO deposits (id, deposit_currency, deposit_address, outgoing_currency, outgoing_address, expiry) VALUES ($1,$2,$3,$4,$5,to_timestamp($6))', [depositId, 'SOL', depositAddress, outgoingCurrency, outgoingAddress, expiry])
+  return res.status(200).json({
+    deposit_address: depositAddress,
+    expires_at: expiry
+  })
+})
 
 app.use((err, req, res, next) => {
   console.error(err);

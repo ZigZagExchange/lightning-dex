@@ -23,7 +23,7 @@ updateDeposits()
 setInterval(updateDeposits, 30000)
 
 async function updateDeposits () {
-  const {rows: depositRequests} = await db.query("SELECT * FROM deposits WHERE expiry > NOW() AND completed = false AND deposit_currency = 'SOL'")
+  const {rows: depositRequests} = await db.query("SELECT * FROM sol_deposits WHERE expiry > NOW() AND completed = false")
 
   for (let request of depositRequests) {
     const addressSignatures = await connection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
@@ -32,7 +32,7 @@ async function updateDeposits () {
     const bridgesToInsert = incomingTransactionOnly.map(tx => {
       const txid = tx.transaction.signatures[0]
       const txValue = (tx.meta.preBalances[0] - tx.meta.postBalances[0] - tx.meta.fee) / LAMPORTS_PER_SOL
-      return [request.deposit_currency, request.deposit_address, txValue, txid, request.outgoing_currency, request.outgoing_address]
+      return ['SOL', request.deposit_address, txValue, txid, request.outgoing_currency, request.outgoing_address]
     })
 
     const {rows: alreadyProcessedDeposits} = await db.query("SELECT deposit_txid FROM bridges WHERE deposit_currency='SOL'")
@@ -41,7 +41,7 @@ async function updateDeposits () {
 
     for (let deposit of newDeposits) {
       console.log(`inserting deposit: ${deposit[3]} - ${deposit[2]} SOL`)
-      await db.query(`UPDATE deposits SET completed = true WHERE id=$1`, [request.id])
+      await db.query(`UPDATE sol_deposits SET completed = true WHERE id=$1`, [request.id])
       await db.query(
         `INSERT INTO bridges (deposit_currency, deposit_address, deposit_amount, deposit_txid, deposit_timestamp, outgoing_currency, outgoing_address) 
          VALUES ($1,$2,$3,$4,NOW(),$5,$6) 

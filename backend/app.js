@@ -87,7 +87,7 @@ app.get('/sol_deposit', async (req, res, next) => {
   const depositId = uuid()
   const depositAddress = deriveSolanaDepositAddress(depositId)
   const expiry = Math.floor(new Date().getTime() / 1000) + SOL_DEPOSIT_EXPIRY_PERIOD
-  await db.query('INSERT INTO deposits (id, deposit_currency, deposit_address, outgoing_currency, outgoing_address, expiry) VALUES ($1,$2,$3,$4,$5,to_timestamp($6))', [depositId, 'SOL', depositAddress, outgoingCurrency, outgoingAddress, expiry])
+  await db.query('INSERT INTO sol_deposits (id, deposit_address, outgoing_currency, outgoing_address, expiry) VALUES ($1,$2,$3,$4,to_timestamp($5))', [depositId, depositAddress, outgoingCurrency, outgoingAddress, expiry])
   return res.status(200).json({
     deposit_address: depositAddress,
     expires_at: expiry

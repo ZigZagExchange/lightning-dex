@@ -1,10 +1,8 @@
 import { ReactNode, useState, useEffect, useContext } from "react"
-import { toast } from 'react-toastify'
 import { useRouter } from "next/router"
 import Link from "next/link"
 import Image from "next/image"
-import { useAccount, useBalance, useConnect, useDisconnect, Connector, useNetwork, useSwitchNetwork } from "wagmi"
-import { PublicKey } from '@solana/web3.js'
+import { useAccount, useBalance, useNetwork, useSwitchNetwork } from "wagmi"
 
 import logo from "../../public/img/zz.svg"
 import styles from "./Layout.module.css"
@@ -18,13 +16,14 @@ import Modal, { ModalMode } from "../bridge/modal/Modal"
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
-import usePhantom from "../../hooks/usePhantom"
 
 interface Balance {
   address: `0x${string}` | undefined
   token?: `0x${string}`
   chainId?: number
+  enabled: boolean
 }
+
 interface LayoutProps {
   children?: ReactNode
 }
@@ -32,12 +31,8 @@ interface LayoutProps {
 function Layout(props: LayoutProps) {
   const router = useRouter()
   const { isConnected: isConnectedMetaMask, address } = useAccount()
-  const { connectAsync, connectors } = useConnect()
-  const { disconnectAsync } = useDisconnect()
-  const { phantomProvider } = usePhantom()
   const { chain: metaMaskChain } = useNetwork()
-  const { chains, error, isLoading, pendingChainId, switchNetworkAsync } =
-    useSwitchNetwork()
+  const { switchNetworkAsync } = useSwitchNetwork()
 
   const {
     chain,
@@ -46,7 +41,6 @@ function Layout(props: LayoutProps) {
     updateAddress,
     updateBalance,
     updateIsLoading,
-    updateIsConnected,
   } = useContext(WalletContext)
 
   const token = networksItems.filter((item) => item.id === orgChainId)
@@ -54,9 +48,11 @@ function Layout(props: LayoutProps) {
   const option: Balance = orgChainId === 1 ? {
     address,
     chainId: orgChainId,
+    enabled: isConnectedMetaMask ? true : false,
   } : {
     address,
     token: `0x${token[0].token}`,
+    enabled: isConnectedMetaMask ? true : false,
   }
 
   const { data, isSuccess } = useBalance(option)
@@ -64,33 +60,28 @@ function Layout(props: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false)
   const [modal, setModal] = useState<ModalMode>(null)
 
-  // useEffect(() => {
-  //   // @ts-ignore
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     // @ts-ignore
-  //     if (window.ethereum.isConnected() && chain === Chain.evm && !isConnected) {
-  //       handleAutoConnectMetaMask(connectors[0])
-  //     }
-  //   }
-  // }, [])
-
   useEffect(() => {
-    if (isConnectedMetaMask && address && data && isSuccess) {
-      updateIsConnected('MataMask')
+    if (isConnected === 'MataMask' && isConnectedMetaMask && address && data && isSuccess) {
       updateAddress(address)
       updateBalance(`${parseFloat(data.formatted).toFixed(2)} ${data.symbol}`)
     }
-  }, [address, data, isConnectedMetaMask, isSuccess])
+  }, [isConnected, address, data, isConnectedMetaMask, isSuccess])
 
   useEffect(() => {
-    if (isConnectedMetaMask && switchNetworkAsync && metaMaskChain?.id !== orgChainId) {
+    if (
+      isConnected === 'MataMask'
+      && isConnectedMetaMask
+      && switchNetworkAsync
+      && metaMaskChain?.id !== orgChainId
+      && chain === Chain.evm
+    ) {
       handleSwitchNetwork()
     }
-  }, [isConnectedMetaMask, switchNetworkAsync, orgChainId, metaMaskChain])
+  }, [chain, isConnected, isConnectedMetaMask, switchNetworkAsync, orgChainId, metaMaskChain])
 
   const handleSwitchNetwork = async () => {
     try {
-      if (switchNetworkAsync) {
+      if (isConnected === 'MataMask' && isConnectedMetaMask && switchNetworkAsync) {
         updateIsLoading(true)
         await switchNetworkAsync(orgChainId)
       }

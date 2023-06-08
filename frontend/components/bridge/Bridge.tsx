@@ -173,11 +173,13 @@ function Bridge() {
 
         if (orgChainId === 2) {
           await handleDisconnectPhantom()
-          await handleConnectMetaMask(connectors[0])
-          onSwitchNetwork(id)
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(id)
+          setModal("connectWallet")
         } else if (orgChainId === 3 || orgChainId === 4) {
-          await handleConnectMetaMask(connectors[0])
-          onSwitchNetwork(id)
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(id)
+          setModal("connectWallet")
         }
 
         if (destChainId === id) {
@@ -188,7 +190,6 @@ function Bridge() {
           }
         }
       } else if (id === 2) {
-        console.log(111)
         updateChain(Chain.solana)
 
         if (orgChainId === 1 || orgChainId === 42161) {
@@ -334,9 +335,10 @@ function Bridge() {
           updateOrgChainId(destChainId)
           if (destChainId === 1 || destChainId === 42161) {
             await handleDisconnectPhantom()
-            await handleConnectMetaMask(connectors[0])
-            onSwitchNetwork(destChainId)
+            // await handleConnectMetaMask(connectors[0])
+            // onSwitchNetwork(destChainId)
             updateChain(Chain.evm)
+            setModal("connectWallet")
           }
           if (destChainId === 3 || destChainId === 4) {
             await handleDisconnectPhantom()
@@ -348,9 +350,10 @@ function Bridge() {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
           if (destChainId === 1 || destChainId === 42161) {
-            await handleConnectMetaMask(connectors[0])
+            // await handleConnectMetaMask(connectors[0])
             updateChain(Chain.evm)
-            onSwitchNetwork(destChainId)
+            // onSwitchNetwork(destChainId)
+            setModal("connectWallet")
           } else if (destChainId === 2) {
             await handleConnectPhantom()
             updateChain(Chain.solana)
@@ -359,32 +362,6 @@ function Bridge() {
           }
         }
       }
-
-      // // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
-      // if (chain === Chain.btc) {
-      //   // Update destination chain to selected chain
-      //   updateDestChainId(id)
-
-      //   updateCurrentAction('Destination')
-      //   return
-      // }
-
-      // if (!isConnected) {
-      //   setModal("connectWallet")
-      //   return
-      // }
-
-      // // Update destination chain to selected chain
-      // updateDestChainId(id)
-
-      // updateCurrentAction('Destination')
-
-      // if (orgChainId === 2 && chain === Chain.solana) {
-      //   await handleDisconnectPhantom()
-      //   updateOrgChainId(1)
-      //   updateChain(Chain.evm)
-      //   setModal("connectWallet")
-      // }
     } catch (err: any) {
       console.log(err?.message || err)
     } finally {
@@ -400,16 +377,21 @@ function Bridge() {
 
       const current = [...[orgChainId], ...[destChainId]]
 
+      updateOrgChainId(current[1])
+      updateDestChainId(current[0])
+
       if (destChainId === 1 || destChainId === 42161) {
         updateChain(Chain.evm)
         if (orgChainId === 1 || orgChainId === 42161) {
           onSwitchNetwork(destChainId)
         } else if (orgChainId === 2) {
           await handleDisconnectPhantom()
-          await handleConnectMetaMask(connectors[0])
+          // await handleConnectMetaMask(connectors[0])
+          setModal("connectWallet")
         } else {
-          await handleConnectMetaMask(connectors[0])
-          onSwitchNetwork(destChainId)
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(destChainId)
+          setModal("connectWallet")
         }
       } else if (destChainId === 2) {
         updateChain(Chain.solana)
@@ -426,9 +408,6 @@ function Bridge() {
           await handleDisconnectPhantom()
         }
       }
-
-      updateOrgChainId(current[1])
-      updateDestChainId(current[0])
     } catch (err: any) {
       console.log(err?.message || err)
     } finally {

@@ -777,25 +777,6 @@ function Bridge() {
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
       <SendTransaction></SendTransaction>
-      <span
-          style={{
-            display: 'flex',
-            margin: '5rem',
-            cursor: 'pointer'
-          }}
-          onClick={() => setIsWizardOpen(!isWizardOpen)}
-        >
-          Transaction Intention Started
-      </span>
-        <TransactionWizardModal
-          show={isWizardOpen}
-          handleClose={() => setIsWizardOpen(false)}
-        >
-          <div style={{ color: "black" }}>
-            <h1>Transaction Wizard </h1>
-              </div>
-
-        </TransactionWizardModal>
     </>
   )
 }

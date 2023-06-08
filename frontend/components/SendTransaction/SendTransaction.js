@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { utils } from 'ethers';
 import { styled } from 'styled-components';
+import { TransactionWizardModal } from "../bridge/modals/transactionWizardModal/TransactionWizardModal"
 
 const StyledInput = styled.input`
   background-color: black;
 `;
 
 export function SendTransaction() {
+    const [isWizardOpen, setIsWizardOpen] = useState(false)
+
     const [amount, setAmount] = useState('');
     const [to, setTo] = useState('');
     const [debouncedAmount, setDebouncedAmount] = useState('');
@@ -48,6 +51,7 @@ export function SendTransaction() {
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
+                    setIsWizardOpen(!isWizardOpen);
                     write?.();
                 }}
             >
@@ -74,6 +78,15 @@ export function SendTransaction() {
             {error && (
                 <div>An error occurred preparing the transaction: {error.message}</div>
             )}
+            <TransactionWizardModal
+                show={isWizardOpen}
+                handleClose={() => setIsWizardOpen(false)}
+            >
+                <div style={{ color: "black" }}>
+                    <h1>Transaction Wizard </h1>
+                </div>
+
+            </TransactionWizardModal>
         </>
     );
 }

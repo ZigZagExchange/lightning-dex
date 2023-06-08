@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useContractWrite, usePrepareContractWrite } from 'wagmi';
 import { utils } from 'ethers';
 import { styled } from 'styled-components';
-import { useDebounce } from 'use-debounce';
 
 const StyledInput = styled.input`
   background-color: black;
@@ -11,8 +10,28 @@ const StyledInput = styled.input`
 export function SendTransaction() {
     const [amount, setAmount] = useState('');
     const [to, setTo] = useState('');
-    const [debouncedAmount] = useDebounce(amount, 500);
-    const [debouncedTo] = useDebounce(to, 500);
+    const [debouncedAmount, setDebouncedAmount] = useState('');
+    const [debouncedTo, setDebouncedTo] = useState('');
+
+    const debounce = (func, delay) => {
+        let timeoutId;
+
+        return function (...args) {
+            clearTimeout(timeoutId);
+
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    };
+
+    const debouncedAmountChange = debounce((value) => {
+        setDebouncedAmount(value);
+    }, 500);
+
+    const debouncedToChange = debounce((value) => {
+        setDebouncedTo(value);
+    }, 500);
 
     const { config, error } = usePrepareContractWrite({
         address: '0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208',
@@ -34,13 +53,19 @@ export function SendTransaction() {
             >
                 <StyledInput
                     aria-label="Amount (ether)"
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => {
+                        setAmount(e.target.value);
+                        debouncedAmountChange(e.target.value);
+                    }}
                     placeholder="0.05"
                     value={amount}
                 />
                 <StyledInput
                     aria-label="BTC receiving address"
-                    onChange={(e) => setTo(e.target.value)}
+                    onChange={(e) => {
+                        setTo(e.target.value);
+                        debouncedToChange(e.target.value);
+                    }}
                     placeholder="bc1qd...et62"
                     value={to}
                 />

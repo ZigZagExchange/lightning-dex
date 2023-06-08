@@ -1,7 +1,6 @@
 import { useState, useContext, useEffect } from "react"
-import { toast } from 'react-toastify'
 import Image from "next/image"
-import { useNetwork, useSwitchNetwork, useDisconnect } from 'wagmi'
+import { useSwitchNetwork, useConnect } from 'wagmi'
 
 import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
@@ -11,8 +10,8 @@ import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
-import { evmTokenItems, solTokenItems } from "./tokenSelector/TokenSelector"
-import usePhantom from "../../hooks/usePhantom"
+import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
+import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 
 export enum SellValidationState {
@@ -31,9 +30,8 @@ export enum BuyValidationState {
 }
 
 function Bridge() {
-  const { disconnectAsync } = useDisconnect()
   const { switchNetworkAsync } = useSwitchNetwork()
-  const { chain } = useNetwork()
+  const { connectors } = useConnect()
   const {
     address,
     balance: nativeBalance,
@@ -42,7 +40,6 @@ function Bridge() {
     chain: walletChain,
     orgChainId: _orgChainId,
     destChainId: _destChainId,
-    currentAction,
     updateChain,
     updateOrgChainId,
     updateDestChainId,
@@ -50,7 +47,12 @@ function Bridge() {
     updateIsConnected,
     updateCurrentAction
   } = useContext(WalletContext)
-  const { phantomProvider } = usePhantom()
+  const {
+    handleConnectMetaMask,
+    handleConnectPhantom,
+    handleDisconnectMetaMask,
+    handleDisconnectPhantom,
+  } = useHandleWallet()
 
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)
@@ -77,58 +79,22 @@ function Bridge() {
   }, [_destChainId])
 
   useEffect(() => {
-    // If Chain is "EVM", please switch Network
-    if (isConnected === 'MataMask' && chain?.id !== orgChainId)
-      onSwitchNetwork(orgChainId)
-  }, [isConnected, orgChainId])
-
-  useEffect(() => {
-    if (destChainId === orgChainId) {
-      if (currentAction === 'Destination') {
-        updateChain(Chain.evm)
-
-        if (walletChain === Chain.solana || destChainId !== 1) {
-          // Update origin chain
-          updateOrgChainId(1)
-          onSwitchNetwork(1)
-        } else {
-          updateOrgChainId(42161)
-        }
-      }
-
-      if (currentAction === 'Origin') {
-        if (destChainId === 1) {
-          onSwitchNetwork(42161)
-          updateDestChainId(42161)
-        } else if (destChainId === 42161) {
-          onSwitchNetwork(1)
-          updateDestChainId(1)
-        } else {
-          updateDestChainId(1)
-        }
-      }
-    }
-  }, [destChainId, orgChainId])
-
-  useEffect(() => {
-    if (isConnected === 'MataMask' && currentAction === 'Swap') {
-      onSwitchNetwork(orgChainId)
-    }
-  }, [isConnected, currentAction, orgChainId])
-
-  useEffect(() => {
-    if (orgChainId !== 2) {
+    if (orgChainId === 1 || orgChainId === 42161) {
       setOrgTokenItem(evmTokenItems[0])
-    } else {
+    } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
+    } else {
+      setOrgTokenItem(btcTokenItems[0])
     }
   }, [orgChainId])
 
   useEffect(() => {
-    if (destChainId !== 2) {
+    if (destChainId === 1 || destChainId === 42161) {
       setDestTokenItem(evmTokenItems[0])
-    } else {
+    } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
+    } else {
+      setDestTokenItem(btcTokenItems[0])
     }
   }, [destChainId])
 
@@ -178,19 +144,6 @@ function Bridge() {
     }
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
-  const handleDisconnectPhantom = async () => {
-    updateIsLoading(true)
-
-    try {
-      await phantomProvider?.disconnect()
-      updateIsConnected(null)
-    } catch (err: any) {
-      console.log(err?.message || err)
-    } finally {
-      updateIsLoading(false)
-    }
-  }
-
   const handleTokenClick = (newTokenAddress: string) => {
     setModal(null)
   }
@@ -213,77 +166,53 @@ function Bridge() {
     updateIsLoading(true)
 
     try {
-      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
-      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
-
-      const chain =
-        _chain === 'Solana'
-          ? Chain.solana
-          : Chain.evm
-
-      updateChain(chain)
-
-      // Update origin chain
       updateOrgChainId(id)
-      localStorage.setItem('orgChainId', id.toString())
 
-      // Check if wallet is connected or not
-      if (!isConnected) {
-        setModal("connectWallet")
-        return
-      }
+      if (id === 1 || id === 42161) {
+        updateChain(Chain.evm)
 
-      updateCurrentAction('Origin')
+        if (orgChainId === 2) {
+          await handleDisconnectPhantom()
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(id)
+          setModal("connectWallet")
+        } else if (orgChainId === 3 || orgChainId === 4) {
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(id)
+          setModal("connectWallet")
+        }
 
-      // Check if an origin chain corresponds to wallet chain
-      if (walletChain !== chain) {
-        if (walletChain === Chain.evm) {
-          // Disconnect wallet
-          await disconnectAsync()
-          updateIsConnected(null)
-        } else {
+        if (destChainId === id) {
+          updateDestChainId(orgChainId)
+
+          if (orgChainId === 1 || orgChainId === 42161) {
+            onSwitchNetwork(id)
+          }
+        }
+      } else if (id === 2) {
+        updateChain(Chain.solana)
+
+        if (orgChainId === 1 || orgChainId === 42161) {
+          await handleDisconnectMetaMask()
+          await handleConnectPhantom()
+        } else if (orgChainId === 3 || orgChainId === 4) {
+          await handleConnectPhantom()
+        }
+
+        if (destChainId === id) {
+          updateDestChainId(orgChainId)
+        }
+      } else {
+        updateChain(Chain.btc)
+
+        if (orgChainId === 1 || orgChainId === 42161) {
+          await handleDisconnectMetaMask()
+        } else if (orgChainId === 2) {
           await handleDisconnectPhantom()
         }
 
-        setModal("connectWallet")
-      } else {
-        // Check what wallet has been connected to Dapp
-        if (chain === 'EVM') {
-          // Check if MetaMask is installed and connected
-
-          // @ts-ignore
-          if (typeof window.ethereum !== 'undefined') {
-            // @ts-ignore
-            if (window.ethereum.isConnected()) {
-              console.log('MetaMask is connected!')
-            } else {
-              // Other wallet is connected
-              await handleDisconnectPhantom()
-              setModal("connectWallet")
-            }
-          } else {
-            console.log('No MetaMask Wallet detected. Please install MetaMask Wallet!')
-          }
-        } else {
-          // @ts-ignore
-          if (typeof window.solana !== 'undefined') {
-            // Wallet is installed, so you can access the connected wallet information
-
-            // @ts-ignore
-            const { isPhantom } = window.solana
-
-            if (isPhantom) {
-              // Phantom wallet is connected
-              console.log('Connected wallet: Phantom')
-            } else {
-              // Other Solana wallet is connected
-              await disconnectAsync()
-              updateIsConnected(null)
-              setModal("connectWallet")
-            }
-          } else {
-            console.log('No Phantom Wallet detected. Please install Phantom Wallet!')
-          }
+        if (destChainId === id) {
+          updateDestChainId(orgChainId)
         }
       }
     } catch (err: any) {
@@ -291,36 +220,147 @@ function Bridge() {
     } finally {
       updateIsLoading(false)
     }
+
+    // try {
+    //   const chain =
+    //     _chain === 'Solana'
+    //       ? Chain.solana
+    //       : _chain === 'Bitcoin' || _chain === 'Lightning'
+    //         ? Chain.btc
+    //         : Chain.evm
+
+    //   updateChain(chain)
+
+    //   // Update origin chain
+    //   updateOrgChainId(id)
+
+    //   // Check if chain is 'Bitcoin' or 'Lightning'. If yes, disconnect all wallets
+    //   if (chain === Chain.btc) {
+    //     await disconnectAsync()
+    //     await handleDisconnectPhantom()
+    //     updateCurrentAction('Origin')
+    //     return
+    //   }
+
+    //   // Check if wallet is connected or not
+    //   if (!isConnected) {
+    //     setModal("connectWallet")
+    //     return
+    //   }
+
+    //   updateCurrentAction('Origin')
+
+    //   // Check if an origin chain corresponds to wallet chain
+    //   if (walletChain !== chain) {
+    //     if (walletChain === Chain.evm) {
+    //       // Disconnect wallet
+    //       await disconnectAsync()
+    //       updateIsConnected(null)
+    //     } else {
+    //       await handleDisconnectPhantom()
+    //     }
+
+    //     setModal("connectWallet")
+    //   } else {
+    //     // Check what wallet has been connected to Dapp
+    //     if (chain === 'EVM') {
+    //       // Check if MetaMask is installed and connected
+
+    //       // @ts-ignore
+    //       if (typeof window.ethereum !== 'undefined') {
+    //         // @ts-ignore
+    //         if (window.ethereum.isConnected()) {
+    //           console.log('MetaMask is connected!')
+    //         } else {
+    //           // Other wallet is connected
+    //           await handleDisconnectPhantom()
+    //           setModal("connectWallet")
+    //         }
+    //       } else {
+    //         console.log('No MetaMask Wallet detected. Please install MetaMask Wallet!')
+    //       }
+    //     } else {
+    //       // @ts-ignore
+    //       if (typeof window.solana !== 'undefined') {
+    //         // Wallet is installed, so you can access the connected wallet information
+
+    //         // @ts-ignore
+    //         const { isPhantom } = window.solana
+
+    //         if (isPhantom) {
+    //           // Phantom wallet is connected
+    //           console.log('Connected wallet: Phantom')
+    //         } else {
+    //           // Other Solana wallet is connected
+    //           await disconnectAsync()
+    //           updateIsConnected(null)
+    //           setModal("connectWallet")
+    //         }
+    //       } else {
+    //         console.log('No Phantom Wallet detected. Please install Phantom Wallet!')
+    //       }
+    //     }
+    //   }
+    // } catch (err: any) {
+    //   console.log(err?.message || err)
+    // } finally {
+    //   updateIsLoading(false)
+    // }
   }
 
-  const changeDestNetworkID = async (id: number, _chain: string) => {
+  const changeDestNetworkID = async (id: number) => {
     updateIsLoading(true)
 
     try {
-      // Check if chain is 'Bitcoin' or 'Lightning'. If yes, return null
-      if (_chain === 'Bitcoin' || _chain === 'Lightning') return
-
-      const chain =
-        _chain === 'Solana'
-          ? Chain.solana
-          : Chain.evm
-
-      if (!isConnected) {
-        setModal("connectWallet")
-        return
-      }
-
-      // Update destination chain to selected chain
       updateDestChainId(id)
-      localStorage.setItem('destChainId', id.toString())
 
-      updateCurrentAction('Destination')
-
-      if (orgChainId === 2 && chain === Chain.solana) {
-        await handleDisconnectPhantom()
-        updateOrgChainId(1)
-        updateChain(Chain.evm)
-        setModal("connectWallet")
+      if (id === 1 || id === 42161) {
+        if (orgChainId === id) {
+          updateOrgChainId(destChainId)
+          if (destChainId === 1 || destChainId === 42161) {
+            onSwitchNetwork(destChainId)
+            updateChain(Chain.evm)
+          } else if (destChainId === 2) {
+            await handleDisconnectMetaMask()
+            await handleConnectPhantom()
+            updateChain(Chain.solana)
+          } else {
+            await handleDisconnectMetaMask()
+            updateIsConnected(null)
+            updateChain(Chain.btc)
+          }
+        }
+      } else if (id === 2) {
+        if (orgChainId === 2) {
+          updateOrgChainId(destChainId)
+          if (destChainId === 1 || destChainId === 42161) {
+            await handleDisconnectPhantom()
+            // await handleConnectMetaMask(connectors[0])
+            // onSwitchNetwork(destChainId)
+            updateChain(Chain.evm)
+            setModal("connectWallet")
+          }
+          if (destChainId === 3 || destChainId === 4) {
+            await handleDisconnectPhantom()
+            updateChain(Chain.btc)
+            updateIsConnected(null)
+          }
+        }
+      } else {
+        if (orgChainId === id) {
+          updateOrgChainId(destChainId)
+          if (destChainId === 1 || destChainId === 42161) {
+            // await handleConnectMetaMask(connectors[0])
+            updateChain(Chain.evm)
+            // onSwitchNetwork(destChainId)
+            setModal("connectWallet")
+          } else if (destChainId === 2) {
+            await handleConnectPhantom()
+            updateChain(Chain.solana)
+          } else {
+            updateChain(Chain.btc)
+          }
+        }
       }
     } catch (err: any) {
       console.log(err?.message || err)
@@ -331,31 +371,43 @@ function Bridge() {
 
   const swapNetwork = async () => {
     try {
-      if (!isConnected) {
-        setModal("connectWallet")
-        return
-      }
-
       updateIsLoading(true)
 
       updateCurrentAction('Swap')
 
       const current = [...[orgChainId], ...[destChainId]]
 
-      if (current[1] === 2) {
-        await disconnectAsync()
-        updateIsConnected(null)
-        updateChain(Chain.solana)
-        setModal("connectWallet")
-      } else {
-        updateChain(Chain.evm)
-        if (current[0] === 2) {
-          await handleDisconnectPhantom()
-          setModal("connectWallet")
-        }
-      }
       updateOrgChainId(current[1])
       updateDestChainId(current[0])
+
+      if (destChainId === 1 || destChainId === 42161) {
+        updateChain(Chain.evm)
+        if (orgChainId === 1 || orgChainId === 42161) {
+          onSwitchNetwork(destChainId)
+        } else if (orgChainId === 2) {
+          await handleDisconnectPhantom()
+          // await handleConnectMetaMask(connectors[0])
+          setModal("connectWallet")
+        } else {
+          // await handleConnectMetaMask(connectors[0])
+          // onSwitchNetwork(destChainId)
+          setModal("connectWallet")
+        }
+      } else if (destChainId === 2) {
+        updateChain(Chain.solana)
+        if (orgChainId === 1 || orgChainId === 42161) {
+          await handleDisconnectMetaMask()
+          await handleConnectPhantom()
+        } else {
+          await handleConnectPhantom()
+        }
+      } else {
+        updateChain(Chain.btc)
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 2) {
+          await handleDisconnectMetaMask()
+          await handleDisconnectPhantom()
+        }
+      }
     } catch (err: any) {
       console.log(err?.message || err)
     } finally {
@@ -587,7 +639,7 @@ function Bridge() {
                         <button
                           className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
                           key={`${item.name}-${item.token}`}
-                          onClick={() => changeDestNetworkID(item.id, item.name)}
+                          onClick={() => changeDestNetworkID(item.id)}
                         >
                           <div className="inline-block">
                             <Image src={`/tokenIcons/${item.icon}`} width={22} height={22} className="duration-300 rounded-full hover:scale-125" alt={item.name} />

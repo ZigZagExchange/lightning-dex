@@ -7,6 +7,7 @@ import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
+import { TransactionWizardModal } from "./modals/transactionWizardModal/TransactionWizardModal"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
@@ -432,6 +433,8 @@ function Bridge() {
     setAmount(balance)
   }
 
+  const [isWizardOpen, setIsWizardOpen] = useState(false)
+
   return (
     <>
       <div className="pb-3 place-self-center">
@@ -774,6 +777,25 @@ function Bridge() {
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
       <SendTransaction></SendTransaction>
+      <span
+          style={{
+            display: 'flex',
+            margin: '5rem',
+            cursor: 'pointer'
+          }}
+          onClick={() => setIsWizardOpen(!isWizardOpen)}
+        >
+          Transaction Intention Started
+      </span>
+        <TransactionWizardModal
+          show={isWizardOpen}
+          handleClose={() => setIsWizardOpen(false)}
+        >
+          <div style={{ color: "black" }}>
+            <h1>Transaction Wizard </h1>
+              </div>
+
+        </TransactionWizardModal>
     </>
   )
 }

@@ -9,6 +9,8 @@ function ConnectWallet(
   const { address, isConnected } = useContext(WalletContext)
   const [text, setText] = useState("Connect Wallet")
 
+
+
   useEffect(() => {
     if (address && isConnected) {
       setText(formatAddress(address))

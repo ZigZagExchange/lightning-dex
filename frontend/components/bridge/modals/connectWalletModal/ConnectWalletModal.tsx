@@ -1,11 +1,8 @@
 import Image from "next/image"
 import { useState, useContext } from "react"
-import { toast } from "react-toastify"
-import { useConnect, useDisconnect, Connector } from 'wagmi'
-import { PublicKey } from '@solana/web3.js'
-import usePhantom from "../../../../hooks/usePhantom"
+import { useConnect, Connector } from 'wagmi'
+import useHandleWallet from "../../../../hooks/useHandleWallet"
 import { Chain, WalletContext } from "../../../../contexts/WalletContext"
-import { getSOLTokenBalance } from "../../../../utils/getTokenBalance"
 import FlexBox from "../../../FlexBox"
 import Loader from "../../../loader"
 import styles from "./ConnectWalletModal.module.scss"
@@ -44,31 +41,27 @@ const WalletItem = ({ disabled, icon, name, isLoading, handleConnect }: WalletIt
 )
 
 function ConnectWalletModal({ close }: ConnectWalletModalProps) {
-    const { phantomProvider } = usePhantom()
-    const { connectAsync, connectors } = useConnect()
-    const { disconnectAsync } = useDisconnect()
+    const {
+        handleConnectMetaMask,
+        handleConnectPhantom,
+    } = useHandleWallet()
+
+    const { connectors } = useConnect()
     const {
         chain,
         isLoading,
-        isConnected,
-        updateAddress,
-        updateBalance,
         updateIsLoading,
-        updateIsConnected,
         updateCurrentAction
     } = useContext(WalletContext)
 
     const [network, setNetwork] = useState('metaMask')
 
-    const handleConnectMetaMask = async (connector: Connector) => {
+    const connectMetaMask = async (connector: Connector) => {
+        updateIsLoading(true)
         try {
             setNetwork(connector.id)
-            updateIsLoading(true)
-            if (isConnected === 'Phantom' && phantomProvider) {
-                await phantomProvider.disconnect()
-            }
-            await connectAsync({ connector })
-            updateIsConnected('MataMask')
+
+            await handleConnectMetaMask(connector)
         } catch (err: any) {
             console.log(err?.message || err)
         } finally {
@@ -77,23 +70,11 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
         }
     }
 
-    const handleConnectPhantom = async () => {
+    const connectPhantom = async () => {
+        updateIsLoading(true)
+
         try {
-            if (!phantomProvider) {
-                console.log('Please install Phantom Wallet!')
-                return
-            }
-
-            updateIsLoading(true)
-
-            if (isConnected === 'MataMask') await disconnectAsync()
-
-            const { publicKey }: { publicKey: PublicKey } = await phantomProvider.connect()
-            const balance = await getSOLTokenBalance(publicKey)
-
-            updateIsConnected('Phantom')
-            updateAddress(publicKey.toString())
-            updateBalance(`${(balance / Math.pow(10, 9)).toFixed(2)} SOL`)
+            await handleConnectPhantom()
         } catch (err: any) {
             console.log(err?.message || err)
         } finally {
@@ -140,7 +121,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
                                     name={connector.name}
                                     isLoading={isLoading && network === connector.id}
                                     disabled={!connector.ready || isLoading}
-                                    handleConnect={() => handleConnectMetaMask(connector)}
+                                    handleConnect={() => connectMetaMask(connector)}
                                 />
                             ))
                         ) : (
@@ -149,7 +130,7 @@ function ConnectWalletModal({ close }: ConnectWalletModalProps) {
                                 name='Phantom'
                                 isLoading={isLoading}
                                 disabled={isLoading}
-                                handleConnect={handleConnectPhantom}
+                                handleConnect={connectPhantom}
                             />
                         )}
                     </div>

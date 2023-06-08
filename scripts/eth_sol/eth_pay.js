@@ -21,11 +21,19 @@ const ethWallet = new ethers.Wallet(process.env.ETH_PRIVKEY, ethersProvider);
 const FEE_MULTIPLIER = 0.998
 
 makePayments()
-setInterval(makePayments, 5000)
 
 async function makePayments () {
   const {rows: unpaidBridges} = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'ETH' AND outgoing_address IS NOT NULL AND deposit_currency='SOL'");
-  const ethSolPrice = await getEthSolPrice()
+
+  let ethSolPrice;
+  try {
+    ethSolPrice = await getEthSolPrice()
+  } catch (e) {
+    console.error("Error fetching ETH-SOL price");
+    console.error(e);
+    setTimeout(makePayments, 5000);
+    return;
+  }
 
   let feeData; 
   try {
@@ -83,6 +91,8 @@ async function makePayments () {
 
     console.log(`Trade Executed: ${bridge.deposit_amount} SOL for ${readable_outgoing_amount} ETH. Price ${ethSolPrice}. TXID: ${outgoing_txid}`);
   }
+
+  setTimeout(makePayments, 5000);
 }
 
 function getEthSolPrice () {

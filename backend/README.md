@@ -18,7 +18,7 @@ The following currencies are supported by the API:
 
 ## Endpoints
 
-#### GET /btc_deposit
+### GET /btc_deposit
 
 Generate a deposit address to swap BTC for ETH.
 
@@ -37,7 +37,7 @@ Response:
 }
 ```
 
-##### /sol_deposit
+### GET /sol_deposit
 
 Generate a deposit address to swap SOL for ETH
 
@@ -56,7 +56,7 @@ Response:
 
 
 
-###### GET /history/:address
+### GET /history/:address
 
 Get an account's bridging history. 
 

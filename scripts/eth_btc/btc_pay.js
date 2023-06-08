@@ -11,7 +11,7 @@ const exec = util.promisify(nodeChildProcess.exec);
 const db = new pg.Pool({
   host: 'localhost',
   port: 5432,
-  database: 'zap',
+  database: process.env.POSTGRES_DB,
   user: 'postgres',
   password: 'postgres'
 });

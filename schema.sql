@@ -27,4 +27,4 @@ CREATE TABLE IF NOT EXISTS sol_deposits (
   outgoing_address TEXT,
   completed BOOLEAN DEFAULT FALSE,
   expiry TIMESTAMP
-)
+);

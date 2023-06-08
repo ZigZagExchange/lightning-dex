@@ -5,31 +5,53 @@ import { styled } from 'styled-components'
 import { useDebounce } from 'use-debounce'
 
 export function SendTransaction() {
+    const [to, setTo] = useState('')
+    const [debouncedTo] = useDebounce(to, 500)
 
-    // const response = usePrepareSendTransaction({
-    //     to: 'moxey.eth',
-    //     value: utils.parseEther('0.1'),
-    // })
-    // console.log(response.data)
+    const [amount, setAmount] = useState('')
+    const [debouncedAmount] = useDebounce(amount, 500)
 
     const request = usePrepareSendTransaction({
-        to: 'moxey.eth',
-        value: utils.parseEther('0.1'),
-        maxFeePerGas: utils.parseEther('50') * 10 ** -9
+        to: debouncedTo,
+        value: debouncedAmount ? utils.parseEther(debouncedAmount)._hex : undefined,
     })
+    let error;
+    if (request.error) {
+        error = request.error
+    }
 
     const { sendTransaction } = useSendTransaction(request.data)
-    console.log(request)
+
+    const StyledInput = styled.input`
+  color: red;
+`;
 
 
     return (
         <>
-            <button disabled={!sendTransaction} onClick={() => sendTransaction?.()}>
-                Send Transaction
-            </button>
-            {/* {error && (
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    sendTransaction?.()
+                }}
+            >
+                <StyledInput
+                    aria-label="Recipient"
+                    onChange={(e) => setTo(e.target.value)}
+                    placeholder="0xA0Cf…251e"
+                    value={to}
+                />
+                <StyledInput
+                    aria-label="Amount (ether)"
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.05"
+                    value={amount}
+                />
+                <button disabled={!sendTransaction || !to || !amount}>Send</button>
+            </form>
+            {error && (
                 <div>An error occurred preparing the transaction: {error.message}</div>
-            )} */}
+            )}
         </>
     )
 }

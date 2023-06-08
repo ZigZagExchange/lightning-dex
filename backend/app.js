@@ -9,6 +9,7 @@ const dotenv = require('dotenv');
 const { ethers } = require('ethers');
 const solana = require('@solana/web3.js')
 const {v4: uuid} = require('uuid')
+const axios = require('axios')
 
 dotenv.config();
 
@@ -94,6 +95,25 @@ app.get('/sol_deposit', async (req, res, next) => {
   return res.status(200).json({
     deposit_address: depositAddress,
     expires_at: expiry
+  })
+})
+
+app.get('/prices', async (_, res) => {
+  const gmxPrices = await axios.get('https://api.gmx.io/prices').then(({ data })=> ({
+    btc_usd: data['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'] / 1e30,
+    eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30 
+  }))
+  const coinCapPrices = await axios.get('https://api.coincap.io/v2/assets', {
+    headers: {
+      'Authorization': `Bearer ${process.env.COIN_CAP_API_KEY}`
+    }
+  }).then(({data}) => ({
+    sol_usd: Number(data.data.find(asset => asset.id === 'solana').priceUsd)
+  }))
+
+  return res.status(200).json({
+    ...gmxPrices,
+    ...coinCapPrices
   })
 })
 

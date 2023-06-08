@@ -24,9 +24,7 @@ Generate a deposit address to swap BTC for ETH.
 
 Example Request:
 
-```
 https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
-```
 
 Response:
 
@@ -45,9 +43,7 @@ Generate a deposit address to swap SOL for ETH
 
 Example Request:
 
-```
 https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
-```
 
 Response:
 
@@ -66,9 +62,7 @@ Get an account's bridging history.
 
 Example Request:
 
-```
 https://api.zap.zigzag.exchange/history/0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
-```
 
 Response:
 
@@ -93,9 +87,7 @@ Response:
 
 Example Request:
 
-```
 https://api.zap.zigzag.exchange/prices
-```
 
 Response
 ```

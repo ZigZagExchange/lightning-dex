@@ -1,7 +1,8 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const beneficiary = "0x26AFeEBc8012FD47521c955cfAd6d6172B06516C"; // ETH-SOL goerli
+  const beneficiary = "0xB10b3b7bAc1C209830458eDE1c1547D5AF28A6D1"; // ETH-SOL mainnet
+  //const beneficiary = "0x26AFeEBc8012FD47521c955cfAd6d6172B06516C"; // ETH-SOL goerli
   //const beneficiary = "0x6f457Ce670D18FF8bda00E1B5D9654833e7D91BB"; // ETH-BTC goerli
   //const beneficiary = "0x98d066538842d2585fd26d0CF01C0f24e8eD716f"; // ETH-BTC mainnet
   const Bridge = await ethers.getContractFactory("BTCBridge");

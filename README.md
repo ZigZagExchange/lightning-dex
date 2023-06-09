@@ -24,6 +24,28 @@ The following swaps are supported by the API:
 * ETH-SOL
 * ETH-BTC
 
+## Pricing
+
+There is an endpoint `GET /prices` that you can use to see the price the protocol is offering. The prices are determined by the average of the top 3 exchanges by volume for a given currency. 
+
+All swaps are conducted at market price when the depositing transaction hits finality. Finality is determined as follows for the following chains. 
+
+* ETH: 3 confirmations (~45 seconds)
+* BTC: 1 confirmation (~10 minutes)
+* SOL: 1 confirmation (~5 seconds)
+
+There is a possibility, especially on BTC, that the market price moves significantly between when you send the transaction and when the transaction finalizes. This is the risk you choose to take when you interact with the protocol. 
+
+# Fees
+
+A variable network fee, plus a 0.2% trading fee, is charged on each swap.
+
+The network fees are calculated as follows: 
+
+SOL: essentially 0
+ETH: (Current base fee for a simple ETH transfer) * 2
+BTC: (1-block confirmation fee-rate) * (400 vB)
+
 ## Testnets
 
 We use the Goerli Testnet for ETH, Solana Devnet for SOL, and Bitcoin Testnet for BTC. 
@@ -53,8 +75,6 @@ Swapping from BTC or SOL to ETH is supported via deposit addresses. Please see t
 ### GET /btc_deposit
 
 Generate a deposit address to swap BTC for ETH. Every outgoing address will have a unique deposit address. Make sure you double check the address you enter. If you enter the wrong `outgoing_address` your ETH will be lost forever and we will not refund you. 
-
-All BTC sent to the 
 
 Example Request:
 

@@ -1,6 +1,8 @@
-# Zap API
+# Zap
 
-This document provides an overview of the backend API endpoints and their usage.
+Zap is a cross-chain crypto swap protocol. It specializes in supporting native tokens with no counterparty risk such as ETH, BTC, and SOL. 
+
+This document provides an overview of how to interact with the protocol. 
 
 ## Base URLs
 

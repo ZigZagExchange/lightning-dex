@@ -3,6 +3,37 @@ import { useState, useEffect } from 'react';
 function BridgeHistory({ address }) {
     const [responseData, setResponseData] = useState([]);
 
+    const renderLink = (item) => {
+        if (item.deposit_currency === 'ETH') {
+            return (
+                <a
+                    href={`https://etherscan.io/tx/${item.deposit_txid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
+                </a>
+            );
+        } else if (item.deposit_currency === 'BTC') {
+            return (
+                <a
+                    href={`https://mempool.space/tx/${item.deposit_txid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
+                </a>
+            );
+        } else {
+            return 'N/A';
+        }
+    };
+
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -16,6 +47,9 @@ function BridgeHistory({ address }) {
 
                 if (response.ok) {
                     const data = await response.json();
+                    // Sort items by timestamp in descending order
+                    data.sort((a, b) => new Date(b.deposit_timestamp) - new Date(a.deposit_timestamp));
+                    console.log(data)
                     setResponseData(data);
                 } else {
                     // Handle non-successful response
@@ -38,6 +72,7 @@ function BridgeHistory({ address }) {
                 <table>
                     <thead>
                         <tr>
+                            <th>Deposit Timestamp</th>
                             <th>Deposit Currency</th>
                             <th>Deposit Amount</th>
                             <th>Deposit Transaction</th>
@@ -46,19 +81,12 @@ function BridgeHistory({ address }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {responseData.map((item, index) => (
+                        {responseData.reverse().map((item, index) => (
                             <tr key={index}>
+                                <td>{formatDate(item.deposit_timestamp)}</td>
                                 <td>{item.deposit_currency}</td>
                                 <td>{item.deposit_amount}</td>
-                                <td>
-                                    <a
-                                        href={`https://etherscan.io/tx/${item.deposit_txid}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
-                                    </a>
-                                </td>
+                                <td>{renderLink(item)}</td>
                                 <td>{item.outgoing_currency}</td>
                                 <td>{item.outgoing_amount || 'Pending'}</td>
                             </tr>

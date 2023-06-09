@@ -23,29 +23,7 @@ const ContentDiv = styled.div`
     background: white;
 `
 
-function StageRow({ stage }) {
-    const name = stage.completed ? <span style={{ color: 'green' }}>{stage.name}</span> :
-        <span style={{ color: 'red' }}>
-            {stage.name}
-        </span>;
-    return (
-        <tr>
-            <td>{name}</td>
-            <td>{stage.completed ? <>✅</> : <>❌</>}</td>
-        </tr>
-    );
-}
-
-function StagesTable({ stages }) {
-    const rows = [];
-
-    stages.forEach((stage) => {
-        rows.push(
-            <StageRow
-                stage={stage}
-                key={stage.name} />
-        );
-    });
+function StagesTable({ isSent, isMined }) {
 
     return (
         <table style={{ color: 'black' }}>
@@ -55,32 +33,24 @@ function StagesTable({ stages }) {
                     <th>Completed</th>
                 </tr>
             </thead>
-            <tbody>{rows}</tbody>
+            <tbody>
+                <tr>
+                    <td>Sent</td>
+                    <td>{isSent ? <>✅</> : <>❌</>}</td>
+                </tr>
+                <tr>
+                    <td>Mined</td>
+                    <td>{isMined ? <>✅</> : <>❌</>}</td>
+                </tr>
+            </tbody>
         </table>
-    );
-}
-
-function UpdatingStagesTable({ stages }) {
-    const [stageInfo, setStageInfo] = useState([])
-
-    useEffect(() => {
-        fetch('/api/hello')
-            .then(response => response.json())
-            .then(data => {
-                setStageInfo(data)
-            })
-            .catch(error => console.error(error))
-    }, []);
-
-    return (
-        <div>
-            <StagesTable stages={stageInfo} />
-        </div>
     );
 }
 
 export const TransactionWizardModal = (
     {
+        isSent,
+        isMined,
         handleClose,
         show,
         children
@@ -90,7 +60,7 @@ export const TransactionWizardModal = (
         <ModalDiv block={show ? "block" : "none"}>
             <ContentDiv className="text-base font-medium text-white">
                 {children}
-                <UpdatingStagesTable stages={null}></UpdatingStagesTable>
+                <StagesTable isSent={isSent} isMined={isMined}></StagesTable>
                 <button className={styles.connect_button}
                     onClick={handleClose}
                 >

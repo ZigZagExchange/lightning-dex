@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
 import { utils } from 'ethers';
 import { styled } from 'styled-components';
@@ -15,6 +15,8 @@ export function SendTransaction() {
     const [to, setTo] = useState('');
     const [debouncedAmount, setDebouncedAmount] = useState('');
     const [debouncedTo, setDebouncedTo] = useState('');
+    const [isSent, setIsSent] = useState(false);
+    const [isMined, setIsMined] = useState(false);
 
     const debounce = (func, delay) => {
         let timeoutId;
@@ -50,6 +52,18 @@ export function SendTransaction() {
         hash: data?.hash,
     })
 
+    useEffect(() => {
+        if (isLoading) {
+            setIsSent(true)
+        }
+    }, [isLoading]);
+
+    useEffect(() => {
+        if (isSuccess) {
+            setIsMined(true)
+        }
+    }, [isSuccess]);
+
     return (
         <>
             <form
@@ -83,6 +97,8 @@ export function SendTransaction() {
                 <div>An error occurred preparing the transaction: {error.message}</div>
             )}
             <TransactionWizardModal
+                isSent={isSent}
+                isMined={isMined}
                 show={isWizardOpen}
                 handleClose={() => setIsWizardOpen(false)}
             >

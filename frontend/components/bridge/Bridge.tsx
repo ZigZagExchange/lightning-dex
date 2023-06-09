@@ -433,8 +433,6 @@ function Bridge() {
     setAmount(balance)
   }
 
-  const [isWizardOpen, setIsWizardOpen] = useState(false)
-
   return (
     <>
       <div className="pb-3 place-self-center">

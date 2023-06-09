@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useContractWrite, usePrepareContractWrite } from 'wagmi';
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
 import { utils } from 'ethers';
 import { styled } from 'styled-components';
 import { TransactionWizardModal } from "../bridge/modals/transactionWizardModal/TransactionWizardModal"
@@ -44,7 +44,11 @@ export function SendTransaction() {
         value: debouncedAmount ? utils.parseEther(debouncedAmount)._hex : undefined,
     });
 
-    const { write } = useContractWrite(config);
+    const { data, write } = useContractWrite(config);
+
+    const { isLoading, isSuccess } = useWaitForTransaction({
+        hash: data?.hash,
+    })
 
     return (
         <>

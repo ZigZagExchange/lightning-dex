@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function BridgeHistory() {
+function BridgeHistory({ address }) {
     const [responseData, setResponseData] = useState([]);
 
     useEffect(() => {
@@ -11,7 +11,7 @@ function BridgeHistory() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ address: '0x8cBd3259c95239f571456bfce2326E121f11d6a6' }),
+                    body: JSON.stringify({ address }),
                 });
 
                 if (response.ok) {
@@ -28,7 +28,7 @@ function BridgeHistory() {
         };
 
         fetchData();
-    }, []);
+    }, [address]);
 
     return (
         <div>

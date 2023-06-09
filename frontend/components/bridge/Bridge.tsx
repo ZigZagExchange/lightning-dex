@@ -775,7 +775,7 @@ function Bridge() {
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
       <SendTransaction></SendTransaction>
-      <BridgeHistory></BridgeHistory>
+      <BridgeHistory address={address}></BridgeHistory>
     </>
   )
 }

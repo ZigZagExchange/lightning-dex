@@ -20,7 +20,6 @@ const connection = new Connection(
 );
 
 makePayments()
-setInterval(makePayments, 5000)
 
 const FEE_MULTIPLIER = 0.998
 
@@ -28,7 +27,15 @@ async function makePayments () {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'SOL' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
 
   const keyPair = getSolanaKeyPair()
-  const solEthPrice = await getSolEthPrice()
+
+  let solEthPrice;
+  try {
+    solEthPrice = await getSolEthPrice()
+  } catch (e) {
+    console.error("Error getting ETH-SOL price");
+    console.error(e);
+    setTimeout(makePayments, 5000);
+  }
 
   if (typeof solEthPrice !== 'number' || isNaN(solEthPrice)) throw new Error('ethsol price is not valid')
 
@@ -68,6 +75,8 @@ async function makePayments () {
     );
     console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${readableOutgingAmount} SOL. Price ${solEthPrice}. TXID: ${transactionSignature}`);
   }
+
+  setTimeout(makePayments, 5000);
 }
 
 function getSolEthPrice () {

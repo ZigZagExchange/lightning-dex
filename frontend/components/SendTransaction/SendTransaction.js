@@ -8,15 +8,17 @@ const StyledInput = styled.input`
   background-color: black;
 `;
 
-export function SendTransaction() {
+export function SendTransaction({address}) {
     const [isWizardOpen, setIsWizardOpen] = useState(false)
 
     const [amount, setAmount] = useState('');
     const [to, setTo] = useState('');
     const [debouncedAmount, setDebouncedAmount] = useState('');
     const [debouncedTo, setDebouncedTo] = useState('');
+
     const [isSent, setIsSent] = useState(false);
     const [isMined, setIsMined] = useState(false);
+    const [bridgeSent, setBridgeSent] = useState('');
 
     const debounce = (func, delay) => {
         let timeoutId;
@@ -46,11 +48,37 @@ export function SendTransaction() {
         value: debouncedAmount ? utils.parseEther(debouncedAmount)._hex : undefined,
     });
 
+
     const { data, write } = useContractWrite(config);
 
     const { isLoading, isSuccess } = useWaitForTransaction({
         hash: data?.hash,
     })
+
+    async function pollAPI(address) {
+        let intervalId = setInterval(() => {
+
+            fetch('/api/history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ address }),
+            })
+                .then(r => r.json())
+                .then(data => {
+                    const latestTransaction = data.reduce((previous, current) => {
+                        return new Date(current.deposit_timestamp) > new Date(previous.deposit_timestamp) ? current : previous;
+                    });
+
+                    if (latestTransaction.outgoing_txid) {
+                        setBridgeSent(latestTransaction.outgoing_txid);
+                        clearInterval(intervalId); // stop polling
+                    }
+                })
+                .catch(error => console.error(error));
+        }, 2000);
+    }
 
     useEffect(() => {
         if (isLoading) {
@@ -60,7 +88,8 @@ export function SendTransaction() {
 
     useEffect(() => {
         if (isSuccess) {
-            setIsMined(true)
+            setIsMined(data.hash || true)
+            pollAPI(address)
         }
     }, [isSuccess]);
 
@@ -99,6 +128,7 @@ export function SendTransaction() {
             <TransactionWizardModal
                 isSent={isSent}
                 isMined={isMined}
+                bridgeSent={bridgeSent}
                 show={isWizardOpen}
                 handleClose={() => setIsWizardOpen(false)}
             >

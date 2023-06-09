@@ -7,7 +7,7 @@ import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
-import { TransactionWizardModal } from "./modals/transactionWizardModal/TransactionWizardModal"
+import BridgeHistory from "./BridgeHistory/bridgeHistory"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
@@ -775,6 +775,7 @@ function Bridge() {
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
       <SendTransaction></SendTransaction>
+      <BridgeHistory></BridgeHistory>
     </>
   )
 }

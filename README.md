@@ -59,7 +59,7 @@ Swapping from ETH to SOL or BTC is done via a smart contract. The verified code 
 To send ETH, call the `depositETH` function on the appropriate contract with the requested ETH `value`, `out_chain`, and `out_address`. The `out_chain` must be `SOL` on the ETH-SOL contract and `BTC` on the ETH-BTC contract. 
 
 * ETH-BTC (mainnet): [0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208](https://etherscan.io/address/0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208) 
-* ETH-SOL (mainnet): Coming Soon
+* ETH-SOL (mainnet): [0xd484ed3cdF6f34d9Cca869240107E1E8a03BaE96](https://etherscan.io/address/0xd484ed3cdF6f34d9Cca869240107E1E8a03BaE96)
 
 The contracts are avaiable on Goerli Testnet for testing as well. 
 

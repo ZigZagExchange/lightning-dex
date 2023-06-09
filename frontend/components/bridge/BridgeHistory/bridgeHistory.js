@@ -49,7 +49,6 @@ function BridgeHistory({ address }) {
                     const data = await response.json();
                     // Sort items by timestamp in descending order
                     data.sort((a, b) => new Date(b.deposit_timestamp) - new Date(a.deposit_timestamp));
-                    console.log(data)
                     setResponseData(data);
                 } else {
                     // Handle non-successful response

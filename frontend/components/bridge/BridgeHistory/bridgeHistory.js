@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 function BridgeHistory() {
-    const [responseData, setResponseData] = useState(null);
+    const [responseData, setResponseData] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,11 +32,39 @@ function BridgeHistory() {
 
     return (
         <div>
-            {/* Render the response data */}
-            {responseData ? (
-                <pre>{JSON.stringify(responseData, null, 2)}</pre>
+            {responseData.length === 0 ? (
+                <p>No history available.</p>
             ) : (
-                <p>Loading...</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Deposit Currency</th>
+                            <th>Deposit Amount</th>
+                            <th>Deposit Transaction</th>
+                            <th>Outgoing Currency</th>
+                            <th>Outgoing Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {responseData.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.deposit_currency}</td>
+                                <td>{item.deposit_amount}</td>
+                                <td>
+                                    <a
+                                        href={`https://etherscan.io/tx/${item.deposit_txid}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
+                                    </a>
+                                </td>
+                                <td>{item.outgoing_currency}</td>
+                                <td>{item.outgoing_amount || 'Pending'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
         </div>
     );

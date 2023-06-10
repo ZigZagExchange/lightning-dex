@@ -6,6 +6,8 @@ import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
+import { SendTransaction } from "../SendTransaction/SendTransaction"
+import BridgeHistory from "./bridgeHistory/bridgeHistory"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
@@ -772,6 +774,8 @@ function Bridge() {
       </div >
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
+      <SendTransaction address={address}></SendTransaction>
+      <BridgeHistory address={address}></BridgeHistory>
     </>
   )
 }

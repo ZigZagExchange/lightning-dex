@@ -7,7 +7,7 @@ import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
-import BridgeHistory from "./bridgeHistory/bridgeHistory"
+import BridgeHistory from "./BridgeHistory/bridgeHistory"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"

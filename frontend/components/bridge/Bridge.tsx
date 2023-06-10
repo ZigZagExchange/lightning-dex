@@ -701,10 +701,6 @@ function Bridge() {
             <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between text-[#88818C]">
-                  <span className="text-[#88818C]">Will also receive 0.0006 </span>
-                  <span className="ml-1 font-medium text-white">ETH
-                    <span className="text-[#88818C] font-normal"> ($1.10)</span>
-                  </span>
                 </div>
               </div>
 

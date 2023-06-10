@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 
 function BridgeHistory({ address }) {
-    const [responseData, setResponseData] = useState([]);
+    const [responseData, setResponseData] = useState([])
 
     const renderLink = (item) => {
         if (item.deposit_currency === 'ETH') {
@@ -13,7 +13,7 @@ function BridgeHistory({ address }) {
                 >
                     {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
                 </a>
-            );
+            )
         } else if (item.deposit_currency === 'BTC') {
             return (
                 <a
@@ -23,16 +23,16 @@ function BridgeHistory({ address }) {
                 >
                     {item.deposit_txid.slice(0, 6)}...{item.deposit_txid.slice(-6)}
                 </a>
-            );
+            )
         } else {
-            return 'N/A';
+            return 'N/A'
         }
-    };
+    }
 
     const formatDate = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleString();
-    };
+        const date = new Date(timestamp)
+        return date.toLocaleString()
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,25 +43,25 @@ function BridgeHistory({ address }) {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ address }),
-                });
+                })
 
                 if (response.ok) {
-                    const data = await response.json();
+                    const data = await response.json()
                     // Sort items by timestamp in descending order
-                    data.sort((a, b) => new Date(b.deposit_timestamp) - new Date(a.deposit_timestamp));
-                    setResponseData(data);
+                    data.sort((a, b) => new Date(b.deposit_timestamp) - new Date(a.deposit_timestamp))
+                    setResponseData(data)
                 } else {
                     // Handle non-successful response
-                    console.error('Request failed with status:', response.status);
+                    console.error('Request failed with status:', response.status)
                 }
             } catch (error) {
                 // Handle fetch error
-                console.error('Request failed:', error);
+                console.error('Request failed:', error)
             }
-        };
+        }
 
-        fetchData();
-    }, [address]);
+        fetchData()
+    }, [address])
 
     return (
         <div>
@@ -94,7 +94,7 @@ function BridgeHistory({ address }) {
                 </table>
             )}
         </div>
-    );
+    )
 }
 
-export default BridgeHistory;
+export default BridgeHistory

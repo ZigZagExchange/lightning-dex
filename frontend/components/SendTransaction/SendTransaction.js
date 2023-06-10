@@ -1,44 +1,44 @@
-import { useState, useEffect } from "react";
-import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi';
-import { utils } from 'ethers';
-import { styled } from 'styled-components';
+import { useState, useEffect } from "react"
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
+import { utils } from 'ethers'
+import { styled } from 'styled-components'
 import { TransactionWizardModal } from "../bridge/modals/transactionWizardModal/TransactionWizardModal"
 
 const StyledInput = styled.input`
   background-color: black;
-`;
+`
 
 export function SendTransaction({address}) {
     const [isWizardOpen, setIsWizardOpen] = useState(false)
 
-    const [amount, setAmount] = useState('');
-    const [to, setTo] = useState('');
-    const [debouncedAmount, setDebouncedAmount] = useState('');
-    const [debouncedTo, setDebouncedTo] = useState('');
+    const [amount, setAmount] = useState('')
+    const [to, setTo] = useState('')
+    const [debouncedAmount, setDebouncedAmount] = useState('')
+    const [debouncedTo, setDebouncedTo] = useState('')
 
-    const [isSent, setIsSent] = useState(false);
-    const [isMined, setIsMined] = useState(false);
-    const [bridgeSent, setBridgeSent] = useState('');
+    const [isSent, setIsSent] = useState(false)
+    const [isMined, setIsMined] = useState(false)
+    const [bridgeSent, setBridgeSent] = useState('')
 
     const debounce = (func, delay) => {
-        let timeoutId;
+        let timeoutId
 
         return function (...args) {
-            clearTimeout(timeoutId);
+            clearTimeout(timeoutId)
 
             timeoutId = setTimeout(() => {
-                func.apply(this, args);
-            }, delay);
-        };
-    };
+                func.apply(this, args)
+            }, delay)
+        }
+    }
 
     const debouncedAmountChange = debounce((value) => {
-        setDebouncedAmount(value);
-    }, 500);
+        setDebouncedAmount(value)
+    }, 500)
 
     const debouncedToChange = debounce((value) => {
-        setDebouncedTo(value);
-    }, 500);
+        setDebouncedTo(value)
+    }, 500)
 
     const { config, error } = usePrepareContractWrite({
         address: '0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208',
@@ -46,10 +46,10 @@ export function SendTransaction({address}) {
         functionName: 'depositETH',
         args: ['BTC', debouncedTo ? debouncedTo : undefined],
         value: debouncedAmount ? utils.parseEther(debouncedAmount)._hex : undefined,
-    });
+    })
 
 
-    const { data, write } = useContractWrite(config);
+    const { data, write } = useContractWrite(config)
 
     const { isLoading, isSuccess } = useWaitForTransaction({
         hash: data?.hash,
@@ -68,45 +68,45 @@ export function SendTransaction({address}) {
                 .then(r => r.json())
                 .then(data => {
                     const latestTransaction = data.reduce((previous, current) => {
-                        return new Date(current.deposit_timestamp) > new Date(previous.deposit_timestamp) ? current : previous;
-                    });
+                        return new Date(current.deposit_timestamp) > new Date(previous.deposit_timestamp) ? current : previous
+                    })
 
                     if (latestTransaction.outgoing_txid) {
-                        setBridgeSent(latestTransaction.outgoing_txid);
-                        clearInterval(intervalId); // stop polling
+                        setBridgeSent(latestTransaction.outgoing_txid)
+                        clearInterval(intervalId) // stop polling
                     }
                 })
-                .catch(error => console.error(error));
-        }, 2000);
+                .catch(error => console.error(error))
+        }, 2000)
     }
 
     useEffect(() => {
         if (isLoading) {
             setIsSent(true)
         }
-    }, [isLoading]);
+    }, [isLoading])
 
     useEffect(() => {
         if (isSuccess) {
             setIsMined(data.hash || true)
             pollAPI(address)
         }
-    }, [isSuccess]);
+    }, [isSuccess])
 
     return (
         <>
             <form
                 onSubmit={(e) => {
-                    e.preventDefault();
-                    setIsWizardOpen(!isWizardOpen);
-                    write?.();
+                    e.preventDefault()
+                    setIsWizardOpen(!isWizardOpen)
+                    write?.()
                 }}
             >
                 <StyledInput
                     aria-label="Amount (ether)"
                     onChange={(e) => {
-                        setAmount(e.target.value);
-                        debouncedAmountChange(e.target.value);
+                        setAmount(e.target.value)
+                        debouncedAmountChange(e.target.value)
                     }}
                     placeholder="0.05"
                     value={amount}
@@ -114,8 +114,8 @@ export function SendTransaction({address}) {
                 <StyledInput
                     aria-label="BTC receiving address"
                     onChange={(e) => {
-                        setTo(e.target.value);
-                        debouncedToChange(e.target.value);
+                        setTo(e.target.value)
+                        debouncedToChange(e.target.value)
                     }}
                     placeholder="bc1qd...et62"
                     value={to}
@@ -138,5 +138,5 @@ export function SendTransaction({address}) {
 
             </TransactionWizardModal>
         </>
-    );
+    )
 }

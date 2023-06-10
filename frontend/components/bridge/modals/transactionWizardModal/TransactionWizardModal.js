@@ -67,7 +67,7 @@ function StagesTable({ isSent, isMined, bridgeSent }) {
                 </tr>
             </tbody>
         </table>
-    );
+    )
 }
 
 export const TransactionWizardModal = (

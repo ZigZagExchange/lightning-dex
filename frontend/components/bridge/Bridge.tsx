@@ -67,6 +67,7 @@ function Bridge() {
   const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState('')
+  const [prices, setPrices] = useState({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 });
 
   useEffect(() => {
     if (_orgChainId) {
@@ -741,28 +742,6 @@ function Bridge() {
           </div>
         </div >
 
-        <div className="flex-wrap items-center justify-between ml-5 mr-5 text-[15px] md:flex lg:flex">
-          <div className="flex items-center text-secondaryTextColor">
-            <span className="mr-1 opacity-50">Need help? Read </span>
-
-            <a href="#" className="">
-
-              <span className="transition-all duration-75 cursor-pointer hover:text-opacity-100 hover:text-white transform-gpu">this guide </span></a>
-
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-          </div>
-
-          <a href="#">
-            <div className="flex items-center text-opacity-50 transition-all duration-75 text-secondaryTextColor hover:text-opacity-100 hover:text-white transform-gpu ">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-5 h-5 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <span className="cursor-pointer">Explorer</span>
-            </div>
-          </a>
-        </div>
       </div >
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />

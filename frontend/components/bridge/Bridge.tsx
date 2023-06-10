@@ -464,7 +464,7 @@ function Bridge() {
               </div>
               <div>
 
-                <button
+              {/* <button
                   className="group cursor-pointer rounded-lg outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
                   onClick={() => setShowSettings(true)}
                 >
@@ -478,7 +478,7 @@ function Bridge() {
                   </svg>
 
                   <span>Settings</span>
-                </button>
+                </button> */}
               </div>
             </div>
             :
@@ -762,8 +762,10 @@ function Bridge() {
       </div >
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
+      {/*
       <SendTransaction address={address}></SendTransaction>
       <BridgeHistory address={address}></BridgeHistory>
+      */}
     </>
   )
 }

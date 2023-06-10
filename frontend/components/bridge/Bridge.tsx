@@ -61,10 +61,10 @@ function Bridge() {
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder] = useState<string>("order-0")
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
-  const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
+  const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
   const [orgChainId, setOrgChainId] = useState(1)
-  const [destChainId, setDestChainId] = useState(42161)
+  const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState('')
 
@@ -706,19 +706,15 @@ function Bridge() {
 
               <div className="flex justify-between">
                 <div className="flex space-x-2 text-[#88818C]">
-                  <p>Expected Price on</p>
-                  <span className="flex items-center space-x-1">
-                    <Image alt="arbitrium" src="/tokenIcons/abt.jfif" width={16} height={16} className="w-4 h-4 rounded-full" />
-                    <span className="text-white">Arbitrum</span>
-                  </span>
+                  <p>Price</p>
                 </div>
 
                 <span className="text-[#88818C]">—</span>
               </div>
               <div className="flex justify-between">
 
-                <p className="text-[#88818C] ">Slippage</p>
-                <span className="text-[#88818C]">—</span>
+                <p className="text-[#88818C] ">Fee</p>
+                <span className="text-[#88818C]">0.2%</span>
               </div>
             </div>
 
@@ -731,7 +727,7 @@ function Bridge() {
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
                   <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
-                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder="Enter Arbitrum address..." />
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder={"Enter " + networksItems.find(n => n.id == destChainId).name + " address..."} />
                   </div>
                 </div>
               </div>

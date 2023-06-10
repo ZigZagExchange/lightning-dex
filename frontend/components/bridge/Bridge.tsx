@@ -730,7 +730,7 @@ function Bridge() {
                 </div>
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
-                  <div className="h-14 flex flex-grow items-center bg-transparent border border-bgLight hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
+                  <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
                     <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder="Enter Arbitrum address..." />
                   </div>
                 </div>

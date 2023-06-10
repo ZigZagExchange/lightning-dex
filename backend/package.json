@@ -12,7 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "@node-lightning/invoice": "^0.28.0",
-    "dotenv": "^16.0.3",
+    "@solana/web3.js": "^1.77.3",
+    "axios": "^1.4.0",
+    "dotenv": "^16.1.2",
+    "ethers": "^6.4.0",
     "express": "^4.18.2",
     "pg": "^8.8.0"
   },

@@ -1,10 +1,12 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const manager = "0x5D735e9fFA69d0a77eE18363B5B8ce05e2f9eE2d";
-  const wbtc_address = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f";
-  const Bridge = await ethers.getContractFactory("ZigZagBTCBridge");
-  const bridge = await Bridge.deploy(manager, wbtc_address);
+  const beneficiary = "0xB10b3b7bAc1C209830458eDE1c1547D5AF28A6D1"; // ETH-SOL mainnet
+  //const beneficiary = "0x26AFeEBc8012FD47521c955cfAd6d6172B06516C"; // ETH-SOL goerli
+  //const beneficiary = "0x6f457Ce670D18FF8bda00E1B5D9654833e7D91BB"; // ETH-BTC goerli
+  //const beneficiary = "0x98d066538842d2585fd26d0CF01C0f24e8eD716f"; // ETH-BTC mainnet
+  const Bridge = await ethers.getContractFactory("BTCBridge");
+  const bridge = await Bridge.deploy(beneficiary);
 
   await bridge.deployed();
 

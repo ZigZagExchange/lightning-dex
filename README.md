@@ -1,25 +1,153 @@
-# Lightning DEX
+# Zap
 
-The smart contract is currently deployed to Arbitrum at the address: 
+Zap is a cross-chain crypto swap protocol. It specializes in supporting native tokens with no counterparty risk such as ETH, BTC, and SOL. 
+
+This document provides an overview of how to interact with the protocol. 
+
+## Base URLs
+
+* Mainnet: https://api.zap.zigzag.exchange
+* Testnet: https://api.zap.zigzag.exchange/testnet
+
+## Currencies
+
+The following currencies are supported by the API: 
+
+* BTC: Bitcoin
+* ETH: Ethereum
+* SOL: Solana
+
+## Swaps
+
+The following swaps are supported by the API: 
+
+* ETH-SOL
+* ETH-BTC
+
+## Pricing
+
+There is an endpoint `GET /prices` that you can use to see the price the protocol is offering. The prices are determined by the average of the top 3 exchanges by volume for a given currency. 
+
+All swaps are conducted at market price when the depositing transaction hits finality. Finality is determined as follows for the following chains. 
+
+* ETH: 3 confirmations (~45 seconds)
+* BTC: 1 confirmation (~10 minutes)
+* SOL: 1 confirmation (~5 seconds)
+
+There is a possibility, especially on BTC, that the market price moves significantly between when you send the transaction and when the transaction finalizes. This is the risk you choose to take when you interact with the protocol. 
+
+# Fees
+
+A variable network fee, plus a 0.2% trading fee, is charged on each swap.
+
+The network fees are calculated as follows: 
+
+SOL: essentially 0
+ETH: (Current base fee for a simple ETH transfer) * 2
+BTC: (1-block confirmation fee-rate) * (400 vB)
+
+## Testnets
+
+We use the Goerli Testnet for ETH, Solana Devnet for SOL, and Bitcoin Testnet for BTC. 
+
+Your funds can be irrevecably lost if you use the mainnet improperly. Please verify your code on testnet before implementing it on mainnet.  
+
+## Smart Contracts
+
+Swapping from ETH to SOL or BTC is done via a smart contract. The verified code and ABI for each contract is available on Etherscan. 
+
+To send ETH, call the `depositETH` function on the appropriate contract with the requested ETH `value`, `out_chain`, and `out_address`. The `out_chain` must be `SOL` on the ETH-SOL contract and `BTC` on the ETH-BTC contract. 
+
+* ETH-BTC (mainnet): [0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208](https://etherscan.io/address/0x64Ca3FCa3B43c98F12A9E9509f9cF8AB18abc208) 
+* ETH-SOL (mainnet): [0xd484ed3cdF6f34d9Cca869240107E1E8a03BaE96](https://etherscan.io/address/0xd484ed3cdF6f34d9Cca869240107E1E8a03BaE96)
+
+The contracts are avaiable on Goerli Testnet for testing as well. 
+
+* ETH-BTC (testnet): [0xC7F355DE8cC7ec65d275f6Bc3349787c9FB48ACD](https://goerli.etherscan.io/address/0xC7F355DE8cC7ec65d275f6Bc3349787c9FB48ACD)
+* ETH-SOL (testnet): [0x43b2FF69196a1b9641C1fCBaB6A869B4e256Fb12](https://goerli.etherscan.io/address/0x43b2FF69196a1b9641C1fCBaB6A869B4e256Fb12)
+
+## Deposit Addresses
+
+Swapping from BTC or SOL to ETH is supported via deposit addresses. Please see the endpoints for more detail. 
+
+## Endpoints
+
+### GET /btc_deposit
+
+Generate a deposit address to swap BTC for ETH. Every outgoing address will have a unique deposit address. Make sure you double check the address you enter. If you enter the wrong `outgoing_address` your ETH will be lost forever and we will not refund you. 
+
+Example Request:
+
+https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
+
+Response:
 
 ```
-0x7F6678cdBC715F15501342ecFB34ABCC903cBF6F
+{
+  "deposit_currency":"BTC",
+  "deposit_address":"tb1qjylf9cscuj89gucm7tkackx4qsxh7ungsmzuxq",
+  "outgoing_currency":"ETH",
+  "outgoing_address":"0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E"
+}
 ```
 
-You can view it on Arbiscan: https://arbiscan.io/address/0x7F6678cdBC715F15501342ecFB34ABCC903cBF6F
+### GET /sol_deposit
 
-The backend is deployed to https://api.bitcoin.zigzag.exchange
+Generate a deposit address to swap SOL for ETH. SOL deposit addresses are one time use and expire at the specified time. Duplicate deposits or deposits sent after the expiry will not be processed. 
 
-The frontend is currently deployed to https://lightning-dex.vercel.app/ but should be used with great caution.  
+Example Request:
 
-We have a public Lightning node. You can connect to us at: 
+https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
 
-Mainnet: 
+Response:
+
 ```
-02572fcd9ca25472108ff62b975dff47f5625e57abcf0f354065c9586db8dbd632@34.214.120.115:9735
+{
+  "deposit_address":"F5E9kwLLPQ2P4RAeQLGGSrDrbVuaSsaXHcXSDCHiWFn8",
+  "expires_at":1686263061
+}
 ```
 
-Testnet: 
+
+
+### GET /history/:address
+
+Get an account's bridging history. 
+
+Example Request:
+
+https://api.zap.zigzag.exchange/history/0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E
+
+Response:
+
 ```
-03289786c1fd9c2ddb4936186958636a2d2cbf9ef2fdd43a342ad72377711ae326@34.214.120.115:19735
+[  
+  {
+    "deposit_currency": "BTC",
+    "deposit_address": "bc1qdknckpa5h5kl2wedhsjw6n85ddkytf9dmfrz2u",
+    "deposit_amount": "0.01",
+    "deposit_txid": "0cd7c085eda7431c6d634afed0c681cb2bf2fa998ac9a2b3137172e37ed272d8",
+    "deposit_timestamp": "2023-06-01T19:40:33.786Z",
+    "outgoing_currency": "ETH",
+    "outgoing_address": "0xE4ADed7c6515c73B83f6aC4C01930c8A40A1c43E",
+    "outgoing_amount": "0.1405146142799961",
+    "outgoing_txid": "0x670b46ec75934ea2bfb3d98d3ea1b0038ded6447604a2dd891517ad83e3f865a",
+    "outgoing_timestamp": "2023-06-01T19:40:49.590Z",
+    "paid": true
+  }
+]
+```
+### GET /prices
+
+Example Request:
+
+https://api.zap.zigzag.exchange/prices
+
+Response
+```
+{
+    "btc_usd": 26690.19,
+    "eth_usd": 1853.5622852385998,
+    "sol_usd": 18.873888749272282
+}
 ```

@@ -140,11 +140,21 @@ function Bridge() {
     }
   }
 
+  const fetchPrices = async () => {
+    try {
+      const prices = await fetch("https://api.zap.zigzag.exchange/prices").then(r => r.json());
+      setPrices(prices);
+    } catch (err: any) {
+      console.log(err?.message || err)
+    }
+  }
+
   useEffect(() => {
     if (isConnected !== null) {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
+    fetchPrices();
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -416,6 +426,13 @@ function Bridge() {
     } finally {
       updateIsLoading(false)
     }
+  }
+
+  const getCurrentMarketPrices = () => {
+    return [
+      (prices[orgTokenItem.priceKey] / prices[destTokenItem.priceKey]).toPrecision(4),
+      (prices[destTokenItem.priceKey] / prices[orgTokenItem.priceKey]).toPrecision(4)
+    ]
   }
 
   const setOriginToken = (val: any) => {
@@ -710,7 +727,7 @@ function Bridge() {
                   <p>Price</p>
                 </div>
 
-                <span className="text-[#88818C]">—</span>
+                <span className="text-[#88818C]">{getCurrentMarketPrices()[0]} / {getCurrentMarketPrices()[1]}</span>
               </div>
               <div className="flex justify-between">
 

@@ -32,6 +32,8 @@ export enum BuyValidationState {
 }
 
 function Bridge() {
+  const TRADING_FEE = 0.002;
+
   const { switchNetworkAsync } = useSwitchNetwork()
   const { connectors } = useConnect()
   const {
@@ -67,7 +69,9 @@ function Bridge() {
   const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState('')
+  const [destAmount, setDestAmount] = useState('')
   const [prices, setPrices] = useState({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 });
+  const [withdrawAddress, setWithdrawAddress] = useState("");
 
   useEffect(() => {
     if (_orgChainId) {
@@ -321,6 +325,13 @@ function Bridge() {
     // }
   }
 
+  const swapError = () => {
+    if (withdrawAddress == "") {
+      return "Invalid Destination Address"
+    }
+    return null;
+  }
+
   const changeDestNetworkID = async (id: number) => {
     updateIsLoading(true)
 
@@ -443,8 +454,14 @@ function Bridge() {
     setDestTokenItem(val)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
+    setDestAmount(e.target.value * getCurrentMarketPrices()[0] * (1 - TRADING_FEE))
+  }
+
+  const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDestAmount(e.target.value)
+    setAmount(e.target.value * getCurrentMarketPrices()[1] * (1 - TRADING_FEE))
   }
 
   const handleMax = () => {
@@ -604,7 +621,7 @@ function Bridge() {
                 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium"
                             placeholder="0.0000"
                             value={amount}
-                            onChange={handleChange}
+                            onChange={handleAmountChange}
                           />
                         </div>
                         <label
@@ -708,7 +725,8 @@ function Bridge() {
 
                       <div className="flex flex-grow items-center w-full h-16 border-none">
                         <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
-                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" value={destAmount}
+                        onChange={handleDestAmountChange} />
                       </div>
                     </div>
                   </div>
@@ -744,16 +762,16 @@ function Bridge() {
                 </div>
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
-                  <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
-                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder={"Enter " + networksItems.find(n => n.id == destChainId).name + " address..."} />
+                  <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId).name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">
-              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled type="button">
-                <span>Invalid Destination Address</span>
+              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled={swapError()} type="button">
+              {swapError() ? swapError() : "Swap"}
               </button>
             </div>
           </div>

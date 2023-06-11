@@ -68,9 +68,9 @@ function Bridge() {
   const [orgChainId, setOrgChainId] = useState(1)
   const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
-  const [amount, setAmount] = useState('')
-  const [destAmount, setDestAmount] = useState('')
-  const [prices, setPrices] = useState({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
+  const [amount, setAmount] = useState(0)
+  const [destAmount, setDestAmount] = useState(0)
+  const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
 
   useEffect(() => {
@@ -442,10 +442,12 @@ function Bridge() {
   }
 
   const getCurrentMarketPrices = () => {
+    const orgPrice = prices[orgTokenItem.priceKey]
+    const destPrice = prices[destTokenItem.priceKey]
     return [
-      (prices[orgTokenItem.priceKey] / prices[destTokenItem.priceKey]).toPrecision(4),
-      (prices[destTokenItem.priceKey] / prices[orgTokenItem.priceKey]).toPrecision(4)
-    ]
+      (orgPrice / destPrice).toPrecision(4),
+      (destPrice / orgPrice).toPrecision(4)
+    ] 
   }
 
   const setOriginToken = (val: any) => {
@@ -457,17 +459,18 @@ function Bridge() {
   }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(e.target.value)
-    setDestAmount(e.target.value * getCurrentMarketPrices()[0] * (1 - TRADING_FEE))
+    setAmount(Number(e.target.value))
+    setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDestAmount(e.target.value)
-    setAmount(e.target.value * getCurrentMarketPrices()[1] * (1 - TRADING_FEE))
+    setDestAmount(Number(e.target.value))
+    setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
   }
 
   const handleMax = () => {
-    setAmount(balance)
+    setAmount(Number(balance))
+    setDestAmount(Number(balance) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
   }
 
   return (
@@ -765,14 +768,14 @@ function Bridge() {
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
                   <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
-                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId).name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId)?.name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">
-              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled={swapError()} type="button" onClick={sendTransaction} >
+              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled={swapError() ? true : false} type="button" onClick={sendTransaction} >
               {swapError() ? swapError() : "Swap"}
               </button>
             </div>

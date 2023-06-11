@@ -32,7 +32,7 @@ export enum BuyValidationState {
 }
 
 function Bridge() {
-  const TRADING_FEE = 0.002;
+  const TRADING_FEE = 0.002
 
   const { switchNetworkAsync } = useSwitchNetwork()
   const { connectors } = useConnect()
@@ -70,8 +70,8 @@ function Bridge() {
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState('')
   const [destAmount, setDestAmount] = useState('')
-  const [prices, setPrices] = useState({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 });
-  const [withdrawAddress, setWithdrawAddress] = useState("");
+  const [prices, setPrices] = useState({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
+  const [withdrawAddress, setWithdrawAddress] = useState("")
 
   useEffect(() => {
     if (_orgChainId) {
@@ -146,8 +146,8 @@ function Bridge() {
 
   const fetchPrices = async () => {
     try {
-      const prices = await fetch("https://api.zap.zigzag.exchange/prices").then(r => r.json());
-      setPrices(prices);
+      const prices = await fetch("https://api.zap.zigzag.exchange/prices").then(r => r.json())
+      setPrices(prices)
     } catch (err: any) {
       console.log(err?.message || err)
     }
@@ -158,7 +158,7 @@ function Bridge() {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
-    fetchPrices();
+    fetchPrices()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -328,7 +328,7 @@ function Bridge() {
   const swapError = () => {
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
-    return null;
+    return null
   }
 
   const changeDestNetworkID = async (id: number) => {

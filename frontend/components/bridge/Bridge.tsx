@@ -68,8 +68,8 @@ function Bridge() {
   const [orgChainId, setOrgChainId] = useState(1)
   const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
-  const [amount, setAmount] = useState(0)
-  const [destAmount, setDestAmount] = useState(0)
+  const [amount, setAmount] = useState<number | string>("")
+  const [destAmount, setDestAmount] = useState<number | string>("")
   const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
 
@@ -459,12 +459,12 @@ function Bridge() {
   }
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmount(Number(e.target.value))
+    setAmount(e.target.value)
     setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setDestAmount(Number(e.target.value))
+    setDestAmount(e.target.value)
     setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
   }
 

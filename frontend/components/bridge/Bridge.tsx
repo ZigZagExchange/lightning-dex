@@ -663,7 +663,7 @@ function Bridge() {
 
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
-                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Dest.</div>
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>

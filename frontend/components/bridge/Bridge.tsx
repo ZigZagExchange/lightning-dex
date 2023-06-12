@@ -8,6 +8,7 @@ import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import BridgeHistory from "./BridgeHistory/bridgeHistory"
+import GenerateBtcDeposit from "./GenerateBtcDeposit/GenerateBtcDeposit"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
@@ -789,6 +790,7 @@ function Bridge() {
       <SendTransaction address={address}></SendTransaction>
       <BridgeHistory address={address}></BridgeHistory>
       */}
+      <GenerateBtcDeposit></GenerateBtcDeposit>
     </>
   )
 }

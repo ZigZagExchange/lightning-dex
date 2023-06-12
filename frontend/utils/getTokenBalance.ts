@@ -34,7 +34,6 @@ export const getSOLTokenBalance = async (publicKey: PublicKey) => {
 
   try {
     const balance = await connection.getAccountInfo(publicKey)
-    console.log(balance);
 
     return balance?.lamports || 0
   } catch (error: any) {

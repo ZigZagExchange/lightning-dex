@@ -355,6 +355,8 @@ function Bridge() {
   }
 
   const swapError = () => {
+    const chains = ([orgChainId, destChainId]).sort()
+    if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"

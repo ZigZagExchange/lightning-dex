@@ -82,24 +82,24 @@ function Bridge() {
   const [depositAddress, setDepositAddress] = useState<string>("")
 
   ///////////////////////////////////////////////////////////////////////////////
-  // I can't believe this is the most efficient way to write to ETH contracts, 
-  // but I'm going to drop this ugly code here
-  const debouncedAmount = useDebounce((amount * 1e18).toFixed(0))
-  const debouncedWithdrawAddress = useDebounce(withdrawAddress)
+  // Wagmi requires hooks to be pre-set to make sending transactions faster so
+  // that's what's happening here
+  const debouncedAmount = useDebounce((Number(amount) * 1e18).toFixed(0), 500)
+  const debouncedWithdrawAddress = useDebounce(withdrawAddress, 500)
   const depositContractAddress = destTokenItem.name === "BTC" ? ETH_BTC_CONTRACT : ETH_SOL_CONTRACT
   const prepareContractWriteHook = usePrepareContractWrite({
     address: depositContractAddress,
     abi: depositContractABI,
     functionName: 'depositETH',
     args: [destTokenItem.name, debouncedWithdrawAddress[0]],
-    value: debouncedAmount[0]
+    value: debouncedAmount[0] as any
   })
   const contractWriteHook = useContractWrite(prepareContractWriteHook.config)
 
   const waitForTransactionHook = useWaitForTransaction({
     hash: contractWriteHook.data?.hash,
   })
-  // END UGLY ETH CODE
+  // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {

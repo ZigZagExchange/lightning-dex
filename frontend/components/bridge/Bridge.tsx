@@ -1,20 +1,27 @@
 import { useState, useContext, useEffect } from "react"
 import Image from "next/image"
-import { useSwitchNetwork, useConnect } from 'wagmi'
-
+import { 
+  useSwitchNetwork, 
+  useConnect, 
+  usePrepareContractWrite,
+  useContractWrite,
+  useWaitForTransaction
+} from 'wagmi'
 import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import BridgeHistory from "./BridgeHistory/bridgeHistory"
-
+import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems } from "../../utils/data"
+import { networksItems, ETH_BTC_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
+import { useDebounce } from 'use-debounce';
+
 
 export enum SellValidationState {
   OK,
@@ -72,6 +79,24 @@ function Bridge() {
   const [destAmount, setDestAmount] = useState<number | string>("")
   const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
+  const [depositAddress, setDepositAddress] = useState<string>("")
+
+  // I can't believe this is the most efficient way to write to ETH contracts, 
+  // but I'm going to drop this ugly code here
+  const debouncedAmount = useDebounce((amount * 1e18).toFixed(0));
+  const debouncedWithdrawAddress = useDebounce(withdrawAddress);
+  const prepareContractWriteHook = usePrepareContractWrite({
+    address: ETH_BTC_CONTRACT,
+    abi: depositContractABI,
+    functionName: 'depositETH',
+    args: ['BTC', debouncedWithdrawAddress[0]],
+    value: debouncedAmount[0]
+  })
+  const contractWriteHook = useContractWrite(prepareContractWriteHook.config)
+
+  const waitForTransactionHook = useWaitForTransaction({
+    hash: contractWriteHook.data?.hash,
+  })
 
   useEffect(() => {
     if (_orgChainId) {
@@ -328,6 +353,8 @@ function Bridge() {
   const swapError = () => {
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
+    if (!contractWriteHook.write) return "Querying Gas Price"
+    if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
     return null
   }
 
@@ -439,6 +466,15 @@ function Bridge() {
   }
 
   const sendTransaction = () => {
+    if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
+      const depositDetails = fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + address)
+        .then(r => r.json());
+      setDepositAddress(depositDetails.deposit_address);
+    }
+
+    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
+      contractWriteHook.write?.()
+    }
   }
 
   const getCurrentMarketPrices = () => {
@@ -784,11 +820,6 @@ function Bridge() {
 
       </div >
 
-      <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
-      {/*
-      <SendTransaction address={address}></SendTransaction>
-      <BridgeHistory address={address}></BridgeHistory>
-      */}
     </>
   )
 }

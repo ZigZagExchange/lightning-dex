@@ -15,7 +15,7 @@ import { SendTransaction } from "../SendTransaction/SendTransaction"
 import BridgeHistory from "./BridgeHistory/bridgeHistory"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems, ETH_BTC_CONTRACT, depositContractABI } from "../../utils/data"
+import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
@@ -81,15 +81,17 @@ function Bridge() {
   const [withdrawAddress, setWithdrawAddress] = useState("")
   const [depositAddress, setDepositAddress] = useState<string>("")
 
+  ///////////////////////////////////////////////////////////////////////////////
   // I can't believe this is the most efficient way to write to ETH contracts, 
   // but I'm going to drop this ugly code here
-  const debouncedAmount = useDebounce((amount * 1e18).toFixed(0));
-  const debouncedWithdrawAddress = useDebounce(withdrawAddress);
+  const debouncedAmount = useDebounce((amount * 1e18).toFixed(0))
+  const debouncedWithdrawAddress = useDebounce(withdrawAddress)
+  const depositContractAddress = destTokenItem.name === "BTC" ? ETH_BTC_CONTRACT : ETH_SOL_CONTRACT
   const prepareContractWriteHook = usePrepareContractWrite({
-    address: ETH_BTC_CONTRACT,
+    address: depositContractAddress,
     abi: depositContractABI,
     functionName: 'depositETH',
-    args: ['BTC', debouncedWithdrawAddress[0]],
+    args: [destTokenItem.name, debouncedWithdrawAddress[0]],
     value: debouncedAmount[0]
   })
   const contractWriteHook = useContractWrite(prepareContractWriteHook.config)
@@ -97,6 +99,8 @@ function Bridge() {
   const waitForTransactionHook = useWaitForTransaction({
     hash: contractWriteHook.data?.hash,
   })
+  // END UGLY ETH CODE
+  ////////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     if (_orgChainId) {
@@ -353,8 +357,9 @@ function Bridge() {
   const swapError = () => {
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
-    if (!contractWriteHook.write) return "Querying Gas Price"
+    if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
+    if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
     return null
   }
 
@@ -465,14 +470,22 @@ function Bridge() {
     }
   }
 
-  const sendTransaction = () => {
+  const sendTransaction = async () => {
     if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
-      const depositDetails = fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + address)
+      const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json());
       setDepositAddress(depositDetails.deposit_address);
     }
+    else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
+      const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
+        .then(r => r.json());
+    }
 
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
+      contractWriteHook.write?.()
+    }
+
+    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "SOL") {
       contractWriteHook.write?.()
     }
   }
@@ -555,7 +568,7 @@ function Bridge() {
             </div>
         }
 
-        <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
+        <div className="pt-3 max-w-lg px-1 pb-1 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
             <TokenSelector
               count={firstCount}
@@ -815,6 +828,25 @@ function Bridge() {
               {swapError() ? swapError() : "Swap"}
               </button>
             </div>
+
+            {orgTokenItem.name === "BTC" && depositAddress &&
+              <div className="origin-top -mx-0 md:-mx-6">
+                <div>
+                  <p className="mx-6">Send BTC to this deposit address. Your ETH will be sent out when your transaction confirms.</p>
+                  <div className="w-[30%] mt-8">
+                    <div className="flex items-center justify-center  h-[26px] -mt-4 p-2 absolute ml-5 md:ml-10 text-sm text-[#D8D1DC] rounded-md bg-bgLight">Deposit Address</div>
+                  </div>
+
+                  <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
+                    <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
+                      {depositAddress}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+
           </div>
         </div >
 

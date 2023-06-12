@@ -20,7 +20,7 @@ import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
-import { useDebounce } from 'use-debounce';
+import { useDebounce } from 'use-debounce'
 
 
 export enum SellValidationState {
@@ -479,12 +479,12 @@ function Bridge() {
   const sendTransaction = async () => {
     if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
-        .then(r => r.json());
-      setDepositAddress(depositDetails.deposit_address);
+        .then(r => r.json())
+      setDepositAddress(depositDetails.deposit_address)
     }
     else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
-        .then(r => r.json());
+        .then(r => r.json())
     }
 
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {

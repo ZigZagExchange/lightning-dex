@@ -355,6 +355,7 @@ function Bridge() {
   }
 
   const swapError = () => {
+    if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
@@ -468,6 +469,11 @@ function Bridge() {
     } finally {
       updateIsLoading(false)
     }
+    
+    const oldAmount = amount
+    const oldDestAmount = destAmount
+    setAmount(oldDestAmount)
+    setDestAmount(Number(oldDestAmount) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
   }
 
   const sendTransaction = async () => {

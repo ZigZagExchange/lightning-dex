@@ -84,6 +84,7 @@ function Bridge() {
   const [withdrawAddress, setWithdrawAddress] = useState("")
   const [depositAddress, setDepositAddress] = useState<string>("")
   const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
+  const [history, setHistory] = useState([])
 
   ///////////////////////////////////////////////////////////////////////////////
   // Wagmi requires hooks to be pre-set to make sending transactions faster so
@@ -102,6 +103,7 @@ function Bridge() {
 
   const waitForTransactionHook = useWaitForTransaction({
     hash: contractWriteHook.data?.hash,
+    confirmations: 5
   })
   // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////
@@ -186,12 +188,43 @@ function Bridge() {
     }
   }
 
+  const fetchHistory = async () => {
+    try {
+      let historyAddress = address;
+      console.log(ethers.utils.isAddress(address), ethers.utils.isAddress(withdrawAddress))
+      if (!ethers.utils.isAddress(address) && ethers.utils.isAddress(withdrawAddress)) {
+        historyAddress = withdrawAddress;
+      }
+      if (!historyAddress) {
+        setHistory([]);
+        return;
+      }
+      const history = await fetch("https://api.zap.zigzag.exchange/history/" + historyAddress).then(r => r.json())
+      history.sort((a,b) => new Date(b.deposit_timestamp).getTime() - new Date(a.deposit_timestamp).getTime())
+      console.log(history);
+      setHistory(history)
+    } catch (err: any) {
+      console.log(err?.message || err)
+    }
+  }
+
+  const getExplorerLink = (currency, txid) => {
+      if (currency === 'ETH') return `https://etherscan.io/tx/${txid}`
+      else if (currency === 'BTC') return `https://mempool.space/tx/${txid}`
+      else if (currency === 'SOL') return `https://solscan.io/tx/${txid}`
+  }
+
+  useEffect(() => {
+    fetchHistory()
+  }, [address, withdrawAddress])
+
   useEffect(() => {
     if (isConnected !== null) {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
     fetchPrices()
+    fetchHistory()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -366,7 +399,7 @@ function Bridge() {
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
-    if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
+    if (waitForTransactionHook.isLoading) return "Waiting on tx to validate..."
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
     if (destTokenItem.name === "BTC" && !validateBitcoinAddress(withdrawAddress)) return "Bad BTC Address"
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
@@ -522,7 +555,7 @@ function Bridge() {
       } catch (e) {
         console.error(e)
       }
-      setSendingSolPayment(false)
+      setTimeout(() => setSendingSolPayment(false), 5000)
     }
 
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
@@ -532,6 +565,8 @@ function Bridge() {
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "SOL") {
       contractWriteHook.write?.()
     }
+
+    setInterval(fetchHistory, 5000)
   }
 
   const getCurrentMarketPrices = () => {
@@ -892,7 +927,42 @@ function Bridge() {
 
 
           </div>
+
         </div >
+
+        <div>
+          {history.length > 0 &&
+            <div className="ml-3 mb-9 mt-9 text-2xl font-medium text-white">History</div>
+          }
+
+          <div className="bg-bgBase rounded-xl max-h-80 overflow-y-auto">
+            {history.length > 0 && history.slice(0,3).map((item, index) => (
+                <div key={index} className="flex justify-around -mt-4 p-2 text-md text-[#D8D1DC]">
+                    <a className="p-4" href={getExplorerLink(item.deposit_currency, item.deposit_txid)} target="_blank">
+                      <span className="text-lg cursor-pointer">{item.deposit_amount}</span>
+                      <img
+                        src={`/tokenIcons/${item.deposit_currency.toLowerCase()}.svg`}
+                        alt="ether"
+                        width={22}
+                        height={22}
+                        className="w-8 h-8 rounded-full my-1 opacity-80 cursor-pointer"
+                      />
+                    </a>
+                    <Image src="/white-arrows-right.png" alt="-->" className="self-center w-10 h-10" width="30" height="30" />
+                    <a className="p-4" href={getExplorerLink(item.outgoing_currency, item.outgoing_txid)} target="_blank">
+                      <span className="text-lg">{item.outgoing_amount ? Number(item.outgoing_amount)?.toPrecision(6) : 'Pending'}</span>
+                      <Image
+                        src={`/tokenIcons/${item.outgoing_currency.toLowerCase()}.svg`}
+                        alt="ether"
+                        width={22}
+                        height={22}
+                        className="w-8 h-8 my-1 rounded-full md:mr-1 opacity-80 align-right"
+                      />
+                    </a>
+                </div>
+            ))}
+          </div>
+        </div>
 
       </div >
 

@@ -84,6 +84,7 @@ function Bridge() {
   const [depositAddress, setDepositAddress] = useState<string>("")
   const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
   const [history, setHistory] = useState([])
+  const [priceDisplay, setPriceDisplay] = useState<boolean>(true)
 
   ///////////////////////////////////////////////////////////////////////////////
   // Wagmi requires hooks to be pre-set to make sending transactions faster so
@@ -190,7 +191,6 @@ function Bridge() {
   const fetchHistory = async () => {
     try {
       let historyAddress = address
-      console.log(ethers.utils.isAddress(address), ethers.utils.isAddress(withdrawAddress))
       if (!ethers.utils.isAddress(address) && ethers.utils.isAddress(withdrawAddress)) {
         historyAddress = withdrawAddress
       }
@@ -200,7 +200,6 @@ function Bridge() {
       }
       const history = await fetch("https://api.zap.zigzag.exchange/history/" + historyAddress).then(r => r.json())
       history.sort((a: any, b: any) => new Date(b.deposit_timestamp).getTime() - new Date(a.deposit_timestamp).getTime())
-      console.log(history)
       setHistory(history)
     } catch (err: any) {
       console.log(err?.message || err)
@@ -411,6 +410,10 @@ function Bridge() {
     }
     if (sendingSolPayment) return "Sending SOL..."
     return null
+  }
+
+  const togglePriceDisplay = () => {
+    setPriceDisplay(!priceDisplay)
   }
 
   const changeDestNetworkID = async (id: number) => {
@@ -877,7 +880,11 @@ function Bridge() {
                   <p>Price</p>
                 </div>
 
-                <span className="text-[#88818C]">{getCurrentMarketPrices()[0]} / {getCurrentMarketPrices()[1]}</span>
+                {priceDisplay ?
+                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>1 {destTokenItem.name} = {getCurrentMarketPrices()[1]} {orgTokenItem.name}</span>
+                    :
+                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>1 {orgTokenItem.name} = {getCurrentMarketPrices()[0]} {destTokenItem.name}</span>
+                }
               </div>
               <div className="flex justify-between">
 

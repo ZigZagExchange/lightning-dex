@@ -520,7 +520,7 @@ function Bridge() {
         let signature = await connection.sendRawTransaction(signed.serialize())
         await connection.confirmTransaction(signature)
       } catch (e) {
-        console.error(e);
+        console.error(e)
       }
       setSendingSolPayment(false)
     }

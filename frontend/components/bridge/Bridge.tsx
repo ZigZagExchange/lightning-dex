@@ -931,7 +931,10 @@ function Bridge() {
 
         <div>
           {history.length > 0 &&
-            <div className="ml-3 mb-9 mt-9 text-2xl font-medium text-white">History</div>
+            <div className="ml-3 mt-9 mb-9">
+              <div className="text-2xl font-medium text-white">History</div>
+              <div className="text-base text-white text-opacity-50">Click the icons for explorer links.</div>
+            </div>
           }
 
           <div className="bg-bgBase rounded-xl max-h-80 overflow-y-auto">

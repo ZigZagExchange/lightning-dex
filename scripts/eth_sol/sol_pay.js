@@ -31,14 +31,13 @@ async function makePayments () {
   let solEthPrice;
   try {
     solEthPrice = await getSolEthPrice()
+    if (typeof solEthPrice !== 'number' || isNaN(solEthPrice)) throw new Error('ethsol price is not valid')
+    if (solEthPrice > 142 || solEthPrice < 57) throw new Error('soleth price failed sanity check')
   } catch (e) {
     console.error("Error getting ETH-SOL price");
     console.error(e);
     setTimeout(makePayments, 5000);
   }
-
-  if (typeof solEthPrice !== 'number' || isNaN(solEthPrice)) throw new Error('ethsol price is not valid')
-  if (solEthPrice > 142 || solEthPrice < 57) throw new Error('soleth price failed sanity check')
 
   const makerBalance = await connection.getBalance(keyPair.publicKey)
   

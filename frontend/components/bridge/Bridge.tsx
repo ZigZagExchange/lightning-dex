@@ -102,7 +102,7 @@ function Bridge() {
 
   const waitForTransactionHook = useWaitForTransaction({
     hash: contractWriteHook.data?.hash,
-    confirmations: 5
+    confirmations: 4
   })
   // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////

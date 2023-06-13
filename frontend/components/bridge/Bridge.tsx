@@ -106,7 +106,6 @@ function Bridge() {
   // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////
 
-  console.log(_orgChainId, _destChainId)
   useEffect(() => {
     if (_orgChainId) {
       setOrgChainId(_orgChainId)

@@ -22,7 +22,7 @@ import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 import { useDebounce } from 'use-debounce'
 import * as solanaWeb3 from '@solana/web3.js'
-import { validate as validateBitcoinAddress } from 'bitcoin-address-validation';
+import { validate as validateBitcoinAddress } from 'bitcoin-address-validation'
 
 
 export enum SellValidationState {

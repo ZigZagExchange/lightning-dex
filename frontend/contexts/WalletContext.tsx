@@ -42,7 +42,7 @@ export const WalletContext = createContext<WalletContextType>({
   address: '',
   balance: '0.00 ETH',
   orgChainId: 1,
-  destChainId: 42161,
+  destChainId: 3,
   isLoading: false,
   isConnected: null,
   currentAction: 'None',
@@ -66,7 +66,7 @@ function WalletProvider({ children }: Props) {
   const [isConnected, setIsConnected] = useState<Connected>(previousWagmiConnection.isConnected ? "MataMask" : null)
   const [currentAction, setCurrentAction] = useState<CurrentAction>('Origin')
   const [orgChainId, setOrgChainId] = useState(Number(getLocalStorage('orgChainId', 1)))
-  const [destChainId, setDestChainId] = useState(Number(getLocalStorage('destChainId', 42161)))
+  const [destChainId, setDestChainId] = useState(Number(getLocalStorage('destChainId', 3)))
 
   const updateChain = (_chain: Chain) => {
     localStorage.setItem('chain', _chain)

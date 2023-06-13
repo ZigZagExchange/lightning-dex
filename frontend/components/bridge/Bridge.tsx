@@ -75,8 +75,8 @@ function Bridge() {
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
-  const [orgChainId, setOrgChainId] = useState(1)
-  const [destChainId, setDestChainId] = useState(3)
+  const [orgChainId, setOrgChainId] = useState<number>(1)
+  const [destChainId, setDestChainId] = useState<number>(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState<number | string>("")
   const [destAmount, setDestAmount] = useState<number | string>("")
@@ -106,6 +106,7 @@ function Bridge() {
   // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////
 
+  console.log(_orgChainId, _destChainId);
   useEffect(() => {
     if (_orgChainId) {
       setOrgChainId(_orgChainId)
@@ -487,8 +488,6 @@ function Bridge() {
       updateIsLoading(false)
     }
     
-    const oldAmount = amount
-    const oldDestAmount = destAmount
     setAmount("")
     setDestAmount("")
   }

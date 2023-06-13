@@ -26,8 +26,15 @@ async function updateDeposits () {
   const {rows: depositRequests} = await db.query("SELECT * FROM sol_deposits WHERE expiry > NOW() AND completed = false")
 
   for (let request of depositRequests) {
-    const addressSignatures = await connection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
-    const addressTransactions = await connection.getParsedTransactions(addressSignatures.map(sig => sig.signature))
+    let addressSignatures;
+    let addressTransactions;
+    try {
+      addressSignatures = await connection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
+      addressTransactions = await connection.getParsedTransactions(addressSignatures.map(sig => sig.signature))
+    } catch (e) {
+      console.error(e);
+      return;
+    }
     const incomingTransactionOnly = addressTransactions.filter(wasTransactionNotSignedByAddress(request.deposit_address))
     const bridgesToInsert = incomingTransactionOnly.map(tx => {
       const txid = tx.transaction.signatures[0]

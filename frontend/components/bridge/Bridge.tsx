@@ -6,6 +6,8 @@ import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
+import { SendTransaction } from "../SendTransaction/SendTransaction"
+import BridgeHistory from "./BridgeHistory/bridgeHistory"
 
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems } from "../../utils/data"
@@ -30,6 +32,8 @@ export enum BuyValidationState {
 }
 
 function Bridge() {
+  const TRADING_FEE = 0.002
+
   const { switchNetworkAsync } = useSwitchNetwork()
   const { connectors } = useConnect()
   const {
@@ -59,12 +63,15 @@ function Bridge() {
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder] = useState<string>("order-0")
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
-  const [destTokenItem, setDestTokenItem] = useState(evmTokenItems[0])
+  const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
   const [orgChainId, setOrgChainId] = useState(1)
-  const [destChainId, setDestChainId] = useState(42161)
+  const [destChainId, setDestChainId] = useState(3)
   const [balance, setBalance] = useState('0.00')
-  const [amount, setAmount] = useState('')
+  const [amount, setAmount] = useState<number | string>("")
+  const [destAmount, setDestAmount] = useState<number | string>("")
+  const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
+  const [withdrawAddress, setWithdrawAddress] = useState("")
 
   useEffect(() => {
     if (_orgChainId) {
@@ -137,11 +144,21 @@ function Bridge() {
     }
   }
 
+  const fetchPrices = async () => {
+    try {
+      const prices = await fetch("https://api.zap.zigzag.exchange/prices").then(r => r.json())
+      setPrices(prices)
+    } catch (err: any) {
+      console.log(err?.message || err)
+    }
+  }
+
   useEffect(() => {
     if (isConnected !== null) {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
+    fetchPrices()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -308,6 +325,12 @@ function Bridge() {
     // }
   }
 
+  const swapError = () => {
+    if (withdrawAddress == "") return "Invalid Destination Address"
+    if (!amount) return "Invalid Amount"
+    return null
+  }
+
   const changeDestNetworkID = async (id: number) => {
     updateIsLoading(true)
 
@@ -415,6 +438,18 @@ function Bridge() {
     }
   }
 
+  const sendTransaction = () => {
+  }
+
+  const getCurrentMarketPrices = () => {
+    const orgPrice = prices[orgTokenItem.priceKey]
+    const destPrice = prices[destTokenItem.priceKey]
+    return [
+      (orgPrice / destPrice).toPrecision(4),
+      (destPrice / orgPrice).toPrecision(4)
+    ] 
+  }
+
   const setOriginToken = (val: any) => {
     setOrgTokenItem(val)
   }
@@ -423,12 +458,19 @@ function Bridge() {
     setDestTokenItem(val)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
+    setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
+  }
+
+  const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDestAmount(e.target.value)
+    setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
   }
 
   const handleMax = () => {
-    setAmount(balance)
+    setAmount(Number(balance))
+    setDestAmount(Number(balance) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
   }
 
   return (
@@ -444,7 +486,7 @@ function Bridge() {
               </div>
               <div>
 
-                <button
+              {/* <button
                   className="group cursor-pointer rounded-lg outline-none focus:outline-none active:outline-none ring-none transition-all duration-100 transform-gpu flex items-center p-3 text-opacity-75 bg-bgLight hover:bg-bgLighter text-secondaryTextColor hover:text-white"
                   onClick={() => setShowSettings(true)}
                 >
@@ -458,7 +500,7 @@ function Bridge() {
                   </svg>
 
                   <span>Settings</span>
-                </button>
+                </button> */}
               </div>
             </div>
             :
@@ -584,7 +626,7 @@ function Bridge() {
                 placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium"
                             placeholder="0.0000"
                             value={amount}
-                            onChange={handleChange}
+                            onChange={handleAmountChange}
                           />
                         </div>
                         <label
@@ -621,7 +663,7 @@ function Bridge() {
 
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
-                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2">Dest.</div>
+                  <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
                     {networksItems.map((item: any) =>
@@ -688,7 +730,8 @@ function Bridge() {
 
                       <div className="flex flex-grow items-center w-full h-16 border-none">
                         <input pattern="[0-9.]+" className="ml-4 -mt-0 focus:outline-none bg-transparent pr-4 w-5/6
-                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" />
+                placeholder:text-[#88818C]  text-white text-opacity-80 text-lg md:text-2xl lg:text-2xl font-medium" placeholder="0.0000" value={destAmount}
+                        onChange={handleDestAmountChange} />
                       </div>
                     </div>
                   </div>
@@ -699,28 +742,20 @@ function Bridge() {
             <div className="py-3.5 px-1 space-y-2 text-xs md:text-base lg:text-base">
               <div className="flex items-center justify-between">
                 <div className="flex justify-between text-[#88818C]">
-                  <span className="text-[#88818C]">Will also receive 0.0006 </span>
-                  <span className="ml-1 font-medium text-white">ETH
-                    <span className="text-[#88818C] font-normal"> ($1.10)</span>
-                  </span>
                 </div>
               </div>
 
               <div className="flex justify-between">
                 <div className="flex space-x-2 text-[#88818C]">
-                  <p>Expected Price on</p>
-                  <span className="flex items-center space-x-1">
-                    <Image alt="arbitrium" src="/tokenIcons/abt.jfif" width={16} height={16} className="w-4 h-4 rounded-full" />
-                    <span className="text-white">Arbitrum</span>
-                  </span>
+                  <p>Price</p>
                 </div>
 
-                <span className="text-[#88818C]">—</span>
+                <span className="text-[#88818C]">{getCurrentMarketPrices()[0]} / {getCurrentMarketPrices()[1]}</span>
               </div>
               <div className="flex justify-between">
 
-                <p className="text-[#88818C] ">Slippage</p>
-                <span className="text-[#88818C]">—</span>
+                <p className="text-[#88818C] ">Fee</p>
+                <span className="text-[#88818C]">0.2%</span>
               </div>
             </div>
 
@@ -732,46 +767,28 @@ function Bridge() {
                 </div>
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
-                  <div className="h-14 flex flex-grow items-center bg-transparent border border-bgLight hover:border-bgLightest focus-within:border-bgLightest pl-3 sm:pl-4 py-0.5 rounded-xl">
-                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] max-w-[calc(100%-92px)] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" placeholder="Enter Arbitrum address..." />
+                  <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId)?.name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="px-2 py-2 -mt-2 md:px-0 md:py-4">
-              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled type="button">
-                <span>Invalid Destination Address</span>
+              <button className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false" disabled={swapError() ? true : false} type="button" onClick={sendTransaction} >
+              {swapError() ? swapError() : "Swap"}
               </button>
             </div>
           </div>
         </div >
 
-        <div className="flex-wrap items-center justify-between ml-5 mr-5 text-[15px] md:flex lg:flex">
-          <div className="flex items-center text-secondaryTextColor">
-            <span className="mr-1 opacity-50">Need help? Read </span>
-
-            <a href="#" className="">
-
-              <span className="transition-all duration-75 cursor-pointer hover:text-opacity-100 hover:text-white transform-gpu">this guide </span></a>
-
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-          </div>
-
-          <a href="#">
-            <div className="flex items-center text-opacity-50 transition-all duration-75 text-secondaryTextColor hover:text-opacity-100 hover:text-white transform-gpu ">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-5 h-5 mr-2">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-              </svg>
-              <span className="cursor-pointer">Explorer</span>
-            </div>
-          </a>
-        </div>
       </div >
 
       <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
+      {/*
+      <SendTransaction address={address}></SendTransaction>
+      <BridgeHistory address={address}></BridgeHistory>
+      */}
     </>
   )
 }

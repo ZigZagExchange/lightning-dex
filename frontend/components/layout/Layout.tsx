@@ -125,7 +125,7 @@ function Layout(props: LayoutProps) {
         <Image src={logo} alt="logo" width="30" height={"50"} />
       </span>
       <Link
-        href="https://arbitrum.zigzag.exchange/"
+        href="https://trade.zigzag.exchange/"
         className={`${styles.nav_link} ${styles.named_nav_link} ${router.route === "/trade" ? styles.active_nav_link : ""}`}
       >
         Order Book
@@ -148,7 +148,7 @@ function Layout(props: LayoutProps) {
       <header className={`${styles.header} ${styles.mobile} ${isMenuOpen ? styles.menu_open : ""} py-10 xl:px-28 lg:px-14 px-5 md:px-28`}>
         {headerLeft}
 
-        <NavBar />
+        {/* <NavBar /> */}
 
         <div className={styles.header_right}>
           <NetworkSelector networkSelectorModalOpen={() => { setModal("network") }} />

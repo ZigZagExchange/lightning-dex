@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react"
 import getLocalStorage from "../utils/getLocalStorage"
+import { useAccount } from 'wagmi'
 
 interface Props {
   children: React.ReactNode
@@ -57,11 +58,12 @@ export const WalletContext = createContext<WalletContextType>({
 })
 
 function WalletProvider({ children }: Props) {
+  const previousWagmiConnection = useAccount()
   const [chain, setChain] = useState<Chain>(getLocalStorage('chain', Chain.evm))
-  const [address, setAddress] = useState<string>('')
+  const [address, setAddress] = useState<string>(previousWagmiConnection.address ? previousWagmiConnection.address : "")
   const [balance, setBalance] = useState('0.00 ETH')
   const [isLoading, setIsLoading] = useState(false)
-  const [isConnected, setIsConnected] = useState<Connected>(null)
+  const [isConnected, setIsConnected] = useState<Connected>(previousWagmiConnection.isConnected ? "MataMask" : null)
   const [currentAction, setCurrentAction] = useState<CurrentAction>('Origin')
   const [orgChainId, setOrgChainId] = useState(Number(getLocalStorage('orgChainId', 1)))
   const [destChainId, setDestChainId] = useState(Number(getLocalStorage('destChainId', 42161)))

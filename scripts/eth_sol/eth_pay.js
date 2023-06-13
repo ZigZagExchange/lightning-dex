@@ -35,6 +35,9 @@ async function makePayments () {
     return;
   }
 
+  if (typeof ethSolPrice !== 'number') throw new Error('invalid ethsol price')
+  if (ethSolPrice > 0.015 || ethSolPrice < 0.006) throw new Error('ethsol price failed sanity check')
+
   let feeData; 
   try {
     feeData = await ethersProvider.getFeeData();

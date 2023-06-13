@@ -21,24 +21,6 @@ function GroupButtonDropdown() {
                 isOpen &&
                 <div className={styles.menu}>
                     <div className={styles.menu_content}>
-                        <Link className={styles.menu_item} href="#">
-                            <p className={styles.menu_item_header}>
-                                Contracts
-                            </p>
-
-                            <p className={styles.menu_item_content}>
-                                View contract related information such as contract addresses
-                            </p>
-                        </Link>
-                        <Link className={styles.menu_item} href="#">
-                            <p className={styles.menu_item_header}>
-                                Portfolio
-                            </p>
-
-                            <p className={styles.menu_item_content}>
-                                View your portfolio of related assets on this chain
-                            </p>
-                        </Link>
 
                         <div className={styles.menu_link_container}>
                             <a href="https://docs.zigzag.exchange/" target="_blank" rel="noopener noreferrer" className={styles.menu_link}>

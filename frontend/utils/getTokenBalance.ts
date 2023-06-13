@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { Connection, PublicKey } from '@solana/web3.js'
 import ERC20ABI from '../helpers/ERC20.abi.json'
 
-const solRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_DEV as string
+const solRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC as string
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY as string
 
 export const getEVMTokenBalance = async (
@@ -34,7 +34,6 @@ export const getSOLTokenBalance = async (publicKey: PublicKey) => {
 
   try {
     const balance = await connection.getAccountInfo(publicKey)
-    console.log(balance);
 
     return balance?.lamports || 0
   } catch (error: any) {

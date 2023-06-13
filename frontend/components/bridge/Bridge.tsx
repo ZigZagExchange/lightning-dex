@@ -1,20 +1,29 @@
 import { useState, useContext, useEffect } from "react"
 import Image from "next/image"
-import { useSwitchNetwork, useConnect } from 'wagmi'
-
+import { 
+  useSwitchNetwork, 
+  useConnect, 
+  usePrepareContractWrite,
+  useContractWrite,
+  useWaitForTransaction
+} from 'wagmi'
 import styles from "./Bridge.module.css"
 import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import BridgeHistory from "./BridgeHistory/bridgeHistory"
-
+import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems } from "../../utils/data"
+import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
+import { useDebounce } from 'use-debounce'
+import * as solanaWeb3 from '@solana/web3.js'
+import { validate as validateBitcoinAddress } from 'bitcoin-address-validation'
+
 
 export enum SellValidationState {
   OK,
@@ -56,6 +65,7 @@ function Bridge() {
     handleConnectPhantom,
     handleDisconnectMetaMask,
     handleDisconnectPhantom,
+    phantomProvider
   } = useHandleWallet()
 
   const [firstCount, setFirstCount] = useState(0)
@@ -65,13 +75,36 @@ function Bridge() {
   const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
-  const [orgChainId, setOrgChainId] = useState(1)
-  const [destChainId, setDestChainId] = useState(3)
+  const [orgChainId, setOrgChainId] = useState<number>(1)
+  const [destChainId, setDestChainId] = useState<number>(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState<number | string>("")
   const [destAmount, setDestAmount] = useState<number | string>("")
   const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
+  const [depositAddress, setDepositAddress] = useState<string>("")
+  const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Wagmi requires hooks to be pre-set to make sending transactions faster so
+  // that's what's happening here
+  const debouncedAmount = useDebounce((Number(amount) * 1e18).toFixed(0), 500)
+  const debouncedWithdrawAddress = useDebounce(withdrawAddress, 500)
+  const depositContractAddress = destTokenItem.name === "BTC" ? ETH_BTC_CONTRACT : ETH_SOL_CONTRACT
+  const prepareContractWriteHook = usePrepareContractWrite({
+    address: depositContractAddress,
+    abi: depositContractABI,
+    functionName: 'depositETH',
+    args: [destTokenItem.name, debouncedWithdrawAddress[0]],
+    value: debouncedAmount[0] as any
+  })
+  const contractWriteHook = useContractWrite(prepareContractWriteHook.config)
+
+  const waitForTransactionHook = useWaitForTransaction({
+    hash: contractWriteHook.data?.hash,
+  })
+  // END WAGMI ETH CODE
+  ////////////////////////////////////////////////////////////////////////////
 
   useEffect(() => {
     if (_orgChainId) {
@@ -326,8 +359,25 @@ function Bridge() {
   }
 
   const swapError = () => {
+    const chains = ([orgChainId, destChainId]).sort()
+    if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
+    if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
+    if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
+    if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
+    if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
+    if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
+    if (destTokenItem.name === "BTC" && !validateBitcoinAddress(withdrawAddress)) return "Bad BTC Address"
+    if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
+    if (destTokenItem.name === "SOL") {
+      try {
+        new solanaWeb3.PublicKey(withdrawAddress)
+      } catch (e) {
+        return "Bad SOL Address"
+      }
+    }
+    if (sendingSolPayment) return "Sending SOL..."
     return null
   }
 
@@ -436,9 +486,48 @@ function Bridge() {
     } finally {
       updateIsLoading(false)
     }
+    
+    setAmount("")
+    setDestAmount("")
   }
 
-  const sendTransaction = () => {
+  const sendTransaction = async () => {
+    if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
+      const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
+        .then(r => r.json())
+      setDepositAddress(depositDetails.deposit_address)
+    }
+    else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
+      setSendingSolPayment(true)
+      const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
+        .then(r => r.json())
+
+      const connection = new solanaWeb3.Connection(process.env.NEXT_PUBLIC_SOLANA_RPC as string)
+      const receiver = new solanaWeb3.PublicKey(depositDetails.deposit_address)
+      const transaction = new solanaWeb3.Transaction().add(
+        solanaWeb3.SystemProgram.transfer({
+          fromPubkey: phantomProvider.publicKey,
+          toPubkey: receiver,
+          lamports: solanaWeb3.LAMPORTS_PER_SOL * Number(amount)
+        }),
+      )
+      transaction.feePayer = phantomProvider.publicKey
+      let blockhashObj = await connection.getRecentBlockhash()
+      transaction.recentBlockhash = await blockhashObj.blockhash
+
+      let signed = await phantomProvider.signTransaction(transaction)
+      let signature = await connection.sendRawTransaction(signed.serialize())
+      await connection.confirmTransaction(signature)
+      setSendingSolPayment(false)
+    }
+
+    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
+      contractWriteHook.write?.()
+    }
+
+    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "SOL") {
+      contractWriteHook.write?.()
+    }
   }
 
   const getCurrentMarketPrices = () => {
@@ -519,7 +608,7 @@ function Bridge() {
             </div>
         }
 
-        <div className="pt-3 max-w-lg px-1 pb-0 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
+        <div className="pt-3 max-w-lg px-1 pb-1 -mb-3 transition-all duration-100 transform rounded-xl bg-bgBase md:px-6 lg:px-6">
           <div className="mb-8">
             <TokenSelector
               count={firstCount}
@@ -768,7 +857,7 @@ function Bridge() {
 
                 <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
                   <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
-                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-xl placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId)?.name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
+                    <input className="focus:outline-none bg-transparent w-[300px] sm:min-w-[300px] sm:w-full text-white text-opacity-80 text-md placeholder:text-[#88818C]" value={withdrawAddress} placeholder={"Enter " + networksItems.find(n => n.id == destChainId)?.name + " address..."} onChange={e => setWithdrawAddress(e.target.value)} />
                   </div>
                 </div>
               </div>
@@ -779,16 +868,30 @@ function Bridge() {
               {swapError() ? swapError() : "Swap"}
               </button>
             </div>
+
+            {orgTokenItem.name === "BTC" && depositAddress &&
+              <div className="origin-top -mx-0 md:-mx-6">
+                <div>
+                  <p className="mx-6">Send BTC to this deposit address. Your ETH will be sent out when your transaction confirms.</p>
+                  <div className="w-[30%] mt-8">
+                    <div className="flex items-center justify-center  h-[26px] -mt-4 p-2 absolute ml-5 md:ml-10 text-sm text-[#D8D1DC] rounded-md bg-bgLight">Deposit Address</div>
+                  </div>
+
+                  <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
+                    <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
+                      {depositAddress}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+
           </div>
         </div >
 
       </div >
 
-      <Modal selectedModal={modal} onTokenClick={(tokenAddress: string) => handleTokenClick(tokenAddress)} close={() => setModal(null)} />
-      {/*
-      <SendTransaction address={address}></SendTransaction>
-      <BridgeHistory address={address}></BridgeHistory>
-      */}
     </>
   )
 }

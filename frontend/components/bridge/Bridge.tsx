@@ -370,7 +370,7 @@ function Bridge() {
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
     if (destTokenItem.name === "SOL") {
       try {
-        new solanaWeb3.PublicKey(withdrawAddress);
+        new solanaWeb3.PublicKey(withdrawAddress)
       } catch (e) {
         return "Bad SOL Address"
       }

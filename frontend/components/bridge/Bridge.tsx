@@ -500,7 +500,7 @@ function Bridge() {
         solanaWeb3.SystemProgram.transfer({
           fromPubkey: phantomProvider.publicKey,
           toPubkey: receiver,
-          lamports: parseInt(solanaWeb3.LAMPORTS_PER_SOL * Number(amount))
+          lamports: solanaWeb3.LAMPORTS_PER_SOL * Number(amount)
         }),
       )
       transaction.feePayer = phantomProvider.publicKey

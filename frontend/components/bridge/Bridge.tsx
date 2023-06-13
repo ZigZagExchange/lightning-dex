@@ -361,6 +361,7 @@ function Bridge() {
     const chains = ([orgChainId, destChainId]).sort()
     if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
+    if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!amount) return "Invalid Amount"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"

@@ -499,25 +499,29 @@ function Bridge() {
     }
     else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
       setSendingSolPayment(true)
-      const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
-        .then(r => r.json())
+      try {
+        const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
+          .then(r => r.json())
 
-      const connection = new solanaWeb3.Connection(process.env.NEXT_PUBLIC_SOLANA_RPC as string)
-      const receiver = new solanaWeb3.PublicKey(depositDetails.deposit_address)
-      const transaction = new solanaWeb3.Transaction().add(
-        solanaWeb3.SystemProgram.transfer({
-          fromPubkey: phantomProvider.publicKey,
-          toPubkey: receiver,
-          lamports: solanaWeb3.LAMPORTS_PER_SOL * Number(amount)
-        }),
-      )
-      transaction.feePayer = phantomProvider.publicKey
-      let blockhashObj = await connection.getRecentBlockhash()
-      transaction.recentBlockhash = await blockhashObj.blockhash
+        const connection = new solanaWeb3.Connection(process.env.NEXT_PUBLIC_SOLANA_RPC as string)
+        const receiver = new solanaWeb3.PublicKey(depositDetails.deposit_address)
+        const transaction = new solanaWeb3.Transaction().add(
+          solanaWeb3.SystemProgram.transfer({
+            fromPubkey: phantomProvider.publicKey,
+            toPubkey: receiver,
+            lamports: solanaWeb3.LAMPORTS_PER_SOL * Number(amount)
+          }),
+        )
+        transaction.feePayer = phantomProvider.publicKey
+        let blockhashObj = await connection.getRecentBlockhash()
+        transaction.recentBlockhash = await blockhashObj.blockhash
 
-      let signed = await phantomProvider.signTransaction(transaction)
-      let signature = await connection.sendRawTransaction(signed.serialize())
-      await connection.confirmTransaction(signature)
+        let signed = await phantomProvider.signTransaction(transaction)
+        let signature = await connection.sendRawTransaction(signed.serialize())
+        await connection.confirmTransaction(signature)
+      } catch (e) {
+        console.error(e);
+      }
       setSendingSolPayment(false)
     }
 

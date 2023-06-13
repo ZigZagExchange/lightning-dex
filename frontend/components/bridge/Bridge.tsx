@@ -22,6 +22,7 @@ import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 import { useDebounce } from 'use-debounce'
 import * as solanaWeb3 from '@solana/web3.js'
+import { validate as validateBitcoinAddress } from 'bitcoin-address-validation';
 
 
 export enum SellValidationState {
@@ -367,6 +368,7 @@ function Bridge() {
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
+    if (destTokenItem.name === "BTC" && !validateBitcoinAddress(withdrawAddress)) return "Bad BTC Address"
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
     if (destTokenItem.name === "SOL") {
       try {

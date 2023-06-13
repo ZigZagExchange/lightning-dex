@@ -21,6 +21,7 @@ import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/Tok
 import useHandleWallet from "../../hooks/useHandleWallet"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 import { useDebounce } from 'use-debounce'
+import * as solanaWeb3 from '@solana/web3.js'
 
 
 export enum SellValidationState {
@@ -63,6 +64,7 @@ function Bridge() {
     handleConnectPhantom,
     handleDisconnectMetaMask,
     handleDisconnectPhantom,
+    phantomProvider
   } = useHandleWallet()
 
   const [firstCount, setFirstCount] = useState(0)
@@ -80,6 +82,7 @@ function Bridge() {
   const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
   const [depositAddress, setDepositAddress] = useState<string>("")
+  const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
 
   ///////////////////////////////////////////////////////////////////////////////
   // Wagmi requires hooks to be pre-set to make sending transactions faster so
@@ -363,6 +366,8 @@ function Bridge() {
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
+    if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
+    if (sendingSolPayment) return "Sending SOL..."
     return null
   }
 
@@ -485,8 +490,27 @@ function Bridge() {
       setDepositAddress(depositDetails.deposit_address)
     }
     else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
+      setSendingSolPayment(true);
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json())
+
+      const connection = new solanaWeb3.Connection(process.env.NEXT_PUBLIC_SOLANA_RPC as string)
+      const receiver = new solanaWeb3.PublicKey(depositDetails.deposit_address);
+      const transaction = new solanaWeb3.Transaction().add(
+        solanaWeb3.SystemProgram.transfer({
+          fromPubkey: phantomProvider.publicKey,
+          toPubkey: receiver,
+          lamports: parseInt(solanaWeb3.LAMPORTS_PER_SOL * Number(amount))
+        }),
+      );
+      transaction.feePayer = phantomProvider.publicKey;
+      let blockhashObj = await connection.getRecentBlockhash();
+      transaction.recentBlockhash = await blockhashObj.blockhash;
+
+      let signed = await phantomProvider.signTransaction(transaction);
+      let signature = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(signature);
+      setSendingSolPayment(false);
     }
 
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {

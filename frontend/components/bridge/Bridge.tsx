@@ -368,6 +368,13 @@ function Bridge() {
     if (waitForTransactionHook.isLoading) return "Waiting on tx to mine..."
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
+    if (destTokenItem.name === "SOL") {
+      try {
+        new solanaWeb3.PublicKey(withdrawAddress);
+      } catch (e) {
+        return "Bad SOL Address"
+      }
+    }
     if (sendingSolPayment) return "Sending SOL..."
     return null
   }

@@ -487,8 +487,8 @@ function Bridge() {
     
     const oldAmount = amount
     const oldDestAmount = destAmount
-    setAmount(oldDestAmount)
-    setDestAmount(Number(oldDestAmount) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
+    setAmount("")
+    setDestAmount("")
   }
 
   const sendTransaction = async () => {

@@ -12,7 +12,6 @@ import Modal, { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
-import BridgeHistory from "./BridgeHistory/bridgeHistory"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
@@ -190,25 +189,25 @@ function Bridge() {
 
   const fetchHistory = async () => {
     try {
-      let historyAddress = address;
+      let historyAddress = address
       console.log(ethers.utils.isAddress(address), ethers.utils.isAddress(withdrawAddress))
       if (!ethers.utils.isAddress(address) && ethers.utils.isAddress(withdrawAddress)) {
-        historyAddress = withdrawAddress;
+        historyAddress = withdrawAddress
       }
       if (!historyAddress) {
-        setHistory([]);
-        return;
+        setHistory([])
+        return
       }
       const history = await fetch("https://api.zap.zigzag.exchange/history/" + historyAddress).then(r => r.json())
-      history.sort((a,b) => new Date(b.deposit_timestamp).getTime() - new Date(a.deposit_timestamp).getTime())
-      console.log(history);
+      history.sort((a: any, b: any) => new Date(b.deposit_timestamp).getTime() - new Date(a.deposit_timestamp).getTime())
+      console.log(history)
       setHistory(history)
     } catch (err: any) {
       console.log(err?.message || err)
     }
   }
 
-  const getExplorerLink = (currency, txid) => {
+  const getExplorerLink = (currency: string, txid: string) => {
       if (currency === 'ETH') return `https://etherscan.io/tx/${txid}`
       else if (currency === 'BTC') return `https://mempool.space/tx/${txid}`
       else if (currency === 'SOL') return `https://solscan.io/tx/${txid}`
@@ -936,11 +935,11 @@ function Bridge() {
           }
 
           <div className="bg-bgBase rounded-xl max-h-80 overflow-y-auto">
-            {history.length > 0 && history.slice(0,3).map((item, index) => (
+            {history.length > 0 && history.slice(0,3).map((item: any, index: number) => (
                 <div key={index} className="flex justify-around -mt-4 p-2 text-md text-[#D8D1DC]">
-                    <a className="p-4" href={getExplorerLink(item.deposit_currency, item.deposit_txid)} target="_blank">
+                    <a className="p-4" href={getExplorerLink(item.deposit_currency, item.deposit_txid)} target="_blank" rel="noreferrer">
                       <span className="text-lg cursor-pointer">{item.deposit_amount}</span>
-                      <img
+                      <Image
                         src={`/tokenIcons/${item.deposit_currency.toLowerCase()}.svg`}
                         alt="ether"
                         width={22}
@@ -949,7 +948,7 @@ function Bridge() {
                       />
                     </a>
                     <Image src="/white-arrows-right.png" alt="-->" className="self-center w-10 h-10" width="30" height="30" />
-                    <a className="p-4" href={getExplorerLink(item.outgoing_currency, item.outgoing_txid)} target="_blank">
+                    <a className="p-4" href={getExplorerLink(item.outgoing_currency, item.outgoing_txid)} target="_blank" rel="noreferrer">
                       <span className="text-lg">{item.outgoing_amount ? Number(item.outgoing_amount)?.toPrecision(6) : 'Pending'}</span>
                       <Image
                         src={`/tokenIcons/${item.outgoing_currency.toLowerCase()}.svg`}

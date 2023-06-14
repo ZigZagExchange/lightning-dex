@@ -727,10 +727,10 @@ function Bridge() {
                       <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                         <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
                           <div
-                            className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300"
-                            onClick={() => setFirstCount(v => v + 1)}
+                            className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125"
+                            /*onClick={() => setFirstCount(v => v + 1)}*/
                           >
-                            <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
+                            <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 h-14">
                               <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
                                 <div className="relative flex p-1 rounded-full">
                                   <Image alt={orgTokenItem.name} width={40} height={40} className="w-7 h-7" src={`/tokenIcons/${orgTokenItem.icon}`} />
@@ -836,8 +836,8 @@ function Bridge() {
                     <div className="flex flex-grow items-center pl-4 md:pl-2 w-full h-20 rounded-xl border border-white border-opacity-20 hover:border-opacity-30">
                       <button className="sm:mt-[-1px] flex-shrink-0 mr-[-1px] w-[35%]">
                         <div
-                          className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 hover:bg-blue-100 dark:hover:bg-opacity-20 dark:hover:bg-blue-700  hover:border-blue-300"
-                          onClick={() => setSecondCount(v => v + 1)}
+                          className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125 "
+                          /*onClick={() => setSecondCount(v => v + 1)}*/
                         >
                           <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 cursor-pointer h-14">
                             <div className="self-center flex-shrink-0 hidden mr-1 sm:block">

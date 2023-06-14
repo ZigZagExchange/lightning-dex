@@ -410,6 +410,8 @@ function Bridge() {
       }
     }
     if (sendingSolPayment) return "Sending SOL..."
+    if (amount > orgTokenItem.maxSize) return `Max size is ${orgTokenItem.maxSize} ${orgTokenItem.name}`
+    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     return null
   }
 
@@ -591,12 +593,12 @@ function Bridge() {
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
-    setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
+    setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE) - destTokenItem.networkFee)
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDestAmount(e.target.value)
-    setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 - TRADING_FEE))
+    setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 + TRADING_FEE) + destTokenItem.networkFee)
   }
 
   const handleMax = () => {
@@ -876,15 +878,25 @@ function Bridge() {
                 </div>
 
                 {priceDisplay ?
-                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>1 {destTokenItem.name} = {getCurrentMarketPrices()[1]} {orgTokenItem.name}</span>
+                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>
+                    1 {destTokenItem.name} = {getCurrentMarketPrices()[1]} {orgTokenItem.name} (${prices[destTokenItem.priceKey].toPrecision(5)})
+                  </span>
                     :
-                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>1 {orgTokenItem.name} = {getCurrentMarketPrices()[0]} {destTokenItem.name}</span>
+                  <span className="text-[#88818C] cursor-pointer" onClick={togglePriceDisplay}>
+                    1 {orgTokenItem.name} = {getCurrentMarketPrices()[0]} {destTokenItem.name} (${prices[orgTokenItem.priceKey].toPrecision(5)})
+                  </span>
                 }
               </div>
               <div className="flex justify-between">
 
-                <p className="text-[#88818C] ">Fee</p>
+                <p className="text-[#88818C] ">Trading Fee</p>
                 <span className="text-[#88818C]">0.2%</span>
+              </div>
+
+              <div className="flex justify-between">
+
+                <p className="text-[#88818C] ">Network Fee</p>
+                <span className="text-[#88818C]">{destTokenItem.networkFee} {destTokenItem.name}</span>
               </div>
             </div>
 

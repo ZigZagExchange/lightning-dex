@@ -20,7 +20,10 @@ export const evmTokenItems = [
     border: "#7dd3fc",
     icon: "eth.svg",
     networkIcon: "eth.svg",
-    priceKey: "eth_usd"
+    priceKey: "eth_usd",
+    maxSize: 1,
+    minSize: 0.004,
+    networkFee: 0.002
   },
   //{
   //  name: "USDC",
@@ -80,7 +83,10 @@ export const solTokenItems = [
     border: "#7dd3fc",
     icon: "sol.svg",
     networkIcon: "sol.svg",
-    priceKey: "sol_usd"
+    priceKey: "sol_usd",
+    maxSize: 100,
+    minSize: 0.3,
+    networkFee: 0.001
   },
   //{
   //  name: "USDC",
@@ -123,7 +129,10 @@ export const btcTokenItems = [
     border: "#7dd3fc",
     icon: "btc.svg",
     networkIcon: "btc.svg",
-    priceKey: "btc_usd"
+    priceKey: "btc_usd", 
+    maxSize: 0.1,
+    minSize: 0.0003,
+    networkFee: 0.0001
   },
 ]
 

@@ -71,7 +71,7 @@ async function makePayments () {
     )
 
     await db.query(
-      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW() WHERE deposit_txid = $3", 
+      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW(), paid=true WHERE deposit_txid = $3", 
       [transactionSignature, readableOutgingAmount, bridge.deposit_txid]
     );
     console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${readableOutgingAmount} SOL. Price ${solEthPrice}. TXID: ${transactionSignature}`);

@@ -303,6 +303,9 @@ function Bridge() {
       updateIsLoading(false)
     }
 
+    setAmount("")
+    setDestAmount("")
+
     // try {
     //   const chain =
     //     _chain === 'Solana'
@@ -393,10 +396,12 @@ function Bridge() {
   const swapError = () => {
     const chains = ([orgChainId, destChainId]).sort()
     if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
+    if (!amount) return "Enter Amount"
+    if (amount > orgTokenItem.maxSize) return `Max size is ${orgTokenItem.maxSize} ${orgTokenItem.name}`
+    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
-    if (!amount) return "Invalid Amount"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to validate..."
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
@@ -410,8 +415,6 @@ function Bridge() {
       }
     }
     if (sendingSolPayment) return "Sending SOL..."
-    if (amount > orgTokenItem.maxSize) return `Max size is ${orgTokenItem.maxSize} ${orgTokenItem.name}`
-    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     return null
   }
 
@@ -478,6 +481,9 @@ function Bridge() {
     } finally {
       updateIsLoading(false)
     }
+
+    setAmount("")
+    setDestAmount("")
   }
 
   const swapNetwork = async () => {
@@ -560,7 +566,7 @@ function Bridge() {
       } catch (e) {
         console.error(e)
       }
-      setTimeout(() => setSendingSolPayment(false), 5000)
+      setTimeout(() => setSendingSolPayment(false), 10000)
     }
 
     else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
@@ -593,7 +599,8 @@ function Bridge() {
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
-    setDestAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE) - destTokenItem.networkFee)
+    const outAmount = Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE) - destTokenItem.networkFee
+    setDestAmount(Math.max(0, outAmount))
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {

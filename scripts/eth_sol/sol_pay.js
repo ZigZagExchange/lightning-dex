@@ -25,6 +25,10 @@ const FEE_MULTIPLIER = 0.998
 
 async function makePayments () {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'SOL' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
+  if (result.rows.length === 0) {
+    setTimeout(makePayments, 5000);
+    return;
+  }
 
   const keyPair = getSolanaKeyPair()
 

@@ -16,12 +16,13 @@ const db = new pg.Pool({
   password: 'postgres'
 });
 
-makePayments();
-
 const gmx_tokens = {
   "BTC": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
   "ETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
 }
+
+makePayments();
+
 
 async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");

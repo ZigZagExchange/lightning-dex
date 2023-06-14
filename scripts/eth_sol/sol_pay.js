@@ -44,7 +44,16 @@ async function makePayments () {
     return;
   }
 
-  const makerBalance = await connection.getBalance(keyPair.publicKey)
+  let makerBalance;
+  try {
+    makerBalance = await connection.getBalance(keyPair.publicKey)
+  } catch (e) {
+    console.error("Error while getting maker balance");
+    console.error(e);
+    setTimeout(makePayments, 5000);
+    return;
+  }
+
   
   for (let bridge of result.rows) {
     const readableOutgingAmount = bridge.deposit_amount * solEthPrice

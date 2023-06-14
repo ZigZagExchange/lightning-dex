@@ -19,12 +19,12 @@ const ethersProvider = new ethers.providers.InfuraProvider(
 );
 const ethWallet = new ethers.Wallet(process.env.ETH_PRIVKEY, ethersProvider);
 
-makePayments();
-
 const gmx_tokens = {
   "BTC": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
   "ETH": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
 }
+
+makePayments();
 
 async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'ETH' AND outgoing_address IS NOT NULL AND deposit_currency='BTC'");

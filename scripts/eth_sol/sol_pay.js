@@ -48,6 +48,9 @@ async function makePayments () {
 
     if (makerBalance <= outgoingAmount) continue
 
+    const select = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
+    if (select.rows.length != 1 || select.rows[0].paid) throw new Error("Double payment? Race condition activated");
+
     const update_paid = await db.query("UPDATE bridges SET paid=true WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (update_paid.rowCount !== 1) throw new Error("Weird failure in paid update");
 

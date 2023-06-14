@@ -37,6 +37,7 @@ async function makePayments () {
     console.error("Error getting ETH-SOL price");
     console.error(e);
     setTimeout(makePayments, 5000);
+    return;
   }
 
   const makerBalance = await connection.getBalance(keyPair.publicKey)

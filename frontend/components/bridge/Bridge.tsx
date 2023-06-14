@@ -415,7 +415,7 @@ function Bridge() {
       }
     }
     if (sendingSolPayment) return "Sending SOL..."
-    return null
+    return "Bridge down for maintenance"
   }
 
   const togglePriceDisplay = () => {

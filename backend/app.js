@@ -96,17 +96,24 @@ app.get('/sol_deposit', async (req, res, next) => {
 })
 
 app.get('/prices', async (_, res) => {
-  const gmxPrices = await axios.get('https://api.gmx.io/prices').then(({ data })=> ({
-    btc_usd: data['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'] / 1e30,
-    eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30 
-  }))
-  const coinCapPrices = await axios.get('https://api.coincap.io/v2/assets', {
-    headers: {
-      'Authorization': `Bearer ${process.env.COIN_CAP_API_KEY}`
-    }
-  }).then(({data}) => ({
-    sol_usd: Number(data.data.find(asset => asset.id === 'solana').priceUsd)
-  }))
+  let gmxPrices;
+  let coinCapPrices;
+  try {
+    gmxPrices = await axios.get('https://api.gmx.io/prices').then(({ data })=> ({
+      btc_usd: data['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'] / 1e30,
+      eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30 
+    }))
+    coinCapPrices = await axios.get('https://api.coincap.io/v2/assets', {
+      headers: {
+        'Authorization': `Bearer ${process.env.COIN_CAP_API_KEY}`
+      }
+    }).then(({data}) => ({
+      sol_usd: Number(data.data.find(asset => asset.id === 'solana').priceUsd)
+    }))
+  } catch (e) {
+    console.error(e);
+    return next("Failed to get prices");
+  }
 
   return res.status(200).json({
     ...gmxPrices,

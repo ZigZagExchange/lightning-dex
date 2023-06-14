@@ -17,7 +17,6 @@ const db = new pg.Pool({
 });
 
 makePayments();
-setInterval(makePayments, 10000);
 
 const gmx_tokens = {
   "BTC": "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
@@ -27,7 +26,7 @@ const gmx_tokens = {
 async function makePayments() {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
   if (result.rows.length === 0) {
-    setTimeout(makePayments, 5000);
+    setTimeout(makePayments, 10000);
     return;
   }
 
@@ -37,6 +36,7 @@ async function makePayments() {
   } catch(e) {
       console.error("Failed to fetch prices");
       console.error(e);
+      setTimeout(makePayments, 10000);
       return;
   }
 
@@ -84,4 +84,6 @@ async function makePayments() {
 
     console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${outgoing_amount} BTC. Price ${eth_btc_price}. TXID: ${outgoing_txid}`);
   }
+
+  setTimeout(makePayments, 10000);
 }

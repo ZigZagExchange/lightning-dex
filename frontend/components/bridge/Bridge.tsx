@@ -740,9 +740,6 @@ function Bridge() {
                               <div className="text-left cursor-pointer">
                                 <h4 className="text-lg font-medium text-gray-300 ">
                                   <span>{orgTokenItem.name}</span>
-                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                                  </svg>
                                 </h4>
                               </div>
                             </div>
@@ -849,9 +846,6 @@ function Bridge() {
                             <div className="text-left cursor-pointer">
                               <h4 className="text-lg font-medium text-gray-300 ">
                                 <span>{destTokenItem.name}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="inline w-4 ml-2 -mt-1 transition-all transform focus:rotate-180">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
                               </h4>
                             </div>
                           </div>

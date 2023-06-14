@@ -24,6 +24,10 @@ makePayments()
 
 async function makePayments () {
   const {rows: unpaidBridges} = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'ETH' AND outgoing_address IS NOT NULL AND deposit_currency='SOL'");
+  if (unpaidBridges.length === 0) {
+    setTimeout(makePayments, 5000);
+    return;
+  }
 
   let ethSolPrice;
   try {
@@ -63,6 +67,9 @@ async function makePayments () {
 
     const outgoing_amount = ethers.BigNumber.from((bridge.deposit_amount * FEE_MULTIPLIER * ethSolPrice * 1e18).toFixed(0)).sub(network_fee)
     if (makerBalance.lt(outgoing_amount)) continue;
+
+    const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
+    if (select_deposit.rows.length != 1 || select_deposit.rows[0].paid) throw new Error("Double payment? Race condition activated");
 
     const update_paid = await db.query("UPDATE bridges SET paid=true WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (update_paid.rowCount !== 1) throw new Error("Weird failure in paid update");

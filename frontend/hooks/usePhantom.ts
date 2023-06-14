@@ -4,6 +4,7 @@ const usePhantom = () => {
     const [phantomProvider, setPhantomProvider] = useState<any>(null)
 
     useEffect(() => {
+        console.log(window.phantom)
         // @ts-ignore
         if (typeof window.phantom?.solana !== 'undefined') {
             // @ts-ignore

@@ -18,6 +18,7 @@ import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI }
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
+import usePhantom from "../../hooks/usePhantom"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
 import { useDebounce } from 'use-debounce'
 import * as solanaWeb3 from '@solana/web3.js'
@@ -64,8 +65,8 @@ function Bridge() {
     handleConnectPhantom,
     handleDisconnectMetaMask,
     handleDisconnectPhantom,
-    phantomProvider
   } = useHandleWallet()
+  const { phantomProvider } = usePhantom()
 
   const [firstCount, setFirstCount] = useState(0)
   const [secondCount, setSecondCount] = useState(0)

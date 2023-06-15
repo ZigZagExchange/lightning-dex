@@ -897,7 +897,7 @@ function Bridge() {
               <div className="flex justify-between">
 
                 <p className="text-[#88818C] ">Trading Fee</p>
-                <span className="text-[#88818C]">0.2%</span>
+                <span className="text-[#88818C]">0.1%</span>
               </div>
 
               <div className="flex justify-between">

@@ -18,7 +18,7 @@ const ethersProvider = new ethers.providers.InfuraProvider(
 );
 const ethWallet = new ethers.Wallet(process.env.ETH_PRIVKEY, ethersProvider);
 
-const FEE_MULTIPLIER = 0.998
+const FEE_MULTIPLIER = 0.999
 
 makePayments()
 

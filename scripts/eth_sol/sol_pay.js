@@ -21,7 +21,7 @@ const connection = new Connection(
 
 makePayments()
 
-const FEE_MULTIPLIER = 0.998
+const FEE_MULTIPLIER = 0.999
 
 async function makePayments () {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'SOL' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");

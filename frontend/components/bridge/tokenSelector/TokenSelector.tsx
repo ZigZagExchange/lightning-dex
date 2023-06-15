@@ -23,7 +23,7 @@ export const evmTokenItems = [
     priceKey: "eth_usd",
     maxSize: 1,
     minSize: 0.004,
-    networkFee: 0.002
+    networkFee: 0.0015
   },
   //{
   //  name: "USDC",

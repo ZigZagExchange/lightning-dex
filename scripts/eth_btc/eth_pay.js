@@ -63,7 +63,7 @@ async function makePayments() {
       break;
     }
 
-    const outgoing_amount = ethers.BigNumber.from((bridge.deposit_amount * 0.998 * btc_price / eth_price * 1e18).toFixed(0)).sub(network_fee)
+    const outgoing_amount = ethers.BigNumber.from((bridge.deposit_amount * 0.999 * btc_price / eth_price * 1e18).toFixed(0)).sub(network_fee)
     if (makerBalance.lt(outgoing_amount)) continue;
 
     const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);

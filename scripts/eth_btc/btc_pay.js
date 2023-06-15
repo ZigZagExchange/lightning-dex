@@ -53,7 +53,7 @@ async function makePayments() {
 
     const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
     const walletInfo = JSON.parse(balanceCheck.stdout);
-    let outgoing_amount = (bridge.deposit_amount * 0.998 * eth_btc_price) - network_fee;
+    let outgoing_amount = (bridge.deposit_amount * 0.999 * eth_btc_price) - network_fee;
     outgoing_amount = Number(outgoing_amount.toFixed(8));
     if (walletInfo.balance < outgoing_amount) continue;
 

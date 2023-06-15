@@ -47,16 +47,19 @@ async function updateDeposits () {
     const newDeposits = bridgesToInsert.filter(tx => !txidsOfAlreadyProcessedDeposits.includes(tx[3]))
 
     for (let deposit of newDeposits) {
-      console.log(`inserting deposit: ${deposit[3]} - ${deposit[2]} SOL`)
-      await db.query(`UPDATE sol_deposits SET completed = true WHERE id=$1`, [request.id])
-      await db.query(
-        `INSERT INTO bridges (deposit_currency, deposit_address, deposit_amount, deposit_txid, deposit_timestamp, outgoing_currency, outgoing_address) 
-         VALUES ($1,$2,$3,$4,NOW(),$5,$6) 
-         ON CONFLICT (deposit_txid) DO NOTHING`, 
-         deposit
-      );
-
-      transferFromDepositAddressToLiquidityPool(request.id)
+      try {
+        await transferFromDepositAddressToLiquidityPool(request.id)
+        console.log(`inserting deposit: ${deposit[3]} - ${deposit[2]} SOL`)
+        await db.query(`UPDATE sol_deposits SET completed = true WHERE id=$1`, [request.id])
+        await db.query(
+          `INSERT INTO bridges (deposit_currency, deposit_address, deposit_amount, deposit_txid, deposit_timestamp, outgoing_currency, outgoing_address) 
+          VALUES ($1,$2,$3,$4,NOW(),$5,$6) 
+          ON CONFLICT (deposit_txid) DO NOTHING`, 
+          deposit
+        );
+      } catch (error) {
+        console.log(`error sending sol back to liquidity pool: `, JSON.stringify(error))
+      }
     }
   }
 }

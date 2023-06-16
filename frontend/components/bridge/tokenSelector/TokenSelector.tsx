@@ -21,7 +21,7 @@ export const evmTokenItems = [
     icon: "eth.svg",
     networkIcon: "eth.svg",
     priceKey: "eth_usd",
-    maxSize: 1,
+    maxSize: 3,
     minSize: 0.004,
     networkFee: 0.0015
   },
@@ -84,7 +84,7 @@ export const solTokenItems = [
     icon: "sol.svg",
     networkIcon: "sol.svg",
     priceKey: "sol_usd",
-    maxSize: 100,
+    maxSize: 200,
     minSize: 0.3,
     networkFee: 0.001
   },

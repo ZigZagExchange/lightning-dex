@@ -130,11 +130,18 @@ app.get('/prices', async (_, res) => {
 })
 
 app.get('/available_liquidity', async (_, res) => {
+  const balances = await Promise.all([
+    getSolanaBalance(),
+    getEthereumBalance(process.env.ETH_SOL_LIQUIDITY_ADDRESS),
+    getEthereumBalance(process.env.ETH_BTC_LIQUIDITY_ADDRESS),
+    getBitcoinBalace()
+  ]);
+
   return res.status(200).json({
-    sol: await getSolanaBalance(),
-    eth_sol: await getEthereumBalance(process.env.ETH_SOL_LIQUIDITY_ADDRESS),
-    eth_btc: await getEthereumBalance(process.env.ETH_BTC_LIQUIDITY_ADDRESS),
-    btc: await getBitcoinBalace()
+    sol: balances[0], 
+    eth_sol: balances[1], 
+    eth_btc: balances[2], 
+    btc: balances[3], 
   })
 })
 

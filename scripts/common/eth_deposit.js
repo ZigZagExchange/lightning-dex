@@ -31,7 +31,6 @@ async function updateBridges() {
     deposits = await Bridge.queryFilter(Bridge.filters.Deposit(), -100, -2);
   } catch (e) {
     console.error("Error while getting ETH deposits");
-    console.error(e);
     return;
   }
 

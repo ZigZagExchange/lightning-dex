@@ -152,7 +152,7 @@ async function getEthereumBalance () {
 async function getBitcoinBalace () {
   const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
   const walletInfo = JSON.parse(balanceCheck.stdout);
-  walletInfo.balance
+  return walletInfo.balance
 }
 
 app.use((err, req, res, next) => {

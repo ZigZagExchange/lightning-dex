@@ -10,8 +10,17 @@ const { ethers } = require('ethers');
 const solana = require('@solana/web3.js')
 const {v4: uuid} = require('uuid')
 const axios = require('axios')
+const bs58 = require('bs58')
+const BigNumber = require('bignumber.js')
 
 dotenv.config();
+
+const solanaConnection = new solana.Connection(process.env.SOLANA_CONNECTION_URL)
+const ethersProvider = new ethers.InfuraProvider(
+  process.env.ETH_NETWORK,
+  process.env.INFURA_PROJECT_ID,
+);
+
 
 const exec = util.promisify(nodeChildProcess.exec);
 
@@ -119,6 +128,32 @@ app.get('/prices', async (_, res) => {
     ...coinCapPrices
   })
 })
+
+app.get('/available_liqudity', async (_, res) => {
+  return res.status(200).json({
+    solana: await getSolanaBalance(),
+    ethereum: await getEthereumBalance(),
+    bitcoin: await getBitcoinBalace()
+  })
+})
+
+async function getSolanaBalance () {
+  const decoded = bs58.decode(process.env.SOL_LIQUIDITY_ACCOUNT_PRIV_KEY_BASE58)
+  const liqudityKeyPair =  solana.Keypair.fromSecretKey(decoded)
+  const solanaBalance = await solanaConnection.getBalance(liqudityKeyPair.publicKey)
+  return solanaBalance / solana.LAMPORTS_PER_SOL
+}
+
+async function getEthereumBalance () {
+  const balance = await ethersProvider.getBalance(process.env.ETHEREUM_LIQUIDITY_ADDRESS)
+  return new BigNumber(balance.toString()).div(1e18).toNumber()
+}
+
+async function getBitcoinBalace () {
+  const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
+  const walletInfo = JSON.parse(balanceCheck.stdout);
+  walletInfo.balance
+}
 
 app.use((err, req, res, next) => {
   console.error(err);

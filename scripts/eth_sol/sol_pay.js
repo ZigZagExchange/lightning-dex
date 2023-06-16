@@ -3,6 +3,7 @@ import pg from 'pg'
 import fetch from 'node-fetch'
 import bs58 from 'bs58'
 import {Keypair, Connection, LAMPORTS_PER_SOL, Transaction, SystemProgram, PublicKey, sendAndConfirmTransaction} from '@solana/web3.js'
+import {reportError} from './errors.js'
 
 dotenv.config()
 
@@ -37,20 +38,18 @@ async function makePayments () {
     solEthPrice = await getSolEthPrice()
     if (typeof solEthPrice !== 'number' || isNaN(solEthPrice)) throw new Error('ethsol price is not valid')
     if (solEthPrice > 142 || solEthPrice < 57) throw new Error('soleth price failed sanity check')
-  } catch (e) {
-    console.error("Error getting ETH-SOL price");
-    console.error(e);
+  } catch (error) {
     setTimeout(makePayments, 5000);
+    await reportError('Error getting ETH-SOL price', error)
     return;
   }
 
   let makerBalance;
   try {
     makerBalance = await connection.getBalance(keyPair.publicKey)
-  } catch (e) {
-    console.error("Error while getting maker balance");
-    console.error(e);
+  } catch (error) {
     setTimeout(makePayments, 5000);
+    await reportError('Error while getting maker balance', error)
     return;
   }
 

@@ -1,6 +1,7 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
+import {reportError} from './error.js'
 
 dotenv.config()
 
@@ -32,10 +33,9 @@ async function makePayments () {
   let ethSolPrice;
   try {
     ethSolPrice = await getEthSolPrice()
-  } catch (e) {
-    console.error("Error fetching ETH-SOL price");
-    console.error(e);
+  } catch (error) {
     setTimeout(makePayments, 5000);
+    await reportError('Error fetching ETH-SOL price', error)
     return;
   }
 
@@ -46,10 +46,9 @@ async function makePayments () {
   try {
     feeData = await ethersProvider.getFeeData();
     if (!feeData.gasPrice) throw new Error(feeData)
-  } catch (e) {
-    console.error("Error getting ETH fee data");
-    console.error(e);
+  } catch (error) {
     setTimeout(makePayments, 5000);
+    await reportError('Error getting ETH fee data', error)
     return;
   }
   const network_fee = feeData.gasPrice.mul(21000).mul(2);
@@ -59,9 +58,8 @@ async function makePayments () {
     let makerBalance;
     try {
       makerBalance = await ethersProvider.getBalance(ethWallet.address);
-    } catch (e) {
-      console.error("Error getting maker balance")
-      console.error(e);
+    } catch (error) {
+      await reportError('Error getting maker balance', error)
       break;
     }
 
@@ -86,9 +84,8 @@ async function makePayments () {
           value: outgoing_amount
       });
       await eth_payment.wait();
-    } catch (e) {
-      console.error("Trade failed");
-      console.error(e);
+    } catch (error) {
+      await reportError('Trade failed', error)
       continue;
     }
     const outgoing_txid = eth_payment.hash;

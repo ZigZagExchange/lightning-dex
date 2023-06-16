@@ -3,6 +3,7 @@ import {Connection, LAMPORTS_PER_SOL, PublicKey, Keypair, Transaction, SystemPro
 import dotenv from 'dotenv'
 import crypto from 'crypto'
 import bs58 from 'bs58'
+import {reportError} from './errors.js'
 
 dotenv.config()
 
@@ -31,8 +32,8 @@ async function updateDeposits () {
     try {
       addressSignatures = await connection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
       addressTransactions = await connection.getParsedTransactions(addressSignatures.map(sig => sig.signature))
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      await reportError(`error fetching tx list for deposit address: ${request.deposit_address}`, error)
       return;
     }
     const incomingTransactionOnly = addressTransactions.filter(wasTransactionNotSignedByAddress(request.deposit_address))
@@ -58,7 +59,7 @@ async function updateDeposits () {
           deposit
         );
       } catch (error) {
-        console.log(`error sending sol back to liquidity pool: `, JSON.stringify(error))
+        await reportError(`error sending sol back to liquidity pool from ${deposit.deposit_address}`, error)
       }
     }
   }

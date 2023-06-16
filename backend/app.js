@@ -111,7 +111,6 @@ app.get('/prices', async (_, res) => {
       sol_usd: Number(data.data.find(asset => asset.id === 'solana').priceUsd)
     }))
   } catch (e) {
-    console.error(e);
     return next("Failed to get prices");
   }
 

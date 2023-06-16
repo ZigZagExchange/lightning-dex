@@ -1,7 +1,7 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
-import {reportError} from './error.js'
+import {reportError} from './errors.js'
 
 dotenv.config()
 

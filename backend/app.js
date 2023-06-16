@@ -129,11 +129,12 @@ app.get('/prices', async (_, res) => {
   })
 })
 
-app.get('/available_liqudity', async (_, res) => {
+app.get('/available_liquidity', async (_, res) => {
   return res.status(200).json({
-    solana: await getSolanaBalance(),
-    ethereum: await getEthereumBalance(),
-    bitcoin: await getBitcoinBalace()
+    sol: await getSolanaBalance(),
+    eth_sol: await getEthereumBalance(process.env.ETH_SOL_LIQUIDITY_ADDRESS),
+    eth_btc: await getEthereumBalance(process.env.ETH_BTC_LIQUIDITY_ADDRESS),
+    btc: await getBitcoinBalace()
   })
 })
 
@@ -144,8 +145,8 @@ async function getSolanaBalance () {
   return solanaBalance / solana.LAMPORTS_PER_SOL
 }
 
-async function getEthereumBalance () {
-  const balance = await ethersProvider.getBalance(process.env.ETHEREUM_LIQUIDITY_ADDRESS)
+async function getEthereumBalance (address) {
+  const balance = await ethersProvider.getBalance(address);
   return new BigNumber(balance.toString()).div(1e18).toNumber()
 }
 

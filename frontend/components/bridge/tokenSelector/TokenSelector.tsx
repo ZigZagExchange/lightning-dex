@@ -130,7 +130,7 @@ export const btcTokenItems = [
     icon: "btc.svg",
     networkIcon: "btc.svg",
     priceKey: "btc_usd", 
-    maxSize: 0.1,
+    maxSize: 0.2,
     minSize: 0.0003,
     networkFee: 0.0001
   },

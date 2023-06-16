@@ -81,6 +81,7 @@ function Bridge() {
   const [amount, setAmount] = useState<number | string>("")
   const [destAmount, setDestAmount] = useState<number | string>("")
   const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
+  const [liquidity, setLiquidity] = useState<{ [liquidityKey: string]: number }>({ "btc": 0, "sol": 0, "eth_btc": 0, "eth_sol": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
   const [depositAddress, setDepositAddress] = useState<string>("")
   const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
@@ -189,6 +190,21 @@ function Bridge() {
     }
   }
 
+  const fetchLiquidity = async () => {
+    try {
+      const availableLiquidity = await fetch("https://api.zap.zigzag.exchange/available_liquidity").then(r => r.json())
+      setLiquidity(availableLiquidity)
+    } catch (err: any) {
+      console.log(err?.message || err)
+    }
+  }
+
+  const getCurrentDestLiquidity = () => {
+    if (destTokenItem.name == "ETH" && orgTokenItem.name == "SOL") return liquidity.eth_sol
+    if (destTokenItem.name == "ETH" && orgTokenItem.name == "BTC") return liquidity.eth_btc
+    return liquidity[destTokenItem.name.toLowerCase()]
+  }
+
   const fetchHistory = async () => {
     try {
       let historyAddress = address
@@ -224,6 +240,7 @@ function Bridge() {
     }
     fetchPrices()
     fetchHistory()
+    fetchLiquidity()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -397,7 +414,8 @@ function Bridge() {
     const chains = ([orgChainId, destChainId]).sort()
     if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!amount) return "Enter Amount"
-    if (amount > orgTokenItem.maxSize) return `Max size is ${orgTokenItem.maxSize} ${orgTokenItem.name}`
+    const maxSize = getCurrentDestLiquidity() - destTokenItem.liquidityBuffer
+    if (destAmount > maxSize) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
     if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
@@ -578,6 +596,8 @@ function Bridge() {
     }
 
     setInterval(fetchHistory, 5000)
+    setTimeout(fetchLiquidity, 5000)
+    setTimeout(fetchLiquidity, 30000)
   }
 
   const getCurrentMarketPrices = () => {

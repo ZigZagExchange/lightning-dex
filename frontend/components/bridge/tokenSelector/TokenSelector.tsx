@@ -21,7 +21,7 @@ export const evmTokenItems = [
     icon: "eth.svg",
     networkIcon: "eth.svg",
     priceKey: "eth_usd",
-    maxSize: 10,
+    liquidityBuffer: 0.1,
     minSize: 0.004,
     networkFee: 0.0015
   },
@@ -84,7 +84,7 @@ export const solTokenItems = [
     icon: "sol.svg",
     networkIcon: "sol.svg",
     priceKey: "sol_usd",
-    maxSize: 500,
+    liquidityBuffer: 0.1,
     minSize: 0.3,
     networkFee: 0.001
   },
@@ -130,7 +130,7 @@ export const btcTokenItems = [
     icon: "btc.svg",
     networkIcon: "btc.svg",
     priceKey: "btc_usd", 
-    maxSize: 1,
+    liquidityBuffer: 0.001,
     minSize: 0.0003,
     networkFee: 0.0001
   },

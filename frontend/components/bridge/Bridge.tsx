@@ -41,8 +41,8 @@ export enum BuyValidationState {
 }
 
 let LAST_DATA_UPDATE = Date.now()
-let LIQUIDITY_INTERVAL
-let PRICES_INTERVAL
+let LIQUIDITY_INTERVAL: Object
+let PRICES_INTERVAL: Object
 
 function Bridge() {
   const TRADING_FEE = 0.002

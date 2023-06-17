@@ -145,6 +145,8 @@ function Bridge() {
   }, [destChainId])
 
   useEffect(() => {
+    fetchLiquidity()
+    fetchPrices()
     const refetchInterval = setInterval(() => {
       fetchLiquidity()
       fetchPrices()

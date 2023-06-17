@@ -41,6 +41,8 @@ export enum BuyValidationState {
 }
 
 let LAST_DATA_UPDATE = Date.now()
+let LIQUIDITY_INTERVAL
+let PRICES_INTERVAL
 
 function Bridge() {
   const TRADING_FEE = 0.002
@@ -145,8 +147,16 @@ function Bridge() {
   }, [destChainId])
 
   useEffect(() => {
-    fetchLiquidity()
-    setInterval(fetchLiquidity, 20000)
+    // For some reason this function gets triggered twice so the
+    // checks are to prevent the intervals from being set twice
+    if (!LIQUIDITY_INTERVAL) {
+      fetchLiquidity()
+      LIQUIDITY_INTERVAL = setInterval(fetchLiquidity, 20000)
+    }
+    if (!PRICES_INTERVAL) {
+      fetchPrices()
+      PRICES_INTERVAL = setInterval(fetchPrices, 20000)
+    }
   }, [])
 
   // Fetch SPL Token balance
@@ -249,7 +259,6 @@ function Bridge() {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
-    fetchPrices()
     fetchHistory()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 

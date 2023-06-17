@@ -40,6 +40,8 @@ export enum BuyValidationState {
   InternalError,
 }
 
+let LAST_DATA_UPDATE = Date.now()
+
 function Bridge() {
   const TRADING_FEE = 0.002
 
@@ -142,6 +144,11 @@ function Bridge() {
     }
   }, [destChainId])
 
+  useEffect(() => {
+    fetchLiquidity()
+    setInterval(fetchLiquidity, 20000)
+  }, [])
+
   // Fetch SPL Token balance
   const fetchSPLTokenBalance = async () => {
     try {
@@ -234,13 +241,16 @@ function Bridge() {
   }, [address, withdrawAddress])
 
   useEffect(() => {
+    const now = Date.now()
+    if ((now - 5000) < LAST_DATA_UPDATE) return
+    else LAST_DATA_UPDATE = now
+
     if (isConnected !== null) {
       fetchSPLTokenBalance()
       fetchEVMTokenBalance()
     }
     fetchPrices()
     fetchHistory()
-    fetchLiquidity()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
 
   const handleTokenClick = (newTokenAddress: string) => {
@@ -596,8 +606,6 @@ function Bridge() {
     }
 
     setInterval(fetchHistory, 5000)
-    setTimeout(fetchLiquidity, 5000)
-    setTimeout(fetchLiquidity, 30000)
   }
 
   const getCurrentMarketPrices = () => {

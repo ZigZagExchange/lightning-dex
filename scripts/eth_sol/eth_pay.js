@@ -2,6 +2,7 @@ import pg from 'pg'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
 import {reportError} from './errors.js'
+import { fetchPrices, getOutAmountAndFee } from './utils.js'
 
 dotenv.config()
 
@@ -19,8 +20,6 @@ const ethersProvider = new ethers.providers.InfuraProvider(
 );
 const ethWallet = new ethers.Wallet(process.env.ETH_PRIVKEY, ethersProvider);
 
-const FEE_MULTIPLIER = 0.999
-
 makePayments()
 
 async function makePayments () {
@@ -30,17 +29,16 @@ async function makePayments () {
     return;
   }
 
-  let ethSolPrice;
+  let depositUsdPrice
+  let outgoingUsdPrice;
   try {
-    ethSolPrice = await getEthSolPrice()
+    const {ethUsd, solUsd} = await fetchPrices()
+    depositUsdPrice = solUsd
+    outgoingUsdPrice = ethUsd
   } catch (error) {
-    setTimeout(makePayments, 5000);
-    await reportError('Error fetching ETH-SOL price', error)
-    return;
+    await reportError('error getting prices', error)
+    return
   }
-
-  if (typeof ethSolPrice !== 'number') throw new Error('invalid ethsol price')
-  if (ethSolPrice > 0.015 || ethSolPrice < 0.006) throw new Error('ethsol price failed sanity check')
 
   let feeData; 
   try {
@@ -55,6 +53,16 @@ async function makePayments () {
 
   for (let bridge of unpaidBridges) {
 
+    let readableOutgoingAmount;
+    let readableBridgeFee;
+    try {
+      const {amountMinusFee, fee} = await getOutAmountAndFee('SOL', 'ETH', depositUsdPrice, outgoingUsdPrice, bridge.deposit_amount)
+      readableOutgoingAmount = amountMinusFee
+      readableBridgeFee = fee
+    } catch (error) {
+      await reportError('error calculating outgoing amounts', error)
+    }
+
     let makerBalance;
     try {
       makerBalance = await ethersProvider.getBalance(ethWallet.address);
@@ -63,7 +71,7 @@ async function makePayments () {
       break;
     }
 
-    const outgoing_amount = ethers.BigNumber.from((bridge.deposit_amount * FEE_MULTIPLIER * ethSolPrice * 1e18).toFixed(0)).sub(network_fee)
+    const outgoing_amount = ethers.BigNumber.from((readableOutgoingAmount * 1e18).toFixed()).sub(network_fee)
     if (makerBalance.lt(outgoing_amount)) continue;
 
     const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
@@ -90,26 +98,13 @@ async function makePayments () {
     }
     const outgoing_txid = eth_payment.hash;
 
-    const readable_outgoing_amount = outgoing_amount.toString() / 1e18;
     await db.query(
-      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW() WHERE deposit_txid = $3", 
-      [outgoing_txid, readable_outgoing_amount, bridge.deposit_txid]
+      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW(), fee=$3 WHERE deposit_txid = $4", 
+      [outgoing_txid, readableOutgoingAmount, readableBridgeFee, bridge.deposit_txid]
     );
 
-    console.log(`Trade Executed: ${bridge.deposit_amount} SOL for ${readable_outgoing_amount} ETH. Price ${ethSolPrice}. TXID: ${outgoing_txid}`);
+    console.log(`Trade Executed: ${bridge.deposit_amount} SOL for ${readableOutgoingAmount} ETH. Price ${depositUsdPrice / outgoingUsdPrice}. TXID: ${outgoing_txid}`);
   }
 
   setTimeout(makePayments, 5000);
-}
-
-function getEthSolPrice () {
-  return fetch('https://api.coincap.io/v2/assets', {
-    headers: {
-      'Authorization': `Bearer ${process.env.COIN_CAP_API_KEY}`
-    }
-  }).then(res => res.json()).then(({data}) => {
-    const etheremPrice = data.find(asset => asset.id === 'ethereum').priceUsd
-    const solanaPrice = data.find((asset) => asset.id === 'solana').priceUsd
-    return Number(solanaPrice) / Number(etheremPrice)
-  })
 }

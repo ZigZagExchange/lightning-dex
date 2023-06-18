@@ -1,9 +1,9 @@
 import dotenv from 'dotenv'
 import pg from 'pg'
-import fetch from 'node-fetch'
 import bs58 from 'bs58'
 import {Keypair, Connection, LAMPORTS_PER_SOL, Transaction, SystemProgram, PublicKey, sendAndConfirmTransaction} from '@solana/web3.js'
 import {reportError} from './errors.js'
+import {fetchPrices, getOutAmountAndFee} from './utils.js'
 
 dotenv.config()
 
@@ -22,8 +22,6 @@ const connection = new Connection(
 
 makePayments()
 
-const FEE_MULTIPLIER = 0.999
-
 async function makePayments () {
   const result = await db.query("SELECT * FROM bridges WHERE paid=false AND outgoing_currency = 'SOL' AND outgoing_address IS NOT NULL AND deposit_currency='ETH'");
   if (result.rows.length === 0) {
@@ -33,30 +31,41 @@ async function makePayments () {
 
   const keyPair = getSolanaKeyPair()
 
-  let solEthPrice;
+  let depositUsdPrice
+  let outgoingUsdPrice;
   try {
-    solEthPrice = await getSolEthPrice()
-    if (typeof solEthPrice !== 'number' || isNaN(solEthPrice)) throw new Error('ethsol price is not valid')
-    if (solEthPrice > 142 || solEthPrice < 57) throw new Error('soleth price failed sanity check')
+    const {ethUsd, solUsd} = await fetchPrices()
+    depositUsdPrice = ethUsd
+    outgoingUsdPrice = solUsd
   } catch (error) {
-    setTimeout(makePayments, 5000);
-    await reportError('Error getting ETH-SOL price', error)
-    return;
-  }
-
-  let makerBalance;
-  try {
-    makerBalance = await connection.getBalance(keyPair.publicKey)
-  } catch (error) {
-    setTimeout(makePayments, 5000);
-    await reportError('Error while getting maker balance', error)
-    return;
+    await reportError('error getting prices', error)
+    return
   }
 
   
   for (let bridge of result.rows) {
-    const readableOutgingAmount = bridge.deposit_amount * solEthPrice
-    const outgoingAmount = Number((readableOutgingAmount * LAMPORTS_PER_SOL * FEE_MULTIPLIER).toFixed(0))
+
+    let makerBalance;
+    try {
+      makerBalance = await connection.getBalance(keyPair.publicKey)
+    } catch (error) {
+      setTimeout(makePayments, 5000);
+      await reportError('Error while getting maker balance', error)
+      return;
+    }
+
+    let readableOutgoingAmount;
+    let readableBridgeFee;
+    try {
+      const {amountMinusFee, fee} = await getOutAmountAndFee('ETH', 'SOL', depositUsdPrice, outgoingUsdPrice, bridge.deposit_amount)
+      readableOutgoingAmount = amountMinusFee
+      readableBridgeFee = fee
+    } catch (error) {
+      console.log(error)
+      await reportError('error calculating outgoing amounts', error)
+    }
+
+    const outgoingAmount = Number((readableOutgoingAmount * LAMPORTS_PER_SOL).toFixed(0))
 
     if (makerBalance <= outgoingAmount) continue
 
@@ -86,25 +95,13 @@ async function makePayments () {
     )
 
     await db.query(
-      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW(), paid=true WHERE deposit_txid = $3", 
-      [transactionSignature, readableOutgingAmount, bridge.deposit_txid]
+      "UPDATE bridges SET outgoing_txid=$1, outgoing_amount=$2, outgoing_timestamp=NOW(), paid=true, fee=$3 WHERE deposit_txid = $4", 
+      [transactionSignature, readableOutgoingAmount, readableBridgeFee, bridge.deposit_txid]
     );
-    console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${readableOutgingAmount} SOL. Price ${solEthPrice}. TXID: ${transactionSignature}`);
+    console.log(`Trade Executed: ${bridge.deposit_amount} ETH for ${readableOutgoingAmount} SOL. Price ${depositUsdPrice / outgoingUsdPrice}. TXID: ${transactionSignature}`);
   }
 
   setTimeout(makePayments, 5000);
-}
-
-function getSolEthPrice () {
-  return fetch('https://api.coincap.io/v2/assets', {
-    headers: {
-      'Authorization': `Bearer ${process.env.COIN_CAP_API_KEY}`
-    }
-  }).then(res => res.json()).then(({data}) => {
-    const etheremPrice = data.find(asset => asset.id === 'ethereum').priceUsd
-    const solanaPrice = data.find((asset) => asset.id === 'solana').priceUsd
-    return Number(etheremPrice) / Number(solanaPrice)
-  })
 }
 
 function getSolanaKeyPair () {

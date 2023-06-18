@@ -28,3 +28,5 @@ CREATE TABLE IF NOT EXISTS sol_deposits (
   completed BOOLEAN DEFAULT FALSE,
   expiry TIMESTAMP
 );
+
+ALTER TABLE bridges ADD COLUMN fee NUMERIC;

@@ -43,7 +43,6 @@ export enum BuyValidationState {
 let LAST_DATA_UPDATE = Date.now()
 
 function Bridge() {
-  const TRADING_FEE = 0.002
 
   const { switchNetworkAsync } = useSwitchNetwork()
   const { connectors } = useConnect()
@@ -89,6 +88,7 @@ function Bridge() {
   const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
   const [history, setHistory] = useState([])
   const [priceDisplay, setPriceDisplay] = useState<boolean>(true)
+  const [displayFee, setDisplayFee] = useState('0.1%')
 
   ///////////////////////////////////////////////////////////////////////////////
   // Wagmi requires hooks to be pre-set to make sending transactions faster so
@@ -629,20 +629,40 @@ function Bridge() {
     setDestTokenItem(val)
   }
 
+  const DEFAULT_TRADING_FEE = 0.001
+
+  const handleFeeChange = (amountInUsd: number) => {
+    setDisplayFee(amountInUsd > 1000 ? '0.1%' : '$1.00')
+  }
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
-    const outAmount = Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE) - destTokenItem.networkFee
+    const value = Number(e.target.value)
+    const amountInUsd = value * prices[orgTokenItem.priceKey]
+    handleFeeChange(amountInUsd)
+    const price = Number(getCurrentMarketPrices()[0])
+    const feeInOutgoingAmount =  amountInUsd > 1000 ? (value * price) * DEFAULT_TRADING_FEE : 1 / prices[destTokenItem.priceKey]
+    const outAmount = (value * price) - feeInOutgoingAmount - destTokenItem.networkFee
     setDestAmount(Math.max(0, outAmount))
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDestAmount(e.target.value)
-    setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 + TRADING_FEE) + destTokenItem.networkFee)
+    const value = Number(e.target.value)
+    const amountInUsd = value * prices[destTokenItem.priceKey]
+    handleFeeChange(amountInUsd)
+    const feeInAmount = amountInUsd > 1000 ? value * DEFAULT_TRADING_FEE : 1 / prices[orgTokenItem.priceKey]
+    setAmount((value + feeInAmount) * Number(getCurrentMarketPrices()[1]) + destTokenItem.networkFee)
   }
 
   const handleMax = () => {
     setAmount(Number(balance))
-    setDestAmount(Number(balance) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE))
+    const amountInUsd = Number(balance) * prices[orgTokenItem.priceKey]
+    const price = Number(getCurrentMarketPrices()[0])
+    handleFeeChange(amountInUsd)
+    const feeInOutgoingAmount = amountInUsd > 1000 ? (Number(balance) * price) * DEFAULT_TRADING_FEE : 1 / prices[destTokenItem.priceKey]
+    const outAmount = (balance * price) - feeInOutgoingAmount - destTokenItem.networkFee
+    setDestAmount(outAmount)
   }
 
   return (
@@ -929,7 +949,7 @@ function Bridge() {
               <div className="flex justify-between">
 
                 <p className="text-[#88818C] ">Trading Fee</p>
-                <span className="text-[#88818C]">0.1%</span>
+                <span className="text-[#88818C]">{displayFee}</span>
               </div>
 
               <div className="flex justify-between">

@@ -163,6 +163,11 @@ async function getBitcoinBalace () {
   return walletInfo.balance
 }
 
+app.get('/bridge_history', async (_, res) => {
+  const last20Bridges = await db.query('SELECT * FROM bridges ORDER BY outgoing_timestamp LIMIT 20')
+  return res.status(200).json(last20Bridges.rows)
+})
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err })

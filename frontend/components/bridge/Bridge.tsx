@@ -16,7 +16,7 @@ import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
-import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
+import { ethTokenItems, arbTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
 import usePhantom from "../../hooks/usePhantom"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
@@ -74,10 +74,10 @@ function Bridge() {
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder] = useState<string>("order-0")
-  const [orgTokenItem, setOrgTokenItem] = useState(evmTokenItems[0])
+  const [orgTokenItem, setOrgTokenItem] = useState(arbTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
-  const [orgChainId, setOrgChainId] = useState<number>(1)
+  const [orgChainId, setOrgChainId] = useState<number>(42161)
   const [destChainId, setDestChainId] = useState<number>(3)
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState<number | string>("")
@@ -125,10 +125,12 @@ function Bridge() {
   }, [_destChainId])
 
   useEffect(() => {
-    if (orgChainId === 1 || orgChainId === 42161) {
-      setOrgTokenItem(evmTokenItems[0])
+    if (orgChainId === 1) {
+      setOrgTokenItem(ethTokenItems[0])
     } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
+    } else if (orgChainId === 42161) {
+      setOrgTokenItem(arbTokenItems[0])
     } else {
       setOrgTokenItem(btcTokenItems[0])
     }
@@ -136,7 +138,7 @@ function Bridge() {
 
   useEffect(() => {
     if (destChainId === 1 || destChainId === 42161) {
-      setDestTokenItem(evmTokenItems[0])
+      setDestTokenItem(ethTokenItems[0])
     } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
     } else {

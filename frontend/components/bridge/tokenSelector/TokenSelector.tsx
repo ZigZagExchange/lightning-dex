@@ -9,7 +9,7 @@ interface props {
   networkID?: number
 }
 
-export const evmTokenItems = [
+export const ethTokenItems = [
   {
     name: "ETH",
     base: "Ethereum",
@@ -69,15 +69,28 @@ export const evmTokenItems = [
   //},
 ]
 
+export const arbTokenItems = [
+  {
+    name: "USDC",
+    base: "USD Circle",
+    network: "Ethereum",
+    address: [
+      '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'
+    ],
+    numOfDecimals: 18,
+    bg: "#3b82f6",
+    border: "#93c5fd",
+    icon: "usdc.svg",
+    networkIcon: "eth.svg"
+  },
+]
+
 export const solTokenItems = [
   {
     name: "SOL",
     base: "Solana",
     network: "Solana",
-    address: [
-      '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-      '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d',
-    ],
+    address: [],
     numOfDecimals: 9,
     bg: "#0ea5e9",
     border: "#7dd3fc",
@@ -149,14 +162,16 @@ const TokenItem: any = styled.div`
 `
 
 function TokenSelector({ count, onSelect, networkID }: props) {
-  const [tokenItems, setTokenItems] = useState(evmTokenItems)
+  const [tokenItems, setTokenItems] = useState(ethTokenItems)
   const [active, setActive] = useState(false)
   const [search, setSearch] = useState<string>("")
   const network = networksItems.find(item => item.id === networkID) as any
 
   useEffect(() => {
-    if (networkID === 1 || networkID === 42161) {
-      setTokenItems(evmTokenItems)
+    if (networkID === 1) {
+      setTokenItems(ethTokenItems)
+    } else if (networkID === 42161) {
+      setTokenItems(arbTokenItems)
     } else if (networkID === 2) {
       setTokenItems(solTokenItems)
     } else {

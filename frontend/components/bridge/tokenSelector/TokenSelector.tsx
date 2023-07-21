@@ -81,7 +81,8 @@ export const arbTokenItems = [
     bg: "#3b82f6",
     border: "#93c5fd",
     icon: "usdc.svg",
-    networkIcon: "eth.svg"
+    networkIcon: "eth.svg",
+    priceKey: "usdc_usd"
   },
 ]
 

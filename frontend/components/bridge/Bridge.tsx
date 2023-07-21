@@ -137,8 +137,10 @@ function Bridge() {
   }, [orgChainId])
 
   useEffect(() => {
-    if (destChainId === 1 || destChainId === 42161) {
+    if (destChainId === 1) {
       setDestTokenItem(ethTokenItems[0])
+    } else if (destChainId === 42161) {
+      setDestTokenItem(arbTokenItems[0])
     } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
     } else {
@@ -618,8 +620,8 @@ function Bridge() {
     const orgPrice = prices[orgTokenItem.priceKey]
     const destPrice = prices[destTokenItem.priceKey]
     return [
-      (orgPrice / destPrice).toPrecision(4),
-      (destPrice / orgPrice).toPrecision(4)
+      (orgPrice / destPrice).toPrecision(5),
+      (destPrice / orgPrice).toPrecision(5)
     ] 
   }
 

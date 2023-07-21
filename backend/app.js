@@ -125,7 +125,8 @@ app.get('/prices', async (_, res) => {
 
   return res.status(200).json({
     ...gmxPrices,
-    ...coinCapPrices
+    ...coinCapPrices,
+    "usdc_usd": 1
   })
 })
 

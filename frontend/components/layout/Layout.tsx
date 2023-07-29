@@ -43,6 +43,7 @@ function Layout(props: LayoutProps) {
     updateIsLoading,
   } = useContext(WalletContext)
 
+  console.log(orgChainId)
   const token = networksItems.filter((item) => item.id === orgChainId)
 
   const option: Balance = orgChainId === 1 ? {

@@ -69,15 +69,15 @@ export const ethTokenItems = [
   //},
 ]
 
-export const arbTokenItems = [
+export const zksyncEraTokenItems = [
   {
     name: "USDC",
     base: "USD Circle",
     network: "Ethereum",
     address: [
-      '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'
+      '0x3355df6D4c9C3035724Fd0e3914dE96A5a83aaf4'
     ],
-    numOfDecimals: 18,
+    numOfDecimals: 6,
     bg: "#3b82f6",
     border: "#93c5fd",
     icon: "usdc.svg",
@@ -171,8 +171,8 @@ function TokenSelector({ count, onSelect, networkID }: props) {
   useEffect(() => {
     if (networkID === 1) {
       setTokenItems(ethTokenItems)
-    } else if (networkID === 42161) {
-      setTokenItems(arbTokenItems)
+    } else if (networkID === 324) {
+      setTokenItems(zksyncEraTokenItems)
     } else if (networkID === 2) {
       setTokenItems(solTokenItems)
     } else {

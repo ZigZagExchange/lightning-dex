@@ -8,12 +8,12 @@ export const networksItems = [
         icon: "eth.svg"
     },
     {
-        id: 42161,
-        name: "Arbitrum",
+        id: 324,
+        name: "Zksync Era",
         token: "912CE59144191C1204E64559FE8253a0e49E6548",
         layer: "Layer 2",
         color: "#58535B",
-        icon: "abt.jfif"
+        icon: "zksync-era.svg"
     },
     {
         id: 2,

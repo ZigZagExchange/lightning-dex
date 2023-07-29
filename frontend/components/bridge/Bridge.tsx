@@ -16,7 +16,7 @@ import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
-import { ethTokenItems, arbTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
+import { ethTokenItems, zksyncEraTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
 import usePhantom from "../../hooks/usePhantom"
 import { getEVMTokenBalance, getSPLTokenBalance } from "../../utils/getTokenBalance"
@@ -74,7 +74,7 @@ function Bridge() {
   const [secondCount, setSecondCount] = useState(0)
   const [showSettings, setShowSettings] = useState<boolean>(false)
   const [swapOrder] = useState<string>("order-0")
-  const [orgTokenItem, setOrgTokenItem] = useState(arbTokenItems[0])
+  const [orgTokenItem, setOrgTokenItem] = useState(zksyncEraTokenItems[0])
   const [destTokenItem, setDestTokenItem] = useState(btcTokenItems[0])
   const [modal, setModal] = useState<ModalMode>(null)
   const [orgChainId, setOrgChainId] = useState<number>(42161)
@@ -82,7 +82,7 @@ function Bridge() {
   const [balance, setBalance] = useState('0.00')
   const [amount, setAmount] = useState<number | string>("")
   const [destAmount, setDestAmount] = useState<number | string>("")
-  const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0 })
+  const [prices, setPrices] = useState<{ [priceKey: string]: number }>({ "btc_usd": 0, "eth_usd": 0, "sol_usd": 0, "usdc_usd": 1 })
   const [liquidity, setLiquidity] = useState<{ [liquidityKey: string]: number }>({ "btc": 0, "sol": 0, "eth_btc": 0, "eth_sol": 0 })
   const [withdrawAddress, setWithdrawAddress] = useState("")
   const [depositAddress, setDepositAddress] = useState<string>("")
@@ -129,8 +129,8 @@ function Bridge() {
       setOrgTokenItem(ethTokenItems[0])
     } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
-    } else if (orgChainId === 42161) {
-      setOrgTokenItem(arbTokenItems[0])
+    } else if (orgChainId === 324) {
+      setOrgTokenItem(zksyncEraTokenItems[0])
     } else {
       setOrgTokenItem(btcTokenItems[0])
     }
@@ -139,8 +139,8 @@ function Bridge() {
   useEffect(() => {
     if (destChainId === 1) {
       setDestTokenItem(ethTokenItems[0])
-    } else if (destChainId === 42161) {
-      setDestTokenItem(arbTokenItems[0])
+    } else if (destChainId === 324) {
+      setDestTokenItem(zksyncEraTokenItems[0])
     } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
     } else {

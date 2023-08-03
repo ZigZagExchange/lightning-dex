@@ -30,3 +30,17 @@ CREATE TABLE IF NOT EXISTS sol_deposits (
 );
 
 ALTER TABLE bridges ADD COLUMN fee NUMERIC;
+
+CREATE TABLE IF NOT EXISTS base_bridges (
+  id TEXT NOT NULL,
+  outgoing_address TEXT NOT NULL,
+  amount NUMERIC,
+  deposit_expiry TIMESTAMP,
+  deposit_timestamp TIMESTAMP,
+  withdrawal_txid TEXT,
+  proofing_txid TEXT,
+  proofing_period_end TIMESTAMP,
+  finalize_txid TEXT,
+  completed BOOLEAN DEFAULT FALSE,
+  ouitgoing_timestamp TIMESTAMP,
+)

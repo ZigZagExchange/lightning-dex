@@ -168,6 +168,32 @@ app.get('/bridge_history', async (_, res) => {
   return res.status(200).json(last20Bridges.rows)
 })
 
+function generateEthKeyPairFromID (id) {
+  const masterWallet = ethers.HDNodeWallet.fromSeed(Buffer.from(process.env.BASE_BRDIGE_SECRET))
+  const derivationIndex = ethers.keccak256(Buffer.from(id)).substring(0, 10);
+  const derivedWallet = masterWallet.derivePath(`m/44'/60'/0'/0/${parseInt(derivationIndex, 16) & 0x7fffffff}`)
+  return {
+    privateKey: derivedWallet.privateKey,
+    publicKey: derivedWallet.address
+  }
+}
+
+const BASE_DEPOSIT_EXPIRY_PERIOD = 3600 // 1 hour
+
+app.post('/base-bridge/initiate', async (req, res, next) => {
+  if (!req.body.outgoing_address) {
+    return next('outgoing_address requried')
+  }
+  const bridgeId = uuid()
+  const keyPair = generateEthKeyPairFromID(bridgeId)
+  const expiry = Math.floor(new Date().getTime() / 1000) + BASE_DEPOSIT_EXPIRY_PERIOD
+  await db.query('INSERT INTO base_bridges (id, outgoing_address, deposit_expiry) VALUES ($1, $2, to_timestamp($3))', [bridgeId, req.body.outgoing_address, expiry])
+  return res.json({
+    intermediary_wallet: keyPair.publicKey,
+    expires_at: expiry
+  })
+})
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err })

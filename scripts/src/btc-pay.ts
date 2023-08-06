@@ -19,6 +19,11 @@ const runScript = scriptWrapper(async ({db}) => {
     const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
     const walletInfo = JSON.parse(balanceCheck.stdout);
 
+    if (walletInfo.balance < amountMinusFee) {
+      console.log('BTC liqudiity is empty')
+      return
+    }
+
     const duplicates = await db.query("SELECT * FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (duplicates.rowCount !== 1) {
       throw new Error(`double deposit detected ${bridge.deposit_txid}`)

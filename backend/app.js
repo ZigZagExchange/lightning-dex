@@ -91,8 +91,7 @@ app.get('/sol_deposit', async (req, res, next) => {
   const outgoingCurrency = req.query.outgoing_currency
   const outgoingAddress = req.query.outgoing_address
 
-  if (outgoingCurrency !== 'ETH') return next('Only eth bridges supported')
-  if (!ethers.isAddress(outgoingAddress)) return next("Invalid outgoing_address")
+  if (outgoingCurrency === 'ETH' && !ethers.isAddress(outgoingAddress)) return next("Invalid outgoing_address")
   
   const depositId = uuid()
   const depositAddress = deriveSolanaDepositAddress(depositId)

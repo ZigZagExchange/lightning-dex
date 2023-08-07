@@ -1,27 +1,19 @@
+import { scriptWrapper } from "./wrapper";
 import nodeChildProcess from 'node:child_process'
 import util from 'node:util'
-import pg from 'pg'
-import dotenv from 'dotenv'
+import { Assets } from "./common";
 
-dotenv.config()
-
-const db = new pg.Pool({
-  host: 'localhost',
-  port: 5432,
-  database: process.env.POSTGRES_DB,
-  user: 'postgres',
-  password: 'postgres'
-});
+const SCRIPT_INTERVAL = 5000
 
 const exec = util.promisify(nodeChildProcess.exec);
 
-updateDeposits();
-setInterval(updateDeposits, 5000);
-
-async function updateDeposits () {
+const runScript = scriptWrapper(async ({db}) => {
   const { stdout, stderr } = await exec(`${process.env.BITCOIN_CLI_PREFIX} listtransactions`);
+  if (stderr) {
+    return
+  }
   const transactions = JSON.parse(stdout);
-  const deposits = transactions.filter(t => t.category === "receive" && t.confirmations >= 1);
+  const deposits = transactions.filter((tx: any) => tx.category === "receive" && tx.confirmations >= 1);
   for (let deposit of deposits) {
     const deposit_address_result = await db.query("SELECT * FROM deposit_addresses WHERE deposit_address=$1 AND deposit_currency='BTC'", [deposit.address]);
     if (deposit_address_result.rows.length != 1) continue;
@@ -36,6 +28,13 @@ async function updateDeposits () {
        ON CONFLICT (deposit_txid) DO NOTHING`, 
        bridge_data
     );
-    if (result.rowCount === 1) console.log(bridge_data);
+    if (result.rowCount === 1) {
+      console.log(`${Assets.SOL} deposit ${deposit.txid} recorded`)
+    }
   }
-}
+})
+
+runScript()
+setInterval(() => {
+  runScript()
+}, SCRIPT_INTERVAL)

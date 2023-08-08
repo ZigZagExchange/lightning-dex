@@ -29,12 +29,12 @@ const runScript = scriptWrapper(async ({db, solConnection}) => {
 
     if (makerBalance <= amountMinusFee * LAMPORTS_PER_SOL) {
       console.log('SOL liqudiity is empty')
-      return
+      continue
     }
 
     if (amountMinusFee < 0) {
       console.log('outgoing tx would be for < 0 SOL')
-      return
+      continue
     }
 
     const duplicates = await db.query("SELECT * FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);

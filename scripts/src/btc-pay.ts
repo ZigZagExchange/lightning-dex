@@ -10,6 +10,10 @@ const exec = util.promisify(nodeChildProcess.exec);
 const runScript = scriptWrapper(async ({db}) => {
   const {rows: bridges} = await db.query("SELECT * FROM bridges WHERE paid = false AND outgoing_currency = BTC AND outgoing_address IS NOT NULL")
 
+  if (bridges.length === 0) {
+    return
+  }
+
   const usdPriceMap = await generateUSDPriceMap()
   const feeCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} estimatesmartfee 1`);
   const networkFee = JSON.parse(feeCheck.stdout).feerate / 3; // Estimated 333 vB
@@ -21,7 +25,7 @@ const runScript = scriptWrapper(async ({db}) => {
 
     if (walletInfo.balance < amountMinusFee) {
       console.log('BTC liqudiity is empty')
-      return
+      continue
     }
 
     const duplicates = await db.query("SELECT * FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
@@ -36,7 +40,7 @@ const runScript = scriptWrapper(async ({db}) => {
 
     if (amountMinusFee <= 0) {
       console.log("Payment skipped. Outgoing amount would be negative");
-      return
+      continue
     }
 
     let btcPayment;

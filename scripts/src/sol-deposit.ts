@@ -13,14 +13,14 @@ const runScript = scriptWrapper(async ({db, solConnection}) => {
     const intemedieryWalletTxs = await solConnection.getConfirmedSignaturesForAddress2(new PublicKey(request.deposit_address))
     if (intemedieryWalletTxs.length === 0) {
       // user has not deposited funds to intemediery wallet yet
-      return
+      continue
     }
     const depositTransaction = await solConnection.getTransaction(intemedieryWalletTxs[0].signature)
     const depositTxid = depositTransaction?.transaction.signatures[0]
     const {rows: existingDeposits} = await db.query(`SELECT * FROM bridges WHERE deposit_txid = $1 AND deposit_currency = '${Assets.SOL}'`, [depositTxid])
     if (existingDeposits.length > 0) {
       // deposit has already been processed
-      return
+      continue
     }
     const depositAmount = ((depositTransaction?.meta?.preBalances[0] || 0) - (depositTransaction?.meta?.postBalances[0] || 0) - (depositTransaction?.meta?.fee || 0)) / LAMPORTS_PER_SOL
     await transferFromDepositAddressToLiquidityPool(request.id, solConnection)

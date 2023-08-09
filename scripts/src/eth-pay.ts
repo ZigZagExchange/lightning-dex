@@ -11,6 +11,7 @@ const runScript = scriptWrapper(async ({db, ethProvider}) => {
   if (bridges.length === 0) {
     return
   }
+  
   const usdPriceMap = await generateUSDPriceMap()
   const wallet = new ethers.Wallet(process.env.ETH_PRIVKEY as string, ethProvider)
 
@@ -31,12 +32,12 @@ const runScript = scriptWrapper(async ({db, ethProvider}) => {
 
     if (txValue.gte(makerBalance)) {
       console.log('ETH liqudiity is empty')
-      return
+      continue
     }
 
     if (txValue.lte(0)) {
       console.log('outgoing tx would be for < 0 ETH')
-      return
+      continue
     }
 
     const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);

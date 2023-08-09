@@ -17,7 +17,7 @@ const runScript = scriptWrapper(async ({db, ethProvider}) => {
   for (let deposit of recentDeposits) {
     if (deposit?.args?.token !== ethers.constants.AddressZero) {
       // erc20s not yet supported
-      return
+      continue
     }
 
     const depositAmount = WADToAmount(deposit?.args?.amount);

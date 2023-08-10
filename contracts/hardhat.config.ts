@@ -1,7 +1,8 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-etherscan";
-
+import "@matterlabs/hardhat-zksync-deploy";
+import "@matterlabs/hardhat-zksync-solc";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
@@ -24,7 +25,13 @@ const config: HardhatUserConfig = {
     arbitrum: {
       url: "https://arb1.arbitrum.io/rpc",
       accounts: []
-    }, 
+    },
+    zkSyncEraGoerli: {
+      url: 'https://testnet.era.zksync.dev',
+      accounts: [],
+      ethNetwork: 'goerli',
+      zksync: true
+    }
   },
 };
 

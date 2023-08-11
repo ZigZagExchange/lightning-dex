@@ -29,7 +29,8 @@ export async function generateUSDPriceMap (): Promise<USDPriceMap> {
   return {
     [Assets.ETH]: tidyPrice(ethUsdPrice),
     [Assets.SOL]: tidyPrice(solUsdPrice),
-    [Assets.BTC]: tidyPrice(btcUsdPrice)
+    [Assets.BTC]: tidyPrice(btcUsdPrice),
+    [Assets.ZKSync]: tidyPrice(ethUsdPrice)
   }
 }
 

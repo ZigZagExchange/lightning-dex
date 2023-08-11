@@ -1,8 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import "@nomiclabs/hardhat-etherscan";
 import "@matterlabs/hardhat-zksync-deploy";
 import "@matterlabs/hardhat-zksync-solc";
+import "@matterlabs/hardhat-zksync-verify";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
@@ -30,7 +29,8 @@ const config: HardhatUserConfig = {
       url: 'https://testnet.era.zksync.dev',
       accounts: [],
       ethNetwork: 'goerli',
-      zksync: true
+      zksync: true,
+      verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification'
     }
   },
 };

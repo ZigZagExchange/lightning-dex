@@ -13,7 +13,8 @@ Sentry.init({
 interface Options {
   db: Pool,
   ethProvider: ethers.providers.InfuraProvider,
-  solConnection: Connection
+  solConnection: Connection,
+  zkSyncProvider: ethers.providers.JsonRpcProvider
 }
 
 const db = new Pool({
@@ -34,10 +35,12 @@ const solConnection = new Connection(
   "confirmed"
 );
 
+const zkSyncProvider = new ethers.providers.JsonRpcProvider(process.env.ZKSYNC_RPC_URL as string)
+
 export const scriptWrapper = (callback: (options: Options) => void) => {
   return async () => {
     try {
-      await callback({db, ethProvider, solConnection})
+      await callback({db, ethProvider, solConnection, zkSyncProvider})
     } catch (error) {
       Sentry.captureException(error)
       console.error(error)

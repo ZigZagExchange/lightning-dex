@@ -1,9 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ZKSyncBridge {
-    address public beneficiary;
-
+contract ZKSyncBridge is Ownable {
     event Deposit(
         address initiator,
         address token,
@@ -12,21 +11,12 @@ contract ZKSyncBridge {
         string out_address
     );
 
-    constructor(address _beneficiary) {
-        beneficiary = _beneficiary;
-    }
-
     function depositETH(
         string memory out_chain,
         string memory out_address
     ) public payable {
+        (bool success, ) = payable(owner()).call{value: msg.value}("");
+        require(success, "deposit failed");
         emit Deposit(msg.sender, address(0), msg.value, out_chain, out_address);
-    }
-
-    function withdraw() public {
-        (bool success, ) = payable(beneficiary).call{
-            value: address(this).balance
-        }(new bytes(0));
-        require(success, "Withdraw failed");
     }
 }

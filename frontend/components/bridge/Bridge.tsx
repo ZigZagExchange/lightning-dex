@@ -14,7 +14,7 @@ import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems, ETH_BTC_CONTRACT, ETH_SOL_CONTRACT, depositContractABI } from "../../utils/data"
+import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
@@ -95,9 +95,8 @@ function Bridge() {
   // that's what's happening here
   const debouncedAmount = useDebounce((Number(amount) * 1e18).toFixed(0), 500)
   const debouncedWithdrawAddress = useDebounce(withdrawAddress, 500)
-  const depositContractAddress = destTokenItem.name === "BTC" ? ETH_BTC_CONTRACT : ETH_SOL_CONTRACT
   const prepareContractWriteHook = usePrepareContractWrite({
-    address: depositContractAddress,
+    address: ETH_DEPOSIT_CONTRACT,
     abi: depositContractABI,
     functionName: 'depositETH',
     args: [destTokenItem.name, debouncedWithdrawAddress[0]],

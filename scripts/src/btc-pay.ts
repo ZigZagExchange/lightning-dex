@@ -24,7 +24,7 @@ const runScript = scriptWrapper(async ({db}) => {
     const walletInfo = JSON.parse(balanceCheck.stdout);
 
     if (walletInfo.balance < amountMinusFee) {
-      console.log('BTC liqudiity is empty')
+      console.log('BTC liquidity is empty')
       continue
     }
 
@@ -45,7 +45,8 @@ const runScript = scriptWrapper(async ({db}) => {
 
     let btcPayment;
     try {
-      btcPayment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${amountMinusFee - networkFee} conf_target=1`);
+      const amount = (amountMinusFee - networkFee).toFixed(8)
+      btcPayment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${amount} conf_target=1`);
     } catch (e) {
       console.error("Trade failed");
       console.error(e);

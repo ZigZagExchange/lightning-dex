@@ -1,8 +1,8 @@
 import { useContext } from "react"
-import { useConnect, useDisconnect, Connector } from 'wagmi'
-import { PublicKey, Connection } from '@solana/web3.js'
+import { useConnect, useDisconnect, Connector, useSwitchNetwork } from 'wagmi'
+import { PublicKey } from '@solana/web3.js'
 import usePhantom from "./usePhantom"
-import { WalletContext } from "../contexts/WalletContext"
+import { WalletContext, Chain } from "../contexts/WalletContext"
 import { getSOLTokenBalance } from "../utils/getTokenBalance"
 
 const useHandleWallet = () => {
@@ -73,8 +73,9 @@ const useHandleWallet = () => {
         handleConnectPhantom,
         handleDisconnectMetaMask,
         handleDisconnectPhantom,
-        phantomProvider
+        phantomProvider,
     }
 }
 
 export default useHandleWallet
+ 

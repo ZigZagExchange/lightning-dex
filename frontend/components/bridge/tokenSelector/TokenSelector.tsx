@@ -25,6 +25,21 @@ export const evmTokenItems = [
     minSize: 0.004,
     networkFee: 0.0015
   },
+  {
+    name: 'BASE',
+    base: 'Base ETH',
+    network: 'Base',
+    address: ['', ''],
+    numOfDecimals: 18,
+    bg: '#1c62f9',
+    border: '#1c62f9',
+    icon: 'base.svg',
+    networkIcon: 'base.svg',
+    priceKey: 'eth_usd', // needs to be updated,
+    liquidityBuffer: 0.1,
+    minSize: 0.004,
+    networkFee: 0.0015
+  }
   //{
   //  name: "USDC",
   //  base: "USD Circle",

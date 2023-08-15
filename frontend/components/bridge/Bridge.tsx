@@ -8,10 +8,9 @@ import {
   useWaitForTransaction
 } from 'wagmi'
 import styles from "./Bridge.module.css"
-import Modal, { ModalMode } from "./modal/Modal"
+import { ModalMode } from "./modal/Modal"
 import TokenSelector from "./tokenSelector/TokenSelector"
 import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
-import { SendTransaction } from "../SendTransaction/SendTransaction"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
 import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI } from "../../utils/data"
@@ -46,7 +45,6 @@ function Bridge() {
   const TRADING_FEE = 0.002
 
   const { switchNetworkAsync } = useSwitchNetwork()
-  const { connectors } = useConnect()
   const {
     address,
     balance: nativeBalance,
@@ -63,7 +61,6 @@ function Bridge() {
     updateCurrentAction
   } = useContext(WalletContext)
   const {
-    handleConnectMetaMask,
     handleConnectPhantom,
     handleDisconnectMetaMask,
     handleDisconnectPhantom,
@@ -89,6 +86,7 @@ function Bridge() {
   const [sendingSolPayment, setSendingSolPayment] = useState<boolean>(false)
   const [history, setHistory] = useState([])
   const [priceDisplay, setPriceDisplay] = useState<boolean>(true)
+  const [showBaseBridgeComplete, setShowBaseBridgeComplete] = useState(false)
 
   ///////////////////////////////////////////////////////////////////////////////
   // Wagmi requires hooks to be pre-set to make sending transactions faster so
@@ -126,6 +124,8 @@ function Bridge() {
   useEffect(() => {
     if (orgChainId === 1 || orgChainId === 42161) {
       setOrgTokenItem(evmTokenItems[0])
+    } else if (orgChainId === 4) {
+      setOrgTokenItem(evmTokenItems[1])
     } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
     } else {
@@ -238,6 +238,7 @@ function Bridge() {
       if (currency === 'ETH') return `https://etherscan.io/tx/${txid}`
       else if (currency === 'BTC') return `https://mempool.space/tx/${txid}`
       else if (currency === 'SOL') return `https://solscan.io/tx/${txid}`
+      else if (currency === 'BASE') return `https://basescan.com/${txid}`
   }
 
   useEffect(() => {
@@ -255,10 +256,6 @@ function Bridge() {
     }
     fetchHistory()
   }, [address, isConnected, isLoading, orgChainId, walletChain, orgTokenItem.name])
-
-  const handleTokenClick = (newTokenAddress: string) => {
-    setModal(null)
-  }
 
   // Switch network
   const onSwitchNetwork = async (id: number) => {
@@ -281,17 +278,15 @@ function Bridge() {
       updateOrgChainId(id)
 
       if (id === 1 || id === 42161) {
-        updateChain(Chain.evm)
+        updateChain(Chain.eth)
 
         if (orgChainId === 2) {
           await handleDisconnectPhantom()
-          // await handleConnectMetaMask(connectors[0])
-          // onSwitchNetwork(id)
           setModal("connectWallet")
-        } else if (orgChainId === 3 || orgChainId === 4) {
-          // await handleConnectMetaMask(connectors[0])
-          // onSwitchNetwork(id)
+        } else if (orgChainId === 3) {
           setModal("connectWallet")
+        } else if (orgChainId === 4) {
+          onSwitchNetwork(id)
         }
 
         if (destChainId === id) {
@@ -301,13 +296,24 @@ function Bridge() {
             onSwitchNetwork(id)
           }
         }
+      } else if (id === 4) {
+        updateChain(Chain.base)
+        if (orgChainId === 1) {
+          onSwitchNetwork(8453)
+        }
+        if (orgChainId === 2) {
+          await handleDisconnectPhantom()
+          setModal('connectWallet')
+        } else if (orgChainId === 3) {
+          setModal('connectWallet')
+        }
       } else if (id === 2) {
         updateChain(Chain.solana)
 
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleConnectPhantom()
-        } else if (orgChainId === 3 || orgChainId === 4) {
+        } else if (orgChainId === 3) {
           await handleConnectPhantom()
         }
 
@@ -335,101 +341,18 @@ function Bridge() {
 
     setAmount("")
     setDestAmount("")
-
-    // try {
-    //   const chain =
-    //     _chain === 'Solana'
-    //       ? Chain.solana
-    //       : _chain === 'Bitcoin' || _chain === 'Lightning'
-    //         ? Chain.btc
-    //         : Chain.evm
-
-    //   updateChain(chain)
-
-    //   // Update origin chain
-    //   updateOrgChainId(id)
-
-    //   // Check if chain is 'Bitcoin' or 'Lightning'. If yes, disconnect all wallets
-    //   if (chain === Chain.btc) {
-    //     await disconnectAsync()
-    //     await handleDisconnectPhantom()
-    //     updateCurrentAction('Origin')
-    //     return
-    //   }
-
-    //   // Check if wallet is connected or not
-    //   if (!isConnected) {
-    //     setModal("connectWallet")
-    //     return
-    //   }
-
-    //   updateCurrentAction('Origin')
-
-    //   // Check if an origin chain corresponds to wallet chain
-    //   if (walletChain !== chain) {
-    //     if (walletChain === Chain.evm) {
-    //       // Disconnect wallet
-    //       await disconnectAsync()
-    //       updateIsConnected(null)
-    //     } else {
-    //       await handleDisconnectPhantom()
-    //     }
-
-    //     setModal("connectWallet")
-    //   } else {
-    //     // Check what wallet has been connected to Dapp
-    //     if (chain === 'EVM') {
-    //       // Check if MetaMask is installed and connected
-
-    //       // @ts-ignore
-    //       if (typeof window.ethereum !== 'undefined') {
-    //         // @ts-ignore
-    //         if (window.ethereum.isConnected()) {
-    //           console.log('MetaMask is connected!')
-    //         } else {
-    //           // Other wallet is connected
-    //           await handleDisconnectPhantom()
-    //           setModal("connectWallet")
-    //         }
-    //       } else {
-    //         console.log('No MetaMask Wallet detected. Please install MetaMask Wallet!')
-    //       }
-    //     } else {
-    //       // @ts-ignore
-    //       if (typeof window.solana !== 'undefined') {
-    //         // Wallet is installed, so you can access the connected wallet information
-
-    //         // @ts-ignore
-    //         const { isPhantom } = window.solana
-
-    //         if (isPhantom) {
-    //           // Phantom wallet is connected
-    //           console.log('Connected wallet: Phantom')
-    //         } else {
-    //           // Other Solana wallet is connected
-    //           await disconnectAsync()
-    //           updateIsConnected(null)
-    //           setModal("connectWallet")
-    //         }
-    //       } else {
-    //         console.log('No Phantom Wallet detected. Please install Phantom Wallet!')
-    //       }
-    //     }
-    //   }
-    // } catch (err: any) {
-    //   console.log(err?.message || err)
-    // } finally {
-    //   updateIsLoading(false)
-    // }
   }
 
   const swapError = () => {
     const chains = ([orgChainId, destChainId]).sort()
-    if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
+    if (
+      (chains[0] === 2 && chains[1] === 3) ||
+      (orgChainId === 4 && destChainId !== 1)
+    ) return "Unsupported Chain Swap"
     if (!amount) return "Enter Amount"
     const maxSize = getCurrentDestLiquidity() - destTokenItem.liquidityBuffer
-    if (destAmount > maxSize) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
-    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
+    if (Number(destAmount) > Number(maxSize)) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
+    if (Number(amount) < Number(orgTokenItem.minSize)) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
@@ -464,7 +387,7 @@ function Bridge() {
           updateOrgChainId(destChainId)
           if (destChainId === 1 || destChainId === 42161) {
             onSwitchNetwork(destChainId)
-            updateChain(Chain.evm)
+            updateChain(Chain.eth)
           } else if (destChainId === 2) {
             await handleDisconnectMetaMask()
             await handleConnectPhantom()
@@ -480,9 +403,7 @@ function Bridge() {
           updateOrgChainId(destChainId)
           if (destChainId === 1 || destChainId === 42161) {
             await handleDisconnectPhantom()
-            // await handleConnectMetaMask(connectors[0])
-            // onSwitchNetwork(destChainId)
-            updateChain(Chain.evm)
+            updateChain(Chain.eth)
             setModal("connectWallet")
           }
           if (destChainId === 3 || destChainId === 4) {
@@ -495,9 +416,7 @@ function Bridge() {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
           if (destChainId === 1 || destChainId === 42161) {
-            // await handleConnectMetaMask(connectors[0])
-            updateChain(Chain.evm)
-            // onSwitchNetwork(destChainId)
+            updateChain(Chain.eth)
             setModal("connectWallet")
           } else if (destChainId === 2) {
             await handleConnectPhantom()
@@ -529,7 +448,7 @@ function Bridge() {
       updateDestChainId(current[0])
 
       if (destChainId === 1 || destChainId === 42161) {
-        updateChain(Chain.evm)
+        updateChain(Chain.eth)
         if (orgChainId === 1 || orgChainId === 42161) {
           onSwitchNetwork(destChainId)
         } else if (orgChainId === 2) {
@@ -567,6 +486,11 @@ function Bridge() {
   }
 
   const sendTransaction = async () => {
+    if (orgTokenItem.name === 'BASE') {
+      setShowBaseBridgeComplete(true)
+    }
+
+
     if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json())
@@ -630,12 +554,20 @@ function Bridge() {
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value)
+    if (orgChainId === 4) {
+      setDestAmount(e.target.value)
+      return
+    }
     const outAmount = Number(e.target.value) * Number(getCurrentMarketPrices()[0]) * (1 - TRADING_FEE) - destTokenItem.networkFee
     setDestAmount(Math.max(0, outAmount))
   }
 
   const handleDestAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDestAmount(e.target.value)
+    if (orgChainId === 4) {
+      setAmount(e.target.value)
+      return
+    }
     setAmount(Number(e.target.value) * Number(getCurrentMarketPrices()[1]) * (1 + TRADING_FEE) + destTokenItem.networkFee)
   }
 
@@ -712,7 +644,7 @@ function Bridge() {
                   <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
-                    {networksItems.map((item: any) =>
+                    {networksItems.filter((network) => network.canBridgeFrom).map((item: any) =>
                       item.id === orgChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
@@ -819,22 +751,24 @@ function Bridge() {
                 </div>
               </div>
 
-              <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapNetwork}>
-                <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
-                  <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              {orgChainId !== 4 && (
+                 <div className="absolute mt-1 ml-2 top-[11.2rem]" onClick={swapNetwork}>
+                 <div className="rounded-full p-2 -mr-2 -ml-2 hover:cursor-pointer select-none">
+                   <div className="group rounded-full inline-block p-2  bg-primary bg-opacity-80 transform-gpu transition-all duration-100 active:rotate-90">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" className="w-6 h-6 transition-all text-white group-hover:text-opacity-50">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                     </svg>
+                   </div>
+                 </div>
+               </div>
+              )}
 
               <div className="pt-3 pb-3 pl-4 pr-4 mt-2 border-none bg-primary rounded-xl">
                 <div className="flex items-center justify-center md:justify-between">
                   <div className="text-gray-400 text-sm undefined hidden md:block lg:block mr-2"></div>
 
                   <div className="flex items-center space-x-4 md:space-x-3">
-                    {networksItems.map((item: any) =>
+                    {networksItems.filter(network => network.canBridgeTo).map((item: any) =>
                       item.id === destChainId ?
                         <div
                           className="px-1 flex items-center bg-primary text-white border border-[#5170ad] dark:border-[#5170ad] rounded-full"
@@ -910,7 +844,9 @@ function Bridge() {
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              {orgChainId !== 4 && (
+                <>
+                <div className="flex justify-between">
                 <div className="flex space-x-2 text-[#88818C]">
                   <p>Price</p>
                 </div>
@@ -930,6 +866,8 @@ function Bridge() {
                 <p className="text-[#88818C] ">Trading Fee</p>
                 <span className="text-[#88818C]">0.1%</span>
               </div>
+              </>
+              )}
 
               <div className="flex justify-between">
 
@@ -975,6 +913,22 @@ function Bridge() {
                 </div>
               </div>
             }
+
+            {orgTokenItem.name === 'BASE' && showBaseBridgeComplete && (
+              <div className="origin-top -mx-0 md:-mx-6">
+                <div>
+                  <p className="mx-6">Current bridging protocols can take days to complete</p>
+                  <div className="w-[30%] mt-8">
+                    <div className="flex items-center justify-center  h-[26px] -mt-4 p-2 absolute ml-5 md:ml-10 text-sm text-[#D8D1DC] rounded-md bg-bgLight">Estimated time</div>
+                  </div>
+                  <div className="h-16 px-2 pb-4 mt-4 space-x-2 text-left sm:px-5">
+                    <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
+                      7 Days
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
 
           </div>

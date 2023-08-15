@@ -8,7 +8,8 @@ interface Props {
 
 export enum Chain {
   all = 'ALL',
-  evm = 'EVM',
+  eth = 'ETH',
+  base = 'BASE',
   solana = 'SOLANA',
   btc = 'BTC',
 }
@@ -59,7 +60,7 @@ export const WalletContext = createContext<WalletContextType>({
 
 function WalletProvider({ children }: Props) {
   const previousWagmiConnection = useAccount()
-  const [chain, setChain] = useState<Chain>(getLocalStorage('chain', Chain.evm))
+  const [chain, setChain] = useState<Chain>(getLocalStorage('chain', Chain.eth))
   const [address, setAddress] = useState<string>(previousWagmiConnection.address ? previousWagmiConnection.address : "")
   const [balance, setBalance] = useState('0.00 ETH')
   const [isLoading, setIsLoading] = useState(false)

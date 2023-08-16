@@ -33,7 +33,7 @@ export const networksItems = [
     },
     {
         id: 4,
-        name: "ZKSync ETH",
+        name: "zkSync ETH",
         token: "2170ed0880ac9a755fd29b2688956bd959f933f8",
         layer: "Layer 2",
         color: "#11142B",

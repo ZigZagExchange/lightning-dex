@@ -27,7 +27,7 @@ export const evmTokenItems = [
   },
   {
     name: "ETH",
-    base: "zkSync ETH",
+    base: "zkSync Era",
     network: "ZKSync",
     address: ['', ''],
     numOfDecimals: 18,

@@ -31,6 +31,14 @@ export const networksItems = [
         color: "#58535B",
         icon: "btc.svg"
     },
+    {
+        id: 4,
+        name: "ZKSync ETH",
+        token: "2170ed0880ac9a755fd29b2688956bd959f933f8",
+        layer: "Layer 2",
+        color: "#11142B",
+        icon: "zksync.svg"
+    },
     //{
     //    id: 4,
     //    name: "Lightning",

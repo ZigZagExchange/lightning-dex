@@ -12,7 +12,7 @@ export const getEVMTokenBalance = async (
   numOfDecimals: number,
 ) => {
   try {
-    const chain = _chain === 1 ? 'mainnet' : 'arbitrum'
+    const chain = _chain === 1 ? 'mainnet' : _chain === 4 ? 324 : 'arbitrum'
 
     const provider = new ethers.providers.AlchemyProvider(chain, alchemyKey)
 

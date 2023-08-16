@@ -126,6 +126,8 @@ function Bridge() {
   useEffect(() => {
     if (orgChainId === 1 || orgChainId === 42161) {
       setOrgTokenItem(evmTokenItems[0])
+    } else if (orgChainId === 4) {
+      setOrgTokenItem(evmTokenItems[1])
     } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
     } else {
@@ -136,6 +138,8 @@ function Bridge() {
   useEffect(() => {
     if (destChainId === 1 || destChainId === 42161) {
       setDestTokenItem(evmTokenItems[0])
+    } else if (destChainId === 4) {
+      setDestTokenItem(evmTokenItems[1])
     } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
     } else {
@@ -180,7 +184,7 @@ function Bridge() {
         } else {
           const _balance = await getEVMTokenBalance(
             address,
-            orgTokenItem.address[orgChainId === 1 ? 0 : 1],
+            orgTokenItem.address[(orgChainId === 1 || orgChainId === 4) ? 0 : 1],
             orgChainId,
             orgTokenItem.numOfDecimals
           )
@@ -280,7 +284,7 @@ function Bridge() {
     try {
       updateOrgChainId(id)
 
-      if (id === 1 || id === 42161) {
+      if (id === 1 || id === 42161 || id === 4) {
         updateChain(Chain.evm)
 
         if (orgChainId === 2) {
@@ -304,7 +308,7 @@ function Bridge() {
       } else if (id === 2) {
         updateChain(Chain.solana)
 
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleConnectPhantom()
         } else if (orgChainId === 3 || orgChainId === 4) {
@@ -317,7 +321,7 @@ function Bridge() {
       } else {
         updateChain(Chain.btc)
 
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
         } else if (orgChainId === 2) {
           await handleDisconnectPhantom()
@@ -428,8 +432,8 @@ function Bridge() {
     if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!amount) return "Enter Amount"
     const maxSize = getCurrentDestLiquidity() - destTokenItem.liquidityBuffer
-    if (destAmount > maxSize) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
-    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
+    if (Number(destAmount) > Number(maxSize)) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
+    if (Number(amount) < Number(orgTokenItem.minSize)) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
@@ -459,10 +463,10 @@ function Bridge() {
     try {
       updateDestChainId(id)
 
-      if (id === 1 || id === 42161) {
+      if (id === 1 || id === 42161 || id === 4) {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             onSwitchNetwork(destChainId)
             updateChain(Chain.evm)
           } else if (destChainId === 2) {
@@ -478,7 +482,7 @@ function Bridge() {
       } else if (id === 2) {
         if (orgChainId === 2) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             await handleDisconnectPhantom()
             // await handleConnectMetaMask(connectors[0])
             // onSwitchNetwork(destChainId)
@@ -494,7 +498,7 @@ function Bridge() {
       } else {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             // await handleConnectMetaMask(connectors[0])
             updateChain(Chain.evm)
             // onSwitchNetwork(destChainId)
@@ -543,7 +547,7 @@ function Bridge() {
         }
       } else if (destChainId === 2) {
         updateChain(Chain.solana)
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleConnectPhantom()
         } else {
@@ -551,7 +555,7 @@ function Bridge() {
         }
       } else {
         updateChain(Chain.btc)
-        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 2) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 2 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleDisconnectPhantom()
         }

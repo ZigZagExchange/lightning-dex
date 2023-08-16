@@ -10,7 +10,7 @@ export enum Chain {
   all = 'ALL',
   evm = 'EVM',
   solana = 'SOLANA',
-  btc = 'BTC',
+  btc = 'BTC'
 }
 
 export type CurrentAction = 'None' | 'Origin' | 'Destination' | 'Swap'

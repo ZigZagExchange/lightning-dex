@@ -14,7 +14,7 @@ import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI } from "../../utils/data"
+import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI, ZKSYNC_DEPOSIT_CONTRACT } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
@@ -106,6 +106,18 @@ function Bridge() {
 
   const waitForTransactionHook = useWaitForTransaction({
     hash: contractWriteHook.data?.hash,
+    confirmations: 4
+  })
+  const prepareZksyncContractWriteHook = usePrepareContractWrite({
+    address: ZKSYNC_DEPOSIT_CONTRACT,
+    abi: depositContractABI,
+    functionName: 'depositETH',
+    args: [destTokenItem.name, debouncedWithdrawAddress[0]],
+    value: debouncedAmount[0] as any
+  })
+  const zksyncContractWriteHook = useContractWrite(prepareZksyncContractWriteHook.config)
+  const zksyncWaitForTransactionHook = useWaitForTransaction({
+    hash: zksyncContractWriteHook.data?.hash,
     confirmations: 4
   })
   // END WAGMI ETH CODE
@@ -269,7 +281,7 @@ function Bridge() {
     try {
       if (isConnected === 'MataMask') {
         updateIsLoading(true)
-        await switchNetworkAsync?.(id)
+        await switchNetworkAsync?.(id === 4 ? 324 : id)
       }
     } catch (err: any) {
       console.log(err?.message || err)
@@ -439,6 +451,7 @@ function Bridge() {
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to validate..."
+    if (zksyncWaitForTransactionHook.isLoading) return 'Waiting on tx to validate ...'
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
     if (destTokenItem.name === "BTC" && !validateBitcoinAddress(withdrawAddress)) return "Bad BTC Address"
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
@@ -571,12 +584,12 @@ function Bridge() {
   }
 
   const sendTransaction = async () => {
-    if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
+    if (orgTokenItem.network === "Bitcoin" && destTokenItem.network === "Ethereum") {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json())
       setDepositAddress(depositDetails.deposit_address)
     }
-    else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
+    else if (orgTokenItem.network === "Solana" && destTokenItem.network === "Ethereum") {
       setSendingSolPayment(true)
       try {
         const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
@@ -604,12 +617,10 @@ function Bridge() {
       setTimeout(() => setSendingSolPayment(false), 10000)
     }
 
-    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
+    else if (orgTokenItem.network === "Ethereum") {
       contractWriteHook.write?.()
-    }
-
-    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "SOL") {
-      contractWriteHook.write?.()
+    }else if (orgTokenItem.network === 'ZKSync') {
+      zksyncContractWriteHook.write?.()
     }
 
     setInterval(fetchHistory, 5000)

@@ -89,7 +89,7 @@ function NetworkSelectorModal({ close }: Props) {
     }
 
     const changeNetwork = async (id: number) => {
-        if (id === 3 || id === 4) return
+        if (id === 3) return
 
         try {
             updateIsLoading(true)
@@ -99,10 +99,9 @@ function NetworkSelectorModal({ close }: Props) {
                 if (isConnected !== 'MataMask') {
                     await handleConnectMetaMask(connectors[0])
                 }
-
                 updateOrgChainId(id)
                 updateChain(Chain.evm)
-                await switchNetworkAsync?.(id)
+                await switchNetworkAsync?.(id === 4 ? 324 : id)
             }
         } catch (err: any) {
             console.log(err?.message)

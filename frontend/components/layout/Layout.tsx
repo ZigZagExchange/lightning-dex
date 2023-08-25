@@ -49,6 +49,10 @@ function Layout(props: LayoutProps) {
     address,
     chainId: orgChainId,
     enabled: isConnectedMetaMask ? true : false,
+  } : orgChainId === 4 ? {
+    address,
+    chainId: 324,
+    enabled: isConnectedMetaMask ? true : false,
   } : {
     address,
     token: `0x${token[0].token}`,
@@ -83,7 +87,7 @@ function Layout(props: LayoutProps) {
     try {
       if (isConnected === 'MataMask' && isConnectedMetaMask && switchNetworkAsync) {
         updateIsLoading(true)
-        await switchNetworkAsync(orgChainId)
+        await switchNetworkAsync(orgChainId === 4 ? 324 : orgChainId)
       }
     } catch (err: any) {
       console.log(err?.message || err)
@@ -153,7 +157,7 @@ function Layout(props: LayoutProps) {
         <div className={styles.header_right}>
           <NetworkSelector networkSelectorModalOpen={() => { setModal("network") }} />
           <ConnectWallet openConnectWalletModal={() => {
-            orgChainId === 1 || orgChainId === 42161 || orgChainId === 2
+            orgChainId === 1 || orgChainId === 42161 || orgChainId === 2 || orgChainId === 4
               ? setModal("connectWallet")
               : console.log(111)
           }} />

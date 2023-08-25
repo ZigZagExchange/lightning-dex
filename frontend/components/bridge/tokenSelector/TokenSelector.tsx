@@ -25,6 +25,21 @@ export const evmTokenItems = [
     minSize: 0.004,
     networkFee: 0.0015
   },
+  {
+    name: "ETH",
+    base: "zkSync Era",
+    network: "ZKSync",
+    address: ['', ''],
+    numOfDecimals: 18,
+    bg: "#11142B",
+    border: "#11142B",
+    icon: "zksync.svg",
+    networkIcon: "zksync.svg",
+    priceKey: "eth_usd",
+    liquidityBuffer: 0.1,
+    minSize: 0.004,
+    networkFee: 0.0015
+  },
   //{
   //  name: "USDC",
   //  base: "USD Circle",

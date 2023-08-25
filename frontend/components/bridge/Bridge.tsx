@@ -14,7 +14,7 @@ import SettingsDropdown from "./settingsDropdown/SettingsDropdown"
 import { SendTransaction } from "../SendTransaction/SendTransaction"
 import { ethers } from 'ethers'
 import { WalletContext } from "../../contexts/WalletContext"
-import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI } from "../../utils/data"
+import { networksItems, ETH_DEPOSIT_CONTRACT, depositContractABI, ZKSYNC_DEPOSIT_CONTRACT } from "../../utils/data"
 import { Chain } from "../../contexts/WalletContext"
 import { evmTokenItems, solTokenItems, btcTokenItems } from "./tokenSelector/TokenSelector"
 import useHandleWallet from "../../hooks/useHandleWallet"
@@ -108,6 +108,18 @@ function Bridge() {
     hash: contractWriteHook.data?.hash,
     confirmations: 4
   })
+  const prepareZksyncContractWriteHook = usePrepareContractWrite({
+    address: ZKSYNC_DEPOSIT_CONTRACT,
+    abi: depositContractABI,
+    functionName: 'depositETH',
+    args: [destTokenItem.name, debouncedWithdrawAddress[0]],
+    value: debouncedAmount[0] as any
+  })
+  const zksyncContractWriteHook = useContractWrite(prepareZksyncContractWriteHook.config)
+  const zksyncWaitForTransactionHook = useWaitForTransaction({
+    hash: zksyncContractWriteHook.data?.hash,
+    confirmations: 4
+  })
   // END WAGMI ETH CODE
   ////////////////////////////////////////////////////////////////////////////
 
@@ -126,6 +138,8 @@ function Bridge() {
   useEffect(() => {
     if (orgChainId === 1 || orgChainId === 42161) {
       setOrgTokenItem(evmTokenItems[0])
+    } else if (orgChainId === 4) {
+      setOrgTokenItem(evmTokenItems[1])
     } else if (orgChainId === 2) {
       setOrgTokenItem(solTokenItems[0])
     } else {
@@ -136,6 +150,8 @@ function Bridge() {
   useEffect(() => {
     if (destChainId === 1 || destChainId === 42161) {
       setDestTokenItem(evmTokenItems[0])
+    } else if (destChainId === 4) {
+      setDestTokenItem(evmTokenItems[1])
     } else if (destChainId === 2) {
       setDestTokenItem(solTokenItems[0])
     } else {
@@ -180,7 +196,7 @@ function Bridge() {
         } else {
           const _balance = await getEVMTokenBalance(
             address,
-            orgTokenItem.address[orgChainId === 1 ? 0 : 1],
+            orgTokenItem.address[(orgChainId === 1 || orgChainId === 4) ? 0 : 1],
             orgChainId,
             orgTokenItem.numOfDecimals
           )
@@ -265,7 +281,7 @@ function Bridge() {
     try {
       if (isConnected === 'MataMask') {
         updateIsLoading(true)
-        await switchNetworkAsync?.(id)
+        await switchNetworkAsync?.(id === 4 ? 324 : id)
       }
     } catch (err: any) {
       console.log(err?.message || err)
@@ -280,7 +296,7 @@ function Bridge() {
     try {
       updateOrgChainId(id)
 
-      if (id === 1 || id === 42161) {
+      if (id === 1 || id === 42161 || id === 4) {
         updateChain(Chain.evm)
 
         if (orgChainId === 2) {
@@ -304,7 +320,7 @@ function Bridge() {
       } else if (id === 2) {
         updateChain(Chain.solana)
 
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleConnectPhantom()
         } else if (orgChainId === 3 || orgChainId === 4) {
@@ -317,7 +333,7 @@ function Bridge() {
       } else {
         updateChain(Chain.btc)
 
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
         } else if (orgChainId === 2) {
           await handleDisconnectPhantom()
@@ -428,13 +444,14 @@ function Bridge() {
     if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!amount) return "Enter Amount"
     const maxSize = getCurrentDestLiquidity() - destTokenItem.liquidityBuffer
-    if (destAmount > maxSize) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
-    if (amount < orgTokenItem.minSize) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
+    if (Number(destAmount) > Number(maxSize)) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
+    if (Number(amount) < Number(orgTokenItem.minSize)) return `Min size is ${orgTokenItem.minSize} ${orgTokenItem.name}`
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
     if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to validate..."
+    if (zksyncWaitForTransactionHook.isLoading) return 'Waiting on tx to validate ...'
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
     if (destTokenItem.name === "BTC" && !validateBitcoinAddress(withdrawAddress)) return "Bad BTC Address"
     if (destTokenItem.name === "ETH" && !ethers.utils.isAddress(withdrawAddress)) return "Bad ETH Address"
@@ -459,10 +476,10 @@ function Bridge() {
     try {
       updateDestChainId(id)
 
-      if (id === 1 || id === 42161) {
+      if (id === 1 || id === 42161 || id === 4) {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             onSwitchNetwork(destChainId)
             updateChain(Chain.evm)
           } else if (destChainId === 2) {
@@ -478,7 +495,7 @@ function Bridge() {
       } else if (id === 2) {
         if (orgChainId === 2) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             await handleDisconnectPhantom()
             // await handleConnectMetaMask(connectors[0])
             // onSwitchNetwork(destChainId)
@@ -494,7 +511,7 @@ function Bridge() {
       } else {
         if (orgChainId === id) {
           updateOrgChainId(destChainId)
-          if (destChainId === 1 || destChainId === 42161) {
+          if (destChainId === 1 || destChainId === 42161 || destChainId === 4) {
             // await handleConnectMetaMask(connectors[0])
             updateChain(Chain.evm)
             // onSwitchNetwork(destChainId)
@@ -543,7 +560,7 @@ function Bridge() {
         }
       } else if (destChainId === 2) {
         updateChain(Chain.solana)
-        if (orgChainId === 1 || orgChainId === 42161) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleConnectPhantom()
         } else {
@@ -551,7 +568,7 @@ function Bridge() {
         }
       } else {
         updateChain(Chain.btc)
-        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 2) {
+        if (orgChainId === 1 || orgChainId === 42161 || orgChainId === 2 || orgChainId === 4) {
           await handleDisconnectMetaMask()
           await handleDisconnectPhantom()
         }
@@ -567,12 +584,12 @@ function Bridge() {
   }
 
   const sendTransaction = async () => {
-    if (orgTokenItem.name === "BTC" && destTokenItem.name === "ETH") {
+    if (orgTokenItem.network === "Bitcoin" && destTokenItem.network === "Ethereum") {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json())
       setDepositAddress(depositDetails.deposit_address)
     }
-    else if (orgTokenItem.name === "SOL" && destTokenItem.name === "ETH") {
+    else if (orgTokenItem.network === "Solana" && destTokenItem.network === "Ethereum") {
       setSendingSolPayment(true)
       try {
         const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
@@ -600,12 +617,10 @@ function Bridge() {
       setTimeout(() => setSendingSolPayment(false), 10000)
     }
 
-    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "BTC") {
+    else if (orgTokenItem.network === "Ethereum") {
       contractWriteHook.write?.()
-    }
-
-    else if (orgTokenItem.name === "ETH" && destTokenItem.name === "SOL") {
-      contractWriteHook.write?.()
+    }else if (orgTokenItem.network === 'ZKSync') {
+      zksyncContractWriteHook.write?.()
     }
 
     setInterval(fetchHistory, 5000)

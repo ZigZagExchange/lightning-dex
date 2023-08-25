@@ -227,8 +227,10 @@ function Bridge() {
   }
 
   const getCurrentDestLiquidity = () => {
-    if (destTokenItem.name == "ETH" && orgTokenItem.name == "SOL") return liquidity.eth_sol
-    if (destTokenItem.name == "ETH" && orgTokenItem.name == "BTC") return liquidity.eth_btc
+    if (destTokenItem.network == "Ethereum") return liquidity.eth
+    if (destTokenItem.network == "Solana") return liquidity.sol
+    if (destTokenItem.network === 'Bitcoin') return liqudity.btc
+    if (destTokenItem.netwrk === 'ZKSync') return liquidity.zk_sync
     return liquidity[destTokenItem.name.toLowerCase()]
   }
 
@@ -254,6 +256,7 @@ function Bridge() {
       if (currency === 'ETH') return `https://etherscan.io/tx/${txid}`
       else if (currency === 'BTC') return `https://mempool.space/tx/${txid}`
       else if (currency === 'SOL') return `https://solscan.io/tx/${txid}`
+      else if (currency === 'ZKSync') return `https://explorer.zksync.io/tx/${txid}`
   }
 
   useEffect(() => {
@@ -440,8 +443,6 @@ function Bridge() {
   }
 
   const swapError = () => {
-    const chains = ([orgChainId, destChainId]).sort()
-    if (chains[0] === 2 && chains[1] === 3) return "Unsupported Chain Swap"
     if (!amount) return "Enter Amount"
     const maxSize = getCurrentDestLiquidity() - destTokenItem.liquidityBuffer
     if (Number(destAmount) > Number(maxSize)) return `Max size is ${maxSize.toPrecision(6)} ${destTokenItem.name}`
@@ -449,7 +450,8 @@ function Bridge() {
     if (!address && orgTokenItem.name === "ETH") return "Connect Wallet"
     if (!address && orgTokenItem.name === "SOL") return "Connect Wallet"
     if (withdrawAddress == "") return "Invalid Destination Address"
-    if (!contractWriteHook.write && orgTokenItem.name === "ETH") return "Querying Gas Price"
+    if (!contractWriteHook.write && orgTokenItem.network === "Ethereum") return "Querying Gas Price"
+    if (!zksyncContractWriteHook.write && orgTokenItem.network === 'ZKSync') return  "Querying Gas Price"
     if (waitForTransactionHook.isLoading) return "Waiting on tx to validate..."
     if (zksyncWaitForTransactionHook.isLoading) return 'Waiting on tx to validate ...'
     if (orgTokenItem.name === "BTC" && depositAddress) return "Use Deposit Address"
@@ -584,15 +586,14 @@ function Bridge() {
   }
 
   const sendTransaction = async () => {
-    if (orgTokenItem.network === "Bitcoin" && destTokenItem.network === "Ethereum") {
+    if (orgTokenItem.network === 'Bitcoin') {
       const depositDetails = await fetch("https://api.zap.zigzag.exchange/btc_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
         .then(r => r.json())
       setDepositAddress(depositDetails.deposit_address)
-    }
-    else if (orgTokenItem.network === "Solana" && destTokenItem.network === "Ethereum") {
+    } else if (orgTokenItem.network === 'Solana') {
       setSendingSolPayment(true)
       try {
-        const depositDetails = await fetch("https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=ETH&outgoing_address=" + withdrawAddress)
+        const depositDetails = await fetch(`https://api.zap.zigzag.exchange/sol_deposit?outgoing_currency=${destTokenItem.network === 'ZKSync' ? 'ZKSync' : destTokenItem.name}&outgoing_address=` + withdrawAddress)
           .then(r => r.json())
 
         const connection = new solanaWeb3.Connection(process.env.NEXT_PUBLIC_SOLANA_RPC as string)
@@ -615,14 +616,11 @@ function Bridge() {
         console.error(e)
       }
       setTimeout(() => setSendingSolPayment(false), 10000)
-    }
-
-    else if (orgTokenItem.network === "Ethereum") {
+    } else if (orgTokenItem.network === "Ethereum") {
       contractWriteHook.write?.()
-    }else if (orgTokenItem.network === 'ZKSync') {
+    } else if (orgTokenItem.network === 'ZKSync') {
       zksyncContractWriteHook.write?.()
     }
-
     setInterval(fetchHistory, 5000)
   }
 

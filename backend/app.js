@@ -1,6 +1,5 @@
 const express = require('express')
 const app = express()
-const LNInvoice = require("@node-lightning/invoice");
 const { Pool } = require('pg');
 const crypto = require('crypto');
 const nodeChildProcess = require('node:child_process');
@@ -20,6 +19,8 @@ const ethersProvider = new ethers.InfuraProvider(
   process.env.ETH_NETWORK,
   process.env.INFURA_PROJECT_ID,
 );
+
+const zkSyncProvider = new ethers.JsonRpcProvider(process.env.ZKSYNC_RPC_URL)
 
 
 const exec = util.promisify(nodeChildProcess.exec);
@@ -109,7 +110,7 @@ app.get('/prices', async (_, res) => {
   try {
     gmxPrices = await axios.get('https://api.gmx.io/prices').then(({ data })=> ({
       btc_usd: data['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'] / 1e30,
-      eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30 
+      eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30
     }))
     coinCapPrices = await axios.get('https://api.coincap.io/v2/assets', {
       headers: {
@@ -132,15 +133,15 @@ app.get('/prices', async (_, res) => {
 app.get('/available_liquidity', async (_, res) => {
   const balances = await Promise.all([
     getSolanaBalance(),
-    getEthereumBalance(process.env.ETH_SOL_LIQUIDITY_ADDRESS),
-    getEthereumBalance(process.env.ETH_BTC_LIQUIDITY_ADDRESS),
-    getBitcoinBalace()
+    getEthereumBalance(),
+    getZksyncBalance(),
+    getBitcoinBalace(),
   ]);
 
   return res.status(200).json({
     sol: balances[0], 
-    eth_sol: balances[1], 
-    eth_btc: balances[2], 
+    eth: balances[1], 
+    zk_sync: balances[2], 
     btc: balances[3], 
   })
 })
@@ -152,8 +153,8 @@ async function getSolanaBalance () {
   return solanaBalance / solana.LAMPORTS_PER_SOL
 }
 
-async function getEthereumBalance (address) {
-  const balance = await ethersProvider.getBalance(address);
+async function getEthereumBalance () {
+  const balance = await ethersProvider.getBalance(process.env.ETHEREUM_LIQUIDITY_ADDRESS);
   return new BigNumber(balance.toString()).div(1e18).toNumber()
 }
 
@@ -161,6 +162,11 @@ async function getBitcoinBalace () {
   const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
   const walletInfo = JSON.parse(balanceCheck.stdout);
   return walletInfo.balance
+}
+
+async function getZksyncBalance () {
+  const balance = await zkSyncProvider.getBalance(process.env.ZKSYNC_LIQUIDITY_ADDRESS)
+  return new BigNumber(balance.toString()).div(1e18).toNumber()
 }
 
 app.get('/bridge_history', async (_, res) => {

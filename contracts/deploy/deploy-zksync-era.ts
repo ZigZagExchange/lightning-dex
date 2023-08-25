@@ -1,3 +1,8 @@
+// To deploy: 
+//   npx hardhat compile --network zkSyncEraGoerli
+//   npx hardhat deploy-zksync --script deploy-zksync-era.ts --network zkSyncEraGoerli
+//   npx hardhat verify --network zkSyncEraGoerli <contract-address>
+
 import { utils, Wallet } from "zksync-web3";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Deployer } from "@matterlabs/hardhat-zksync-deploy";

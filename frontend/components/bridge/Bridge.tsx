@@ -229,7 +229,7 @@ function Bridge() {
   const getCurrentDestLiquidity = () => {
     if (destTokenItem.network == "Ethereum") return liquidity.eth
     if (destTokenItem.network == "Solana") return liquidity.sol
-    if (destTokenItem.network === 'Bitcoin') return liqudity.btc
+    if (destTokenItem.network === 'Bitcoin') return liquidity.btc
     if (destTokenItem.netwrk === 'ZKSync') return liquidity.zk_sync
     return liquidity[destTokenItem.name.toLowerCase()]
   }

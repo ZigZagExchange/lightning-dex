@@ -50,8 +50,8 @@ app.get('/btc_deposit', async (req, res, next) => {
   const outgoing_currency = req.query.outgoing_currency;
   const outgoing_address = req.query.outgoing_address;
 
-  const valid_outgoing_currencies = ["ETH", "SOL"];
-  if (!valid_outgoing_currencies.includes(outgoing_currency)) return next("Bad outgoing_currency")
+  const valid_outgoing_currencies = ["ETH", "SOL", "ZKSync"];
+  if (!valid_outgoing_currencies.includes(outgoing_currency)) return next("Bad outgoing_currency. Supported currencies: ETH, SOL, ZKSync")
   if (!outgoing_address) return next("Must set outgoing_address")
   if (!ethers.isAddress(outgoing_address)) return next("Invalid outgoing_address")
 

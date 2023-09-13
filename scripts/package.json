@@ -20,7 +20,8 @@
     "bignumber.js": "^9.1.1",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "zksync": "^0.13.1"
   },
   "devDependencies": {
     "@types/bs58": "^4.0.1",

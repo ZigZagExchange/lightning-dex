@@ -154,7 +154,7 @@ app.get('/available_liquidity', async (_, res) => {
     zz_token_zk_sync: balances[2].zzBalance,
     zk_sync_lite: balances[3].ethBalance,
     zz_token_zk_sync_lite: balances[3].zzBalance,
-    btc: balances[3], 
+    btc: balances[4], 
   })
 })
 

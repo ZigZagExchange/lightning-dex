@@ -44,9 +44,10 @@ const runScript = scriptWrapper(async ({db}) => {
     }
 
     let btcPayment;
+    let sendAmount;
     try {
-      const amount = (amountMinusFee - networkFee).toFixed(8)
-      btcPayment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${amount} conf_target=1`);
+      sendAmount = (amountMinusFee - networkFee).toFixed(8)
+      btcPayment = await exec(`${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${bridge.outgoing_address} amount=${sendAmount} conf_target=1`);
     } catch (e) {
       console.error("Trade failed");
       console.error(e);
@@ -60,7 +61,7 @@ const runScript = scriptWrapper(async ({db}) => {
     );
 
     if (updateResult.rowCount === 1) {
-      console.log(`${bridge.deposit_currency} to ${bridge.outgoing_currency} executed ${outgoingTxid}`)
+      console.log(`${bridge.deposit_amount} ${bridge.deposit_currency} to ${sendAmount} ${bridge.outgoing_currency} executed ${outgoingTxid}`)
     }
   }
 })

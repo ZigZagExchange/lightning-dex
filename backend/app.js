@@ -1,6 +1,5 @@
 const express = require('express')
 const app = express()
-const LNInvoice = require("@node-lightning/invoice");
 const { Pool } = require('pg');
 const crypto = require('crypto');
 const nodeChildProcess = require('node:child_process');
@@ -12,16 +11,22 @@ const {v4: uuid} = require('uuid')
 const axios = require('axios')
 const bs58 = require('bs58')
 const BigNumber = require('bignumber.js')
+const zksync = require('zksync')
+const ERC20ABI = require('./ERC20.json')
+
+function WADToValue (input) {
+  return new BigNumber(input.toString()).div(1e18).toNumber()
+}
 
 dotenv.config();
 
 const solanaConnection = new solana.Connection(process.env.SOLANA_CONNECTION_URL)
-const ethersProvider = new ethers.InfuraProvider(
+const ethersProvider = new ethers.providers.InfuraProvider(
   process.env.ETH_NETWORK,
   process.env.INFURA_PROJECT_ID,
 );
-
-
+const zkSyncProvider = new ethers.providers.JsonRpcProvider(process.env.ZKSYNC_RPC_URL)
+const zzTokenContractZkSync = new ethers.Contract(process.env.ZZ_TOKEN_ZKSYNC_ERA_CONTRACT_ADDRESS, ERC20ABI, zkSyncProvider)
 const exec = util.promisify(nodeChildProcess.exec);
 
 const db = new Pool({
@@ -49,10 +54,10 @@ app.get('/btc_deposit', async (req, res, next) => {
   const outgoing_currency = req.query.outgoing_currency;
   const outgoing_address = req.query.outgoing_address;
 
-  const valid_outgoing_currencies = ["ETH"];
-  if (!valid_outgoing_currencies.includes(outgoing_currency)) return next("Bad outgoing_currency")
+  const valid_outgoing_currencies = ["ETH", "SOL", "ZKSync"];
+  if (!valid_outgoing_currencies.includes(outgoing_currency)) return next("Bad outgoing_currency. Supported currencies: ETH, SOL, ZKSync")
   if (!outgoing_address) return next("Must set outgoing_address")
-  if (!ethers.isAddress(outgoing_address)) return next("Invalid outgoing_address")
+  if ((["ETH", "ZKSync"]).includes(outgoing_currency) && !ethers.utils.isAddress(outgoing_address)) return next("Invalid outgoing_address")
 
   const deposit_address = await db.query("SELECT * FROM deposit_addresses WHERE deposit_currency=$1 AND outgoing_currency=$2 AND outgoing_address=$3 LIMIT 1", ["BTC", outgoing_currency, outgoing_address]);
 
@@ -91,7 +96,7 @@ app.get('/sol_deposit', async (req, res, next) => {
   const outgoingCurrency = req.query.outgoing_currency
   const outgoingAddress = req.query.outgoing_address
 
-  if (outgoingCurrency === 'ETH' && !ethers.isAddress(outgoingAddress)) return next("Invalid outgoing_address")
+  if (outgoingCurrency === 'ETH' && !ethers.utils.isAddress(outgoingAddress)) return next("Invalid outgoing_address")
   
   const depositId = uuid()
   const depositAddress = deriveSolanaDepositAddress(depositId)
@@ -109,7 +114,7 @@ app.get('/prices', async (_, res) => {
   try {
     gmxPrices = await axios.get('https://api.gmx.io/prices').then(({ data })=> ({
       btc_usd: data['0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'] / 1e30,
-      eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30 
+      eth_usd: data['0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'] / 1e30
     }))
     coinCapPrices = await axios.get('https://api.coincap.io/v2/assets', {
       headers: {
@@ -125,22 +130,30 @@ app.get('/prices', async (_, res) => {
   return res.status(200).json({
     ...gmxPrices,
     ...coinCapPrices,
-    "usdc_usd": 1
+    "usdc_usd": 1,
+    "zz_token_zk_sync": 1, // only zz to zz supported no prices required
+    "zz_token_zk_sync_lite": 1
   })
 })
 
 app.get('/available_liquidity', async (_, res) => {
+  getZKsyncLiteBalances()
+
   const balances = await Promise.all([
     getSolanaBalance(),
-    getEthereumBalance(process.env.ETH_SOL_LIQUIDITY_ADDRESS),
-    getEthereumBalance(process.env.ETH_BTC_LIQUIDITY_ADDRESS),
-    getBitcoinBalace()
+    getEthereumBalance(),
+    getZksyncBalance(),
+    getZKsyncLiteBalances(),
+    getBitcoinBalace(),
   ]);
 
   return res.status(200).json({
     sol: balances[0], 
-    eth_sol: balances[1], 
-    eth_btc: balances[2], 
+    eth: balances[1], 
+    zk_sync: balances[2].ethBalance,
+    zz_token_zk_sync: balances[2].zzBalance,
+    zk_sync_lite: balances[3].ethBalance,
+    zz_token_zk_sync_lite: balances[3].zzBalance,
     btc: balances[3], 
   })
 })
@@ -152,15 +165,38 @@ async function getSolanaBalance () {
   return solanaBalance / solana.LAMPORTS_PER_SOL
 }
 
-async function getEthereumBalance (address) {
-  const balance = await ethersProvider.getBalance(address);
-  return new BigNumber(balance.toString()).div(1e18).toNumber()
+async function getEthereumBalance () {
+  const balance = await ethersProvider.getBalance(process.env.ETHEREUM_LIQUIDITY_ADDRESS);
+  return WADToValue(balance)
 }
 
 async function getBitcoinBalace () {
   const balanceCheck = await exec(`${process.env.BITCOIN_CLI_PREFIX} getwalletinfo`);
   const walletInfo = JSON.parse(balanceCheck.stdout);
   return walletInfo.balance
+}
+
+async function getZksyncBalance () {
+  const ethBalance = await zkSyncProvider.getBalance(process.env.ZKSYNC_LIQUIDITY_ADDRESS)
+  const zzBalance = await zzTokenContractZkSync.balanceOf(process.env.ZKSYNC_LIQUIDITY_ADDRESS)
+  return {
+    ethBalance: WADToValue(ethBalance),
+    zzBalance: WADToValue(zzBalance)
+  }
+}
+
+async function getZKsyncLiteBalances () {
+  const zkSyncLiteProvider = await zksync.getDefaultProvider('mainnet') // testnet is down :(
+  const viewOnlySigner = {
+    getAddress: () => process.env.ZKSYNC_LIQUIDITY_ADDRESS
+  }
+  const zkSyncLiteWallet = await zksync.Wallet.fromEthSignerNoKeys(viewOnlySigner, zkSyncLiteProvider)
+  const ethBalance = await zkSyncLiteWallet.getBalance('ETH')
+  const zzBalance = await zkSyncLiteWallet.getBalance('ZZ')
+  return {
+    ethBalance: WADToValue(ethBalance),
+    zzBalance: WADToValue(zzBalance)
+  }
 }
 
 app.get('/bridge_history', async (_, res) => {

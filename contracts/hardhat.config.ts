@@ -31,6 +31,13 @@ const config: HardhatUserConfig = {
       ethNetwork: 'goerli',
       zksync: true,
       verifyURL: 'https://zksync2-testnet-explorer.zksync.dev/contract_verification'
+    },
+    zkSyncEra: {
+      url: 'https://mainnet.era.zksync.io',
+      accounts: [],
+      ethNetwork: 'mainnet',
+      zksync: true,
+      verifyURL: 'https://zksync2-mainnet-explorer.zksync.io/contract_verification'
     }
   },
 };

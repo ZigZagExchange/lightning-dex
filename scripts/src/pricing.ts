@@ -30,11 +30,30 @@ export async function generateUSDPriceMap (): Promise<USDPriceMap> {
     [Assets.ETH]: tidyPrice(ethUsdPrice),
     [Assets.SOL]: tidyPrice(solUsdPrice),
     [Assets.BTC]: tidyPrice(btcUsdPrice),
-    [Assets.ZKSync]: tidyPrice(ethUsdPrice)
+    [Assets.ZKSync]: tidyPrice(ethUsdPrice),
+    [Assets.ZKSyncLite]: tidyPrice(ethUsdPrice),
+    [Assets.ZZTokenZKSync]: 1, // no cross token bridges for ZZ supported
+    [Assets.ZZTokenZKSyncLite]: 1
   }
 }
 
 export function getOutgoingAmountAndFee (usdPriceMap: USDPriceMap, depositAsset: Assets, outgoingAsset: Assets, depositAmount: number) {
+  // can only send from zksync lite to zksync era
+  if (depositAsset === Assets.ZKSyncLite && outgoingAsset !== Assets.ZKSync) {
+    throw new Error(`${depositAsset} to ${outgoingAsset} is unspported`)
+  }
+  if (depositAsset === Assets.ZZTokenZKSyncLite && outgoingAsset !== Assets.ZZTokenZKSync) {
+    throw new Error(`${depositAsset} to ${outgoingAsset} is unspported`)
+  }
+  // change 10 ZZ tokens fee if bridging ZZ tokens
+  if (depositAsset === Assets.ZZTokenZKSync || depositAsset === Assets.ZZTokenZKSyncLite) {
+    return {
+      amountMinusFee: depositAmount - 10,
+      fee: 10,
+      outgoingAmount: depositAmount
+    }
+  }
+
   const depositAmountInUSD = depositAmount * usdPriceMap[depositAsset]
   const outgoingAmount = depositAmountInUSD / usdPriceMap[outgoingAsset]
   const bridgeFee = outgoingAmount * FEE_MULTIPLIER;

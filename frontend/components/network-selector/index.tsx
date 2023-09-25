@@ -1,4 +1,4 @@
-import styles from "./Network-selector.module.css";
+import styles from "./network-selector.module.css";
 import { useWallet } from "../../hooks/use-wallet";
 import { useBalance } from "../../hooks/use-balance";
 

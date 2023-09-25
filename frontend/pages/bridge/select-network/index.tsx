@@ -50,6 +50,7 @@ function SelectNetwork({ direction }: Props) {
           <button
             className="relative token-item flex justify-center items-center w-7 h-7 md:w-7 px-0.5 py-0.5 border border-gray-500 rounded-full"
             onClick={() => onChange(item.id)}
+            key={index}
           >
             <div className="inline-block">
               <Image

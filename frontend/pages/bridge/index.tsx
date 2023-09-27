@@ -59,8 +59,6 @@ function BridgePage() {
         ? await selectedDepositAsset.getBalance()
         : undefined;
 
-      console.log(assetBalance);
-
       // figure out current button state
       if (
         !depositAmount ||

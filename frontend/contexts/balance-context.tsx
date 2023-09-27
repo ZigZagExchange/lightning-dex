@@ -18,11 +18,13 @@ const solRpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC as string;
 interface BalanceContext {
   balance: number;
   balanceFormatted: string;
+  getZKSyncLiteZZTokenBalance: () => Promise<number>;
 }
 
 const BalanceContext = createContext<BalanceContext>({
   balance: 0,
   balanceFormatted: "0.000",
+  getZKSyncLiteZZTokenBalance: () => Promise.resolve(0),
 });
 
 function BalanceProvider({ children }: PropsWithChildren) {
@@ -74,6 +76,20 @@ function BalanceProvider({ children }: PropsWithChildren) {
     }
   }
 
+  async function getZKSyncLiteZZTokenBalance(): Promise<number> {
+    if (ethersSigner) {
+      const zksyncProvider = await zksyncLite.getDefaultProvider("mainnet");
+      const zkSyncWallet = await zksyncLite.Wallet.fromEthSigner(
+        ethersSigner,
+        zksyncProvider
+      );
+      const balance = await zkSyncWallet.getBalance("ZZ");
+      return WADToAmount(balance);
+    }
+
+    return 0;
+  }
+
   async function setSolBalance() {
     const connection = new solana.Connection(solRpcUrl);
     const accountInfo = await connection.getAccountInfo(
@@ -85,7 +101,9 @@ function BalanceProvider({ children }: PropsWithChildren) {
   }
 
   return (
-    <BalanceContext.Provider value={{ balance, balanceFormatted }}>
+    <BalanceContext.Provider
+      value={{ balance, balanceFormatted, getZKSyncLiteZZTokenBalance }}
+    >
       {children}
     </BalanceContext.Provider>
   );

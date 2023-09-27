@@ -1,5 +1,6 @@
 import { useDebounce } from "use-debounce";
 import {
+  useChainId,
   useContractWrite,
   usePrepareContractWrite,
   useWaitForTransaction,
@@ -23,7 +24,7 @@ function useEvm(
   outgoingAsset: Assets
 ) {
   const debouncedDepositAmount = useDebounce(
-    (Number(depositAmount) * 1e18).toFixed(0),
+    depositAmount === "" || isNaN(Number(depositAmount)) ? "0" : depositAmount,
     500
   );
   const debouncedWithdrawAddress = useDebounce(withdrawalAddress, 500);
@@ -36,7 +37,9 @@ function useEvm(
     abi: depositContractABI,
     functionName: "depositETH",
     args: [outgoingAsset, debouncedWithdrawAddress[0]],
-    value: debouncedDepositAmount[0] as any,
+    value: ethers.utils.parseEther(
+      debouncedDepositAmount[0] === "" ? "0" : debouncedDepositAmount[0]
+    ) as any,
   });
   const l1EthDepositWrite = useContractWrite(prepareL1EthDepositWrite.config);
   const waitForL1EthDeposit = useWaitForTransaction({
@@ -50,7 +53,9 @@ function useEvm(
     abi: depositContractABI,
     functionName: "depositETH",
     args: [outgoingAsset, debouncedWithdrawAddress[0]],
-    value: debouncedDepositAmount[0] as any,
+    value: ethers.utils.parseEther(
+      debouncedDepositAmount[0] === "" ? "0" : debouncedDepositAmount[0]
+    ) as any,
   });
   const zksyncEraEthDepositWrite = useContractWrite(
     prepareZkSyncEraEthDepositWrite.config

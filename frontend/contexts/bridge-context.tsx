@@ -12,6 +12,7 @@ import { ethers } from "ethers";
 import * as solana from "@solana/web3.js";
 import usePhantom from "../hooks/use-phantom";
 import { useEvm } from "../hooks/use-evm";
+import { useBalance } from "../hooks/use-balance";
 
 function validateSolanaAddress(address: string) {
   try {
@@ -62,6 +63,7 @@ export interface Asset {
   requiresConnectionTo?: Networks;
   availableLiquidityMapKey: string;
   miniumDeposit?: number;
+  getBalance?: () => Promise<number>; // assume required wallet is connected
 }
 
 interface AssetChain {
@@ -137,6 +139,8 @@ function BridgeProvider({ children }: PropsWithChildren) {
     depositZksyncLiteEth,
     depositZksyncLiteZZTokens,
   } = useEvm(depositAmount, withdrawalAddress, outgoingAsset);
+  const { balance: connectedWalletBalance, getZKSyncLiteZZTokenBalance } =
+    useBalance();
 
   // ensure that when target assets are changed the deposit and outgoing amounts are correct
   useEffect(() => {
@@ -250,6 +254,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               validateAddress: ethers.utils.isAddress,
               requiresConnectionTo: Networks.ETH,
               availableLiquidityMapKey: "eth",
+              getBalance: () => connectedWalletBalance,
             },
           ],
         },
@@ -272,6 +277,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               validateAddress: ethers.utils.isAddress,
               requiresConnectionTo: Networks.ZKSyncEra,
               availableLiquidityMapKey: "zk_sync",
+              getBalance: () => connectedWalletBalance,
             },
             {
               id: Assets.ZZTokenZKSyncEra,
@@ -313,6 +319,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               validateAddress: ethers.utils.isAddress,
               requiresConnectionTo: Networks.ZKSyncLite,
               availableLiquidityMapKey: "zk_sync_lite",
+              getBalance: () => connectedWalletBalance,
             },
             {
               id: Assets.ZZTokenZKSyncLite,
@@ -332,6 +339,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               requiresConnectionTo: Networks.ZKSyncLite,
               availableLiquidityMapKey: "zz_token_zk_sync_lite",
               miniumDeposit: 10,
+              getBalance: getZKSyncLiteZZTokenBalance,
             },
           ],
         },
@@ -354,6 +362,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               requiresAddressInput: true,
               requiresConnectionTo: Networks.SOL,
               availableLiquidityMapKey: "sol",
+              getBalance: () => connectedWalletBalance,
             },
           ],
         },
@@ -369,6 +378,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
       depositZksyncZZTokens,
       depositZksyncLiteEth,
       depositZksyncLiteZZTokens,
+      getZKSyncLiteZZTokenBalance,
     ]
   );
 
@@ -413,20 +423,16 @@ function BridgeProvider({ children }: PropsWithChildren) {
     const chainAssets = chains.find((item) => item.id === chain)?.assets || [];
     const newOutgoingAsset = chainAssets[0].id;
     setOutgoingAsset(newOutgoingAsset);
-    if (chain === Chains.ZKSyncEra) {
-      setDepositChain(Chains.ZKSyncLite);
-      if (newOutgoingAsset === Assets.ZKSyncEra) {
-        setDepositAsset(Assets.ZKSyncLite);
-      } else if (newOutgoingAsset === Assets.ZZTokenZKSyncEra) {
-        setDepositAsset(Assets.ZZTokenZKSyncLite);
-      }
-    } else if (chain === Chains.ZKSyncLite) {
+    if (chain === Chains.ZKSyncLite) {
       setDepositChain(Chains.ZKSyncEra);
-      if (newOutgoingAsset === Assets.ZKSyncLite) {
-        setDepositAsset(Assets.ZKSyncEra);
-      } else if (newOutgoingAsset === Assets.ZZTokenZKSyncLite) {
-        setDepositAmount(Assets.ZZTokenZKSyncEra);
-      }
+      setDepositAsset(Assets.ZKSyncEra);
+    }
+    if (depositChain === Chains.ZKSyncLite) {
+      const otherChains = chains.filter(
+        (item) => item.id !== chain && item.id !== Chains.ZKSyncLite
+      );
+      setDepositChain(otherChains[0].id);
+      setDepositAsset(otherChains[0].assets[0].id);
     }
   };
 

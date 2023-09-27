@@ -35,62 +35,78 @@ function BridgePage() {
   const [showAddressInput, setShowAddressInput] = useState(true);
 
   useEffect(() => {
-    // set pricing and metadata
-    const selectedDepositAsset = getCurrentDepositAsset();
-    const selectedOutgoingAsset = getCurrentOutgoingAsset();
-    const priceInOutgoing = calculateOutgoingAmount(
-      selectedDepositAsset?.priceMapKey || "",
-      selectedOutgoingAsset?.priceMapKey || "",
-      1
-    );
-    setDisplayPrice(
-      `1 ${selectedDepositAsset?.name} = ${priceInOutgoing.toFixed(4)} ${
-        selectedOutgoingAsset?.name
-      } (~$${getUsdPrice(selectedDepositAsset?.priceMapKey || "").toFixed(2)})`
-    );
-    setDisplayFee(selectedOutgoingAsset?.feeDisplay || "");
-    setDisplayNetworkFee(selectedDepositAsset?.networkFeeDisplay || "");
-    setOutgoingAssetName(selectedOutgoingAsset?.name || "");
-    setShowAddressInput(selectedDepositAsset?.requiresAddressInput === true);
+    const updateButtonStatus = async () => {
+      // set pricing and metadata
+      const selectedDepositAsset = getCurrentDepositAsset();
+      const selectedOutgoingAsset = getCurrentOutgoingAsset();
+      const priceInOutgoing = calculateOutgoingAmount(
+        selectedDepositAsset?.priceMapKey || "",
+        selectedOutgoingAsset?.priceMapKey || "",
+        1
+      );
+      setDisplayPrice(
+        `1 ${selectedDepositAsset?.name} = ${priceInOutgoing.toFixed(4)} ${
+          selectedOutgoingAsset?.name
+        } (~$${getUsdPrice(selectedDepositAsset?.priceMapKey || "").toFixed(
+          2
+        )})`
+      );
+      setDisplayFee(selectedOutgoingAsset?.feeDisplay || "");
+      setDisplayNetworkFee(selectedDepositAsset?.networkFeeDisplay || "");
+      setOutgoingAssetName(selectedOutgoingAsset?.name || "");
+      setShowAddressInput(selectedDepositAsset?.requiresAddressInput === true);
+      const assetBalance = selectedDepositAsset?.getBalance
+        ? await selectedDepositAsset.getBalance()
+        : undefined;
 
-    // figure out current button state
-    if (
-      !depositAmount ||
-      Number(depositAmount) === 0 ||
-      isNaN(Number(depositAmount))
-    ) {
-      setIsButtonDisabled(true);
-      setButtonLabel("Enter an valid amount");
-    } else if (
-      selectedDepositAsset?.requiresAddressInput &&
-      !selectedOutgoingAsset?.validateAddress(withdrawalAddress)
-    ) {
-      setIsButtonDisabled(true);
-      setButtonLabel("Enter a valid withdrawal address");
-    } else if (
-      !hasSufficientLiquidity(
-        selectedOutgoingAsset?.availableLiquidityMapKey as string,
-        Number(outgoingAmount)
-      )
-    ) {
-      setIsButtonDisabled(true);
-      setButtonLabel("Insufficient liquidity");
-    } else if (
-      selectedDepositAsset?.miniumDeposit &&
-      Number(depositAmount) < selectedDepositAsset?.miniumDeposit
-    ) {
-      setIsButtonDisabled(true);
-      setButtonLabel(`Min deposit is ${selectedDepositAsset?.miniumDeposit}`);
-    } else if (
-      selectedDepositAsset?.requiresConnectionTo &&
-      connectedWallet?.network !== selectedDepositAsset.requiresConnectionTo
-    ) {
-      setIsButtonDisabled(false);
-      setButtonLabel("Connect wallet");
-    } else {
-      setIsButtonDisabled(false);
-      setButtonLabel("Bridge!");
-    }
+      console.log(assetBalance);
+
+      // figure out current button state
+      if (
+        !depositAmount ||
+        Number(depositAmount) === 0 ||
+        isNaN(Number(depositAmount))
+      ) {
+        setIsButtonDisabled(true);
+        setButtonLabel("Enter an valid amount");
+      } else if (
+        selectedDepositAsset?.requiresAddressInput &&
+        !selectedOutgoingAsset?.validateAddress(withdrawalAddress)
+      ) {
+        setIsButtonDisabled(true);
+        setButtonLabel("Enter a valid withdrawal address");
+      } else if (
+        !hasSufficientLiquidity(
+          selectedOutgoingAsset?.availableLiquidityMapKey as string,
+          Number(outgoingAmount)
+        )
+      ) {
+        setIsButtonDisabled(true);
+        setButtonLabel("Insufficient liquidity");
+      } else if (
+        selectedDepositAsset?.miniumDeposit &&
+        Number(depositAmount) < selectedDepositAsset?.miniumDeposit
+      ) {
+        setIsButtonDisabled(true);
+        setButtonLabel(`Min deposit is ${selectedDepositAsset?.miniumDeposit}`);
+      } else if (
+        selectedDepositAsset?.requiresConnectionTo &&
+        connectedWallet?.network !== selectedDepositAsset.requiresConnectionTo
+      ) {
+        setIsButtonDisabled(false);
+        setButtonLabel("Connect wallet");
+      } else if (
+        assetBalance !== undefined &&
+        assetBalance < Number(depositAmount)
+      ) {
+        setIsButtonDisabled(true);
+        setButtonLabel("Insufficient balance");
+      } else {
+        setIsButtonDisabled(false);
+        setButtonLabel("Bridge!");
+      }
+    };
+    updateButtonStatus();
   }, [
     depositAsset,
     outgoingAsset,

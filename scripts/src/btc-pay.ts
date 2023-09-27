@@ -24,7 +24,7 @@ const runScript = scriptWrapper(async ({db}) => {
     const walletInfo = JSON.parse(balanceCheck.stdout);
 
     if (walletInfo.balance < amountMinusFee) {
-      console.log('BTC liqudiity is empty')
+      console.log('BTC liquidity is empty')
       continue
     }
 

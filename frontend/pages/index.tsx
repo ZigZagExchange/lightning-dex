@@ -1,7 +1,9 @@
-import type { NextPage } from "next"
-import Head from "next/head"
-import Layout from "../components/layout/Layout"
-import Bridge from "../components/bridge/Bridge"
+import type { NextPage } from "next";
+import Head from "next/head";
+import Layout from "../components/layout";
+import Bridge from "./bridge";
+import { BridgeProvider } from "../contexts/bridge-context";
+import { BridgeApiProvider } from "../contexts/bridge-api-context";
 
 const Home: NextPage = () => {
   return (
@@ -11,9 +13,13 @@ const Home: NextPage = () => {
         <meta name="description" content="The Lightning to Ethereum Exchange" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Bridge />
+      <BridgeApiProvider>
+        <BridgeProvider>
+          <Bridge />
+        </BridgeProvider>
+      </BridgeApiProvider>
     </Layout>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

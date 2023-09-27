@@ -1,33 +1,33 @@
-import { createConfig, configureChains, mainnet, sepolia } from 'wagmi'
+import { createConfig, configureChains, mainnet } from "wagmi";
 
-import { alchemyProvider } from 'wagmi/providers/alchemy'
-import { publicProvider } from 'wagmi/providers/public'
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
 
-import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
-import { arbitrum, bsc, optimism, zkSync } from 'viem/chains'
+import { MetaMaskConnector } from "wagmi/connectors/metaMask";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
+import { zkSync } from "viem/chains";
 
-const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string
-const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY as string
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID as string;
+const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_KEY as string;
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet, sepolia, arbitrum, bsc, optimism, zkSync],
-  [alchemyProvider({ apiKey: alchemyApiKey }), publicProvider()],
-)
+  [mainnet, zkSync],
+  [alchemyProvider({ apiKey: alchemyApiKey }), publicProvider()]
+);
+
+export const metamaskConnector = new MetaMaskConnector({ chains });
+export const walletConnectConnector = new WalletConnectConnector({
+  chains,
+  options: {
+    projectId,
+  },
+});
 
 const configWagmi = createConfig({
-  autoConnect: true,
-  connectors: [
-    new MetaMaskConnector({ chains }),
-    new WalletConnectConnector({
-      chains,
-      options: {
-        projectId,
-      },
-    }),
-  ],
+  autoConnect: false,
+  connectors: [metamaskConnector, walletConnectConnector],
   publicClient,
   webSocketPublicClient,
-})
+});
 
-export default configWagmi
+export default configWagmi;

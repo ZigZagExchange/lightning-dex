@@ -17,7 +17,8 @@ const runScript = scriptWrapper(async ({db}) => {
     (item: any) => item.tx.from?.toLowerCase() !== wallet.address.toLowerCase() &&
     !ADDRESSES_THAT_DEPOSIT_LIQUIDITY.includes(item.tx.from?.toLowerCase()) &&
     item.tx.type === 'Transfer' &&
-    (item.tx.token === 'ZZ' || item.tx.token === 'ETH')
+    (item.tx.token === 'ZZ' || item.tx.token === 'ETH') &&
+    item.success === true
   )
 
   for (let deposit of incomingTransactions) {

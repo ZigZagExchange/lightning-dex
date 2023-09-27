@@ -4,11 +4,12 @@ import { scriptWrapper } from "./wrapper";
 import {ethers} from 'ethers'
 import ERC20ABI from './ERC20.json'
 
-const SCRIPT_INTERVAL = 5000
+const SCRIPT_INTERVAL = 30000
 
 const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
   const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSync}' OR outgoing_currency='${Assets.ZZTokenZKSync}') AND paid = false AND outgoing_address IS NOT NULL`)
 
+  console.log(bridges)
   if (bridges.length === 0) {
     return
   }
@@ -34,9 +35,10 @@ const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
     const txValue = ethers.BigNumber.from(amountMinusFeeWAD).sub(networkFee)
 
     if (txValue.lte(0)) {
-      console.log('outgoing tx would be for < 0 ZKSync')
-      return
+      console.log('outgoing tx would be for < 0 ZKSync', amountMinusFeeWAD.toString())
+      continue
     }
+
 
     const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (select_deposit.rows.length != 1 || select_deposit.rows[0].paid) {

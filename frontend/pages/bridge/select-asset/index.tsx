@@ -4,6 +4,7 @@ import { useBridge } from "../../../hooks/use-bridge";
 import { Asset, Assets } from "../../../contexts/bridge-context";
 import Modal from "../../../components/modal";
 import ListOption from "../../../components/list-option";
+import ChevronDown from "./chevron-down.svg";
 
 interface Props {
   direction: "deposit" | "outgoing";
@@ -95,24 +96,29 @@ function SelectAsset({ direction }: Props) {
           className="group rounded-xl  border border-transparent transform-gpu transition-all duration-125"
           onClick={() => setIsModalOpen(true)}
         >
-          <div className="flex justify-center md:justify-start bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 h-14">
-            <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
-              <div className="relative flex p-1 rounded-full">
-                <Image
-                  alt={displayAsset?.name || "name"}
-                  width={40}
-                  height={40}
-                  className="w-7 h-7"
-                  src={displayAsset?.image || ""}
-                />
+          <div className="flex bg-white bg-opacity-10 items-center rounded-lg py-1.5 pl-2 h-14 justify-between pr-2">
+            <div className="flex items-center">
+              <div className="self-center flex-shrink-0 hidden mr-1 sm:block">
+                <div className="relative flex p-1 rounded-full">
+                  <Image
+                    alt={displayAsset?.name || "name"}
+                    width={40}
+                    height={40}
+                    className="w-7 h-7"
+                    src={displayAsset?.image || ""}
+                  />
+                </div>
+              </div>
+
+              <div className="text-left cursor-pointer">
+                <h4 className="text-lg font-medium text-gray-300 ">
+                  <span>{displayAsset?.name}</span>
+                </h4>
               </div>
             </div>
-
-            <div className="text-left cursor-pointer">
-              <h4 className="text-lg font-medium text-gray-300 ">
-                <span>{displayAsset?.name}</span>
-              </h4>
-            </div>
+            {options.length > 1 && (
+              <Image src={ChevronDown} alt="" width={20} />
+            )}
           </div>
         </div>
       </button>

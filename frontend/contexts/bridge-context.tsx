@@ -13,6 +13,7 @@ import * as solana from "@solana/web3.js";
 import usePhantom from "../hooks/use-phantom";
 import { useEvm } from "../hooks/use-evm";
 import { useBalance } from "../hooks/use-balance";
+import { useWallet } from "../hooks/use-wallet";
 
 function validateSolanaAddress(address: string) {
   try {
@@ -95,6 +96,7 @@ interface BridgeContext {
   setWithdrawalAddress: (value: string) => void;
   isLoading: boolean;
   bitcoinDepositAddress?: string;
+  zkSyncLiteZZTokenBalance?: number;
 }
 
 const BridgeContext = createContext<BridgeContext>({
@@ -141,11 +143,29 @@ function BridgeProvider({ children }: PropsWithChildren) {
   } = useEvm(depositAmount, withdrawalAddress, outgoingAsset);
   const { balance: connectedWalletBalance, getZKSyncLiteZZTokenBalance } =
     useBalance();
+  const [zkSyncLiteZZTokenBalance, setZkSyncLiteZZTokenBalance] =
+    useState<number>();
+  const { connectedWallet } = useWallet();
 
   // ensure that when target assets are changed the deposit and outgoing amounts are correct
   useEffect(() => {
     onDepositAmountChange(depositAmount);
   }, [depositAsset, outgoingAsset]);
+
+  // set token balance if deposit asset is changed to zz tokens
+  useEffect(() => {
+    if (
+      depositAsset === Assets.ZZTokenZKSyncLite &&
+      connectedWallet?.network === Networks.ZKSyncLite
+    ) {
+      (async () => {
+        const balance = await getZKSyncLiteZZTokenBalance();
+        if (typeof balance === "number") {
+          setZkSyncLiteZZTokenBalance(balance);
+        }
+      })();
+    }
+  }, [depositAsset, connectedWallet?.network]);
 
   const getCurrentDepositAsset = (): Asset => {
     const currentChain = chains.find((item) => item.id === depositChain);
@@ -339,7 +359,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
               requiresConnectionTo: Networks.ZKSyncLite,
               availableLiquidityMapKey: "zz_token_zk_sync_lite",
               miniumDeposit: 10,
-              getBalance: getZKSyncLiteZZTokenBalance,
+              getBalance: () => zkSyncLiteZZTokenBalance,
             },
           ],
         },
@@ -378,7 +398,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
       depositZksyncZZTokens,
       depositZksyncLiteEth,
       depositZksyncLiteZZTokens,
-      getZKSyncLiteZZTokenBalance,
+      zkSyncLiteZZTokenBalance,
     ]
   );
 
@@ -514,6 +534,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
         setWithdrawalAddress,
         isLoading: isLoading || isEvmTxLoading,
         bitcoinDepositAddress,
+        zkSyncLiteZZTokenBalance,
       }}
     >
       {children}

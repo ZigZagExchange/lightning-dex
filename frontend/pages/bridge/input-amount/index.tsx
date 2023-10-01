@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useBridge } from "../../../hooks/use-bridge";
-import { useBalance } from "../../../hooks/use-balance";
 import { useWallet } from "../../../hooks/use-wallet";
 
 interface Props {
@@ -15,6 +14,7 @@ function InputAmount({ direction }: Props) {
     setOutgoingAmount,
     getCurrentDepositAsset,
     depositAsset,
+    zkSyncLiteZZTokenBalance,
   } = useBridge();
   const amount = direction === "deposit" ? depositAmount : outgoingAmount;
   const [showBalance, setShowBalance] = useState(false);
@@ -30,14 +30,21 @@ function InputAmount({ direction }: Props) {
       const selectedDepositAsset = getCurrentDepositAsset();
       if (selectedDepositAsset?.getBalance) {
         const balance = await selectedDepositAsset.getBalance();
-        setAssetBalance(balance.toFixed(4));
-        setShowBalance(true);
+        if (typeof balance === "number") {
+          setAssetBalance(balance.toFixed(4));
+          setShowBalance(true);
+        }
         return;
       }
       setShowBalance(false);
     };
     updateBalanceDetails();
-  }, [direction, depositAsset, connectedWallet?.network]);
+  }, [
+    direction,
+    depositAsset,
+    connectedWallet?.network,
+    zkSyncLiteZZTokenBalance,
+  ]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (direction === "deposit") {

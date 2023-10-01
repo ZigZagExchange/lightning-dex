@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { useWallet } from "../hooks/use-wallet";
 
 interface USDPriceMap {
   [key: string]: number;
@@ -11,6 +12,20 @@ interface USDPriceMap {
 
 interface AvailableLiquidityMap {
   [key: string]: number;
+}
+
+interface BridgeHistoryRecord {
+  deposit_currency: string;
+  deposit_address: string;
+  deposit_txid: string;
+  deposit_timestamp: string;
+  outgoing_currency: string;
+  outgoing_address: string;
+  outgoing_amount: string;
+  outgoing_txid: string;
+  outgoing_timestamp: string;
+  paid: boolean;
+  fee: string;
 }
 
 interface BridgeApiContext {
@@ -39,6 +54,10 @@ function BridgeApiProvider({ children }: PropsWithChildren) {
   const [usdPriceMap, setUsdPriceMap] = useState<USDPriceMap>({});
   const [availableLiquidityMap, setAvailableLiquidityMap] =
     useState<AvailableLiquidityMap>({});
+  const { connectedWallet } = useWallet();
+  const [addressHistory, setAddressHistory] = useState<BridgeHistoryRecord[]>(
+    []
+  );
 
   useEffect(() => {
     refreshPrices();
@@ -51,6 +70,10 @@ function BridgeApiProvider({ children }: PropsWithChildren) {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    refreshAddressHistory();
+  }, [connectedWallet?.address]);
 
   const refreshPrices = () => {
     fetch("https://api.zap.zigzag.exchange/prices")
@@ -71,6 +94,17 @@ function BridgeApiProvider({ children }: PropsWithChildren) {
       })
       .catch(() => {
         console.log("error fetching available liquidity");
+      });
+  };
+
+  const refreshAddressHistory = () => {
+    fetch(`https://api.zap.zigzag.exchange/history/${connectedWallet?.address}`)
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+      })
+      .catch(() => {
+        console.log("error fetching address history");
       });
   };
 

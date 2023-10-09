@@ -9,7 +9,6 @@ const SCRIPT_INTERVAL = 30000
 const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
   const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSync}' OR outgoing_currency='${Assets.ZZTokenZKSync}') AND paid = false AND outgoing_address IS NOT NULL`)
 
-  console.log(bridges)
   if (bridges.length === 0) {
     return
   }
@@ -35,7 +34,7 @@ const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
     const txValue = ethers.BigNumber.from(amountMinusFeeWAD).sub(networkFee)
 
     if (txValue.lte(0)) {
-      console.log('outgoing tx would be for < 0 ZKSync', amountMinusFeeWAD.toString())
+      console.log(`outgoing tx would be for < 0 ${bridge.outgoing_currency}`, amountMinusFeeWAD.toString())
       continue
     }
 

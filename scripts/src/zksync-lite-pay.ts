@@ -12,7 +12,9 @@ const runScript = scriptWrapper(async ({ db }) => {
     process.env.ZKSYNC_LITE_PRIVATE_KEY as string
   );
   const syncWallet = await zksync.Wallet.fromEthSigner(ethWallet, provider);
-  const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSyncLite}' OR outgoing_currency='${Assets.ZZTokenZKSyncLite}') AND paid = false AND outgoing_address is NOT NULL AND deposit_timestamp > NOW() - INTERVAL '24 hours' LIMIT 50;`)
+  const { rows: bridges } = await db.query(
+    `SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSyncLite}' OR outgoing_currency='${Assets.ZZTokenZKSyncLite}') AND paid = false AND outgoing_address is NOT NULL AND deposit_timestamp > NOW() - INTERVAL '24 hours' LIMIT 50;`
+  );
 
   if (bridges.length === 0) {
     return;
@@ -40,6 +42,10 @@ const runScript = scriptWrapper(async ({ db }) => {
       token:
         bridge.outgoing_currency === Assets.ZZTokenZKSyncLite ? "ZZ" : "ETH",
     });
+  }
+
+  if (txMetadata.length === 0) {
+    return;
   }
 
   const txBatch = await batchBuilder.build("ETH");

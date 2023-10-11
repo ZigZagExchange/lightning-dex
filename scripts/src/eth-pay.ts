@@ -6,7 +6,7 @@ import {ethers} from 'ethers'
 const SCRIPT_INTERVAL = 5000
 
 const runScript = scriptWrapper(async ({db, ethProvider}) => {
-  const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE outgoing_currency = '${Assets.ETH}' AND paid = false AND outgoing_address IS NOT NULL`)
+  const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE outgoing_currency = '${Assets.ETH}' AND paid = false AND outgoing_address IS NOT NULL AND deposit_timestamp > NOW() - INTERVAL '24 hours'`)
 
   if (bridges.length === 0) {
     return

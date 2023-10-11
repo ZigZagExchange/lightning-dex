@@ -7,7 +7,7 @@ import ERC20ABI from './ERC20.json'
 const SCRIPT_INTERVAL = 30000
 
 const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
-  const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSync}' OR outgoing_currency='${Assets.ZZTokenZKSync}') AND paid = false AND outgoing_address IS NOT NULL`)
+  const {rows: bridges} = await db.query(`SELECT * FROM bridges WHERE (outgoing_currency='${Assets.ZKSync}' OR outgoing_currency='${Assets.ZZTokenZKSync}') AND paid = false AND outgoing_address IS NOT NULL AND deposit_timestamp > NOW() - INTERVAL '24 hours'`)
 
   if (bridges.length === 0) {
     return

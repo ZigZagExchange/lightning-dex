@@ -8,7 +8,7 @@ const SCRIPT_INTERVAL = 10000
 const exec = util.promisify(nodeChildProcess.exec);
 
 const runScript = scriptWrapper(async ({db}) => {
-  const {rows: bridges} = await db.query("SELECT * FROM bridges WHERE paid = false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL")
+  const {rows: bridges} = await db.query("SELECT * FROM bridges WHERE paid = false AND outgoing_currency = 'BTC' AND outgoing_address IS NOT NULL AND deposit_timestamp > NOW() - INTERVAL '24 hours'")
 
   if (bridges.length === 0) {
     return

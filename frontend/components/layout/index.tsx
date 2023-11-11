@@ -97,15 +97,18 @@ function Layout(props: PropsWithChildren) {
                 key={index}
                 label={item.name}
                 icon={item.image}
-                onClick={() =>
+                onClick={() => {
+                  if (item.name === "Wallet Connect") {
+                    setIsConnectWalletModalOpen(false);
+                  }
                   item
                     .connect()
                     .then(() => {
                       setSelectedNetwork(undefined);
                       setIsConnectWalletModalOpen(false);
                     })
-                    .catch(() => null)
-                }
+                    .catch(() => null);
+                }}
               />
             ))
           : networks.map((item, index) => (

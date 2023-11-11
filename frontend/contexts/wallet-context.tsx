@@ -240,7 +240,6 @@ function WalletProvider({ children }: PropsWithChildren) {
   const connectToNetwork = (network: Networks) => {
     disconnectCurrentWallet().then(() => {
       const targetNetwork = networks.find((item) => item.id === network);
-      targetNetwork?.connectors;
       setIsModalOpen(true);
       setConnectorModalOptions(targetNetwork?.connectors || []);
     });

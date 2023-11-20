@@ -101,7 +101,7 @@ function BridgeApiProvider({ children }: PropsWithChildren) {
     fetch(`https://api.zap.zigzag.exchange/history/${connectedWallet?.address}`)
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
+        setAddressHistory(res);
       })
       .catch(() => {
         console.log("error fetching address history");

@@ -60,7 +60,12 @@ function BalanceProvider({ children }: PropsWithChildren) {
         setSolBalance();
       }
     }
-  }, [connectedWallet?.network, ethersSigner, phantomProvider]);
+  }, [
+    connectedWallet?.network,
+    ethersSigner,
+    phantomProvider,
+    ethBalance?.formatted,
+  ]);
 
   async function setZkSyncLiteBalance() {
     if (ethersSigner) {

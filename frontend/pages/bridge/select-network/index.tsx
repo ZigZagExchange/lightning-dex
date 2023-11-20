@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useBridge } from "../../../hooks/use-bridge";
 import { Chains } from "../../../contexts/bridge-context";
+import { useWallet } from "../../../hooks/use-wallet";
 
 interface Props {
   direction: "deposit" | "outgoing";
@@ -15,12 +16,19 @@ function SelectNetwork({ direction }: Props) {
     outgoingChain,
     setOutgoingChain,
   } = useBridge();
+  const { isConnected, connectToNetwork } = useWallet();
   const currentlySelected =
     direction === "deposit" ? depositChain : outgoingChain;
 
   const onChange = (chain: Chains) => {
     if (direction === "deposit") {
       setDepositChain(chain);
+      const targetChain = chains.find((item) => item.id === chain);
+      console.log(targetChain);
+      if (targetChain?.requiresConnectionTo) {
+        console.log(`connecting to: `);
+        connectToNetwork(targetChain.requiresConnectionTo);
+      }
     }
     if (direction === "outgoing") {
       setOutgoingChain(chain);

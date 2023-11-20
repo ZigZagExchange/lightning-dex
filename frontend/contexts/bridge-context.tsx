@@ -259,6 +259,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
           id: Chains.ETH,
           image: "token-icons/eth.svg",
           name: "Ethereum",
+          requiresConnectionTo: Networks.ETH,
           assets: [
             {
               id: Assets.ETH,
@@ -282,6 +283,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
           id: Chains.ZKSyncEra,
           image: "token-icons/zksync.svg",
           name: "zkSync Era",
+          requiresConnectionTo: Networks.ZKSyncEra,
           assets: [
             {
               id: Assets.ZKSyncEra,
@@ -324,6 +326,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
           id: Chains.ZKSyncLite,
           image: "token-icons/zksync.svg",
           name: "zkSync Lite",
+          requiresConnectionTo: Networks.ZKSyncLite,
           assets: [
             {
               id: Assets.ZKSyncLite,
@@ -367,6 +370,7 @@ function BridgeProvider({ children }: PropsWithChildren) {
           id: Chains.SOL,
           image: "token-icons/sol.svg",
           name: "Solana",
+          requiresConnectionTo: Networks.SOL,
           assets: [
             {
               id: Assets.SOL,

@@ -265,8 +265,8 @@ function WalletProvider({ children }: PropsWithChildren) {
             icon={item.image}
             label={item.name}
             onClick={() => {
-              item.connect();
               setIsModalOpen(false);
+              item.connect();
             }}
           />
         ))}

@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "zksync-deposit": "ts-node scripts/deposit-on-zksync-era.ts"
+    "test": "hardhat test test/*.ts",
+    "deploy:btc-lp:testnet": "hardhat run scripts/deploy-btc-lp-token.ts --network goerli",
+    "verify:btc-lp:testnet": "hardhat verify --network goerli $1"
   },
   "repository": {
     "type": "git",

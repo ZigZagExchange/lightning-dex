@@ -30,3 +30,16 @@ CREATE TABLE IF NOT EXISTS sol_deposits (
 );
 
 ALTER TABLE bridges ADD COLUMN fee NUMERIC;
+
+CREATE TABLE IF NOT EXISTS lp_deposits (
+  deposit_address TEXT NOT NULL,
+  deposit_currency TEXT NOT NULL,
+  outgoing_address TEXT NOT NULL,
+  deposit_timestamp TIMESTAMP,
+  deposit_amount NUMERIC,
+  deposit_txid TEXT,
+  lp_token_mint_txid TEXT,
+  lp_token_id INT,
+  withdrawal_txid: TEXT,
+  has_been_removed BOOLEAN DEFAULT FALSE
+)

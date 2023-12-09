@@ -83,14 +83,14 @@ export const ZZ_TOKEN_CONTRACT_ADDRESS_ON_ZKSYNC_ERA =
 export const ZKSYNC_LITE_LIQUIDITY_POOL =
   "0x9c84e4Ea84DeFEe45FF6Ec64ea3b1D85C7B9a50E";
 export const BTC_LP_CONTRACT_ADDRESS =
-  "0x395504AA5224026D8fA24f91C09F244d2F94734D"; // Warning this is testnet one atm
+  "0xb1a02D0aF27C1d5a76C65749F9518af74dae7F48"; // Warning this is testnet one atm
 
 export const BTC_LP_CONTRACT_ABI = [
   {
     inputs: [
       {
         internalType: "uint256",
-        name: "tokenId",
+        name: "amount",
         type: "uint256",
       },
       {

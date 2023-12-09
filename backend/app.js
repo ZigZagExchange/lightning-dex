@@ -291,18 +291,6 @@ app.get("/get-btc-lp-deposit-address", async (req, res, next) => {
   }
 });
 
-app.get("/get-liquidity-positions", async (req, res) => {
-  const address = req.query.address;
-  if (!ethers.utils.isAddress(address)) {
-    return [];
-  }
-  const result = await db.query(
-    "SELECT * FROM lp_deposits WHERE LOWER(outgoing_address)=$1 AND has_been_removed = FALSE AND deposit_timestamp IS NOT NULL",
-    [address.toLowerCase()]
-  );
-  res.status(200).json(result.rows);
-});
-
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err });

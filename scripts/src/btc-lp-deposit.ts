@@ -45,26 +45,18 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
       { gasLimit: 500000 }
     );
     const finalizedMintTx = await mintedTokenTx.wait();
-    const transferEvent = finalizedMintTx.events.find(
-      (item: any) => item.event === "Transfer"
-    );
-    const mintedTokenId = transferEvent.args.tokenId.toNumber();
-    if (!mintedTokenId) {
-      continue;
-    }
     const updateResult = await db.query(
-      "UPDATE lp_deposits SET deposit_timestamp=NOW(), deposit_amount=$1, deposit_txid=$2, lp_token_mint_txid=$3, lp_token_id=$4 WHERE deposit_address=$5",
+      "UPDATE lp_deposits SET deposit_timestamp=NOW(), deposit_amount=$1, deposit_txid=$2, lp_token_mint_txid=$3 WHERE deposit_address=$4",
       [
         deposit.amount,
         deposit.txid,
         finalizedMintTx.transactionHash,
-        mintedTokenId,
         deposit.address,
       ]
     );
 
     if (updateResult.rowCount === 1) {
-      console.log(`BTC LP Token ${mintedTokenId} minted`);
+      console.log(`${deposit.amount} BTC LP tokens minted`);
     }
   }
 });

@@ -3,8 +3,12 @@ import { ethers } from "ethers";
 import * as LPTokenContract from "./BTCLPToken.json";
 import util from "node:util";
 import nodeChildProcess from "node:child_process";
+import { WADToAmount } from "./common";
 
 const exec = util.promisify(nodeChildProcess.exec);
+const SCRIPT_INTERVAL = 30000;
+
+const TOKEN_SALE_PRICE = 1; // change this to adjust yield. Starts as 1:1
 
 const runScript = scriptWrapper(async ({ ethProvider, db }) => {
   const lpTokenContract = new ethers.Contract(
@@ -23,22 +27,9 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
   );
 
   for (const removalTx of recentRemovals) {
-    const tokenId = removalTx.args?.tokenId?.toNumber();
-    if (!tokenId) {
-      continue;
-    }
+    const amount = removalTx.args?.amount?.toString();
+    const burnedAmount = Number(WADToAmount(amount));
     const withdrawalAddress = removalTx.args?.withdrawalAddress;
-
-    const { rows: lpDeposits } = await db.query(
-      "SELECT * FROM lp_deposits WHERE deposit_currency='BTC' AND lp_token_id=$1 AND has_been_removed=false",
-      [tokenId]
-    );
-
-    if (lpDeposits.length !== 1) {
-      throw new Error("duplicate NFTs of claims?");
-    }
-
-    const deposit = lpDeposits[0];
 
     const networkFee = JSON.parse(feeCheck.stdout).feerate / 3; // Estimated 333 vB
     const balanceCheck = await exec(
@@ -46,41 +37,27 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
     );
     const walletInfo = JSON.parse(balanceCheck.stdout);
 
-    if (walletInfo.balance < Number(deposit.deposit_amount)) {
+    const outgoingBtcAmount = burnedAmount * TOKEN_SALE_PRICE;
+
+    if (walletInfo.balance < Number(outgoingBtcAmount)) {
       console.log("BTC liquidity is empty");
       continue;
     }
 
-    const updatePaid = await db.query(
-      "UPDATE lp_deposits SET has_been_removed=TRUE WHERE deposit_currency='BTC' AND lp_token_id=$1",
-      [tokenId]
-    );
-    if (updatePaid.rowCount !== 1) {
-      throw new Error("Weird failure in paid update");
-    }
-
-    let btcPayment;
-    let sendAmount;
     try {
-      sendAmount = (deposit.deposit_amount - networkFee).toFixed(8);
-      btcPayment = await exec(
+      const sendAmount = (outgoingBtcAmount - networkFee).toFixed(8);
+      await exec(
         `${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${withdrawalAddress} amount=${sendAmount} conf_target=1`
       );
     } catch (e) {
-      console.error("Withdraw failed");
+      console.error("BTC LP payout failed");
       console.error(e);
       continue;
-    }
-    const outgoingTxid = btcPayment.stdout.trim();
-
-    const updateResult = await db.query(
-      "UPDATE lp_tokens SET withdrawal_txid=$1 WHERE deposit_currency='BTC' AND lp_token_id=$2",
-      [outgoingTxid, tokenId]
-    );
-    if (updateResult.rowCount === 1) {
-      console.log(`Liquidity has been removed from token ${tokenId}`);
     }
   }
 });
 
 runScript();
+setInterval(() => {
+  runScript();
+}, SCRIPT_INTERVAL);

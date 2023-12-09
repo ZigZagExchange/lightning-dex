@@ -38,8 +38,5 @@ CREATE TABLE IF NOT EXISTS lp_deposits (
   deposit_timestamp TIMESTAMP,
   deposit_amount NUMERIC,
   deposit_txid TEXT,
-  lp_token_mint_txid TEXT,
-  lp_token_id INT,
-  withdrawal_txid: TEXT,
-  has_been_removed BOOLEAN DEFAULT FALSE
+  lp_token_mint_txid TEXT
 )

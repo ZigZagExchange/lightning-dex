@@ -12,11 +12,11 @@ export enum Assets {
 }
 
 export function WADToAmount(input: ethers.BigNumber): string {
-  return new BN(input.toString()).div(1e18).toString();
+  return new BN(input.toString()).div(1e18).toFixed();
 }
 
 export function amountToWAD(input: number): string {
-  return new BN(input).times(10e8).toFixed();
+  return new BN(input).times(1e18).toFixed();
 }
 
 export const MIN_ZZ_TOKEN_DEPOSIT = 10;

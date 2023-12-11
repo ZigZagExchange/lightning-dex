@@ -33,6 +33,10 @@ const runScript = scriptWrapper(async ({ db }) => {
     );
     if (amountMinusFee <= 0) {
       console.log(`outgoing amount would be < 0 ${bridge.outgoing_currency}`);
+      const updateResult = await db.query(
+        "UPDATE bridges SET paid=true WHERE deposit_txid=$1",
+        [ bridge.deposit_txid ]
+      );
       continue;
     }
     txMetadata.push({ fee, outgoingAmount });

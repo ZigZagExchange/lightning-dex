@@ -33,11 +33,6 @@ const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
     const amountMinusFeeWAD = ethers.utils.parseUnits(String(amountMinusFee), 18)
     const txValue = ethers.BigNumber.from(amountMinusFeeWAD).sub(networkFee)
 
-    if (txValue.lte(0)) {
-      console.log(`outgoing tx would be for < 0 ${bridge.outgoing_currency}`, amountMinusFeeWAD.toString())
-      continue
-    }
-
 
     const select_deposit = await db.query("SELECT paid FROM bridges WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (select_deposit.rows.length != 1 || select_deposit.rows[0].paid) {
@@ -47,6 +42,11 @@ const runScript = scriptWrapper(async ({db, zkSyncEraProvider}) => {
     const update_paid = await db.query("UPDATE bridges SET paid=true WHERE deposit_txid = $1", [bridge.deposit_txid]);
     if (update_paid.rowCount !== 1) {
       throw new Error("Weird failure in paid update")
+    }
+
+    if (txValue.lte(0)) {
+      console.log(`outgoing tx would be for < 0 ${bridge.outgoing_currency}`, amountMinusFeeWAD.toString())
+      continue
     }
 
     const sendTransaction = async () => {

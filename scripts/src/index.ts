@@ -9,5 +9,6 @@ import "./zksync-era-pay";
 import "./zksync-lite-deposit";
 import "./zksync-lite-pay";
 import "./btc-lp-deposit";
+import "./btc-lp-pay";
 
 console.log("bridge is up 🚀");

@@ -55,7 +55,7 @@ function ProvideLiquidity() {
 
             <div className="h-16 pb-4 mt-4 space-x-2 text-left">
               <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
-                {depositAddress}
+                <h4 className="opacity-90">{depositAddress}</h4>
               </div>
             </div>
           </div>

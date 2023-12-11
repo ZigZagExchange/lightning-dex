@@ -27,6 +27,17 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
   );
 
   for (const removalTx of recentRemovals) {
+    const payedOutRecord = await db.query(
+      `SELECT * FROM lp_payouts WHERE currency='BTC' AND burn_txid=$1`,
+      [removalTx.transactionHash]
+    );
+    if (payedOutRecord.rowCount > 0) {
+      return;
+    }
+    await db.query(
+      "INSERT INTO lp_payouts (burn_txid, currency) VALUES ($1, $2)",
+      [removalTx.transactionHash, "BTC"]
+    );
     const amount = removalTx.args?.amount?.toString();
     const burnedAmount = Number(WADToAmount(amount));
     const withdrawalAddress = removalTx.args?.withdrawalAddress;
@@ -46,8 +57,16 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
 
     try {
       const sendAmount = (outgoingBtcAmount - networkFee).toFixed(8);
-      await exec(
+      const btcPayment = await exec(
         `${process.env.BITCOIN_CLI_PREFIX} -named sendtoaddress address=${withdrawalAddress} amount=${sendAmount} conf_target=1`
+      );
+      console.log(
+        `${sendAmount} BTC payed out for ${removalTx.transactionHash}`
+      );
+      const outgoingTxid = btcPayment.stdout.trim();
+      await db.query(
+        `UPDATE lp_payouts SET outgoing_txid=$1 WHERE burn_txid=$2`,
+        [outgoingTxid, removalTx.transactionHash]
       );
     } catch (e) {
       console.error("BTC LP payout failed");

@@ -12,6 +12,11 @@ import {
 import { BTC_LP_CONTRACT_ABI, BTC_LP_CONTRACT_ADDRESS } from "../../data";
 import { ethers } from "ethers";
 
+function formatBalance(number: number) {
+  const scaled = Math.floor(number * 10000) / 10000;
+  return scaled.toFixed(4);
+}
+
 function RemoveLiquidity() {
   const { connectedWallet, connectToNetwork } = useWallet();
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
@@ -24,7 +29,6 @@ function RemoveLiquidity() {
   });
 
   const debouncedWithdrawAddress = useDebounce(withdrawalAddress, 500);
-  const debouncedAmount = useDebounce(amount, 500);
   const prepareRemoveContractWrite = usePrepareContractWrite({
     address: BTC_LP_CONTRACT_ADDRESS,
     abi: BTC_LP_CONTRACT_ABI,
@@ -34,6 +38,9 @@ function RemoveLiquidity() {
       debouncedWithdrawAddress[0],
     ],
   });
+  const contractErrorMessage =
+    // @ts-ignore
+    prepareRemoveContractWrite?.error?.cause?.reason?.replace("ERC20: ", "");
   const removeContractWrite = useContractWrite(
     prepareRemoveContractWrite.config
   );
@@ -65,7 +72,7 @@ function RemoveLiquidity() {
   return (
     <>
       <p className="mt-3 ml-1">
-        LP token balance: {Number(balance?.data?.formatted).toFixed(4)}
+        LP token balance: {formatBalance(Number(balance?.data?.formatted))}
       </p>
       <div className="h-16 pb-4 mt-2 space-x-2 text-left">
         <div className="h-14 flex flex-grow items-center bg-transparent border border-white border-opacity-20 hover:border-bgLightest focus-within:border-bgLightest pl-3 pr-2 sm:pl-4 py-0.5 rounded-xl">
@@ -94,11 +101,15 @@ function RemoveLiquidity() {
       <div className="py-2 -mt-2 md:py-4">
         <button
           className="group cursor-pointer outline-none focus:outline-none active:outline-none ring-none duration-100 transform-gpu w-full rounded-lg my-2 px-4 py-3 text-white text-opacity-100 transition-all hover:opacity-80 disabled:opacity-100 disabled:text-[#88818C] disabled:from-bgLight disabled:to-bgLight bg-gradient-to-r from-[#CF52FE] to-[#AC8FFF] false"
-          disabled={!isAddressValid || waitForRemove?.isLoading}
+          disabled={
+            !isAddressValid || waitForRemove?.isLoading || contractErrorMessage
+          }
           type="button"
           onClick={removeLiquidity}
         >
-          {!amount || amount === ""
+          {contractErrorMessage
+            ? contractErrorMessage
+            : (!amount || amount) === ""
             ? "Enter valid amount"
             : !isAddressValid
             ? "Enter valid address"

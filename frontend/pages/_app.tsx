@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import configWagmi from "../config/wagmi";
 import { WalletProvider } from "../contexts/wallet-context";
 import { BalanceProvider } from "../contexts/balance-context";
+import "react-toastify/dist/ReactToastify.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,7 +14,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <WalletProvider>
         <BalanceProvider>
           <Component {...pageProps} />
-          <ToastContainer />
+          <ToastContainer theme="dark" />
         </BalanceProvider>
       </WalletProvider>
     </WagmiConfig>

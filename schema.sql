@@ -39,4 +39,10 @@ CREATE TABLE IF NOT EXISTS lp_deposits (
   deposit_amount NUMERIC,
   deposit_txid TEXT,
   lp_token_mint_txid TEXT
-)
+);
+
+CREATE TABLE IF NOT EXISTS lp_payouts (
+  burn_txid TEXT NOT NULL PRIMARY KEY,
+  currency TEXT NOT NULL,
+  outgoing_txid TEXT
+);

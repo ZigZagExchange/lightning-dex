@@ -32,12 +32,8 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
       [removalTx.transactionHash]
     );
     if (payedOutRecord.rowCount > 0) {
-      return;
+      continue;
     }
-    await db.query(
-      "INSERT INTO lp_payouts (burn_txid, currency) VALUES ($1, $2)",
-      [removalTx.transactionHash, "BTC"]
-    );
     const amount = removalTx.args?.amount?.toString();
     const burnedAmount = Number(WADToAmount(amount));
     const withdrawalAddress = removalTx.args?.withdrawalAddress;
@@ -54,6 +50,11 @@ const runScript = scriptWrapper(async ({ ethProvider, db }) => {
       console.log("BTC liquidity is empty");
       continue;
     }
+
+    await db.query(
+      "INSERT INTO lp_payouts (burn_txid, currency) VALUES ($1, $2)",
+      [removalTx.transactionHash, "BTC"]
+    );
 
     try {
       const sendAmount = (outgoingBtcAmount - networkFee).toFixed(8);

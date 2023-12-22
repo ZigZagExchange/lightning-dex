@@ -74,6 +74,37 @@ function ProvideLiquidity() {
               ? "Generating deposit address ..."
               : "Deposit BTC"}
           </button>
+
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex justify-between text-[#88818C]"></div>
+            <div className="flex justify-between w-full">
+              <div className="flex space-x-2 text-[#88818C]">
+                <p>Exchange rate</p>
+              </div>
+              <span className="text-[#88818C] cursor-pointer">
+                1 BTC = 1 ZBLP
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex justify-between text-[#88818C]"></div>
+            <div className="flex justify-between w-full">
+              <div className="flex space-x-2 text-[#88818C]">
+                <p>Network fee</p>
+              </div>
+              <span className="text-[#88818C] cursor-pointer">~$30.71</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex justify-between text-[#88818C]"></div>
+            <div className="flex justify-between w-full">
+              <div className="flex space-x-2 text-[#88818C]">
+                <p>Yeild</p>
+              </div>
+              <span className="text-[#88818C] cursor-pointer">6%</span>
+            </div>
+          </div>
         </div>
       )}
     </>

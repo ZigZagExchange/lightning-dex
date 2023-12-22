@@ -18,11 +18,15 @@ function LiquidityPage() {
         <div className="flex items-center justify-between mb-5 ml-5 mr-5 space-x-2">
           <div>
             <div className="text-2xl font-medium text-white">
-              Stake your BTC
+              {activeTab === "provide"
+                ? "Deposit your Bitcoin"
+                : "Withdraw your Bitcoin"}
             </div>
 
             <div className="text-base text-white text-opacity-50">
-              Provide liquidity to the zap bridge.
+              {activeTab === "provide"
+                ? "Provide your ethereum address to receive your LP tokens."
+                : "Burn your LP tokens and redeem your Bitcoin."}
             </div>
           </div>
         </div>

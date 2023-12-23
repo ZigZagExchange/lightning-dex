@@ -9,8 +9,8 @@ const Home: NextPage = () => {
   return (
     <Layout>
       <Head>
-        <title>Lightning DEX</title>
-        <meta name="description" content="The Lightning to Ethereum Exchange" />
+        <title>Zap Bridge</title>
+        <meta name="description" content="The zap cross chain bridge" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <BridgeApiProvider>

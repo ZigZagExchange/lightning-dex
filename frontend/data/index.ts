@@ -82,3 +82,26 @@ export const ZZ_TOKEN_CONTRACT_ADDRESS_ON_ZKSYNC_ERA =
   "0x1ab721f531Cab4c87d536bE8B985EAFCE17f0184";
 export const ZKSYNC_LITE_LIQUIDITY_POOL =
   "0x9c84e4Ea84DeFEe45FF6Ec64ea3b1D85C7B9a50E";
+export const BTC_LP_CONTRACT_ADDRESS =
+  "0x8af49c65D94c17806f48aFC9Ff20A8350B3E471C";
+
+export const BTC_LP_CONTRACT_ABI = [
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "withdrawalAddress",
+        type: "string",
+      },
+    ],
+    name: "removeLiquidity",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];

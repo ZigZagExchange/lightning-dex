@@ -39,6 +39,14 @@ function Layout(props: PropsWithChildren) {
       >
         Order Book
       </Link>
+      <Link
+        href="/liquidity"
+        className={`${styles.nav_link} ${styles.named_nav_link} ${
+          router.route === "/trade" ? styles.active_nav_link : ""
+        }`}
+      >
+        Provide Liquidity
+      </Link>
     </nav>
   );
 

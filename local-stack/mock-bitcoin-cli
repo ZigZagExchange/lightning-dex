@@ -1,0 +1,20 @@
+if [ "$1" == "getnewaddress" ]; then
+    echo "MOCK_BTC_ADDRESS"
+fi
+
+if [ "$1" == "listtransactions" ]; then
+    echo '[{"category":"receive","confirmations":10,"address":"MOCK_BTC_ADDRESS","amount":0.5,"txid":"MOCK_TXID"}]'
+fi
+
+if [ "$1" == "estimatesmartfee" ]; then
+    echo '{"feerate": 0}'
+fi
+
+if [ "$1" == "getwalletinfo" ]; then
+    echo '{"balance": 1000}'
+fi
+
+# send to address
+if [ "$1" == "-named" ]; then
+    echo 'MOCK_TXID'
+fi

@@ -262,13 +262,6 @@ async function getZKsyncLiteBalances() {
   };
 }
 
-app.get("/bridge_history", async (_, res) => {
-  const last20Bridges = await db.query(
-    "SELECT * FROM bridges ORDER BY deposit_timestamp DESC LIMIT 20"
-  );
-  return res.status(200).json(last20Bridges.rows);
-});
-
 app.get("/get-btc-lp-deposit-address", async (req, res, next) => {
   const outgoing_address = req.query.outgoing_address;
   const addressgen = await exec(
@@ -291,6 +284,16 @@ app.get("/get-btc-lp-deposit-address", async (req, res, next) => {
   }
 });
 
+app.get('/bridge_history', async (_, res) => {
+  const last20Bridges = await db.query('SELECT * FROM bridges ORDER BY deposit_timestamp DESC LIMIT 20')
+  return res.status(200).json(last20Bridges.rows)
+})
+app.get('/analytics', async (_, res) => {
+  const volumePerDay = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_timestamp')
+  return res.status(200).json(volumePerDay.rows)
+  const volumePerChain = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_currency')
+  return res.status(200).json(volumePerChain.rows)
+})
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err });

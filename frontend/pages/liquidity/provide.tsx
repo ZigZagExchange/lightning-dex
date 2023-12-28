@@ -100,7 +100,7 @@ function ProvideLiquidity() {
             <div className="flex justify-between text-[#88818C]"></div>
             <div className="flex justify-between w-full">
               <div className="flex space-x-2 text-[#88818C]">
-                <p>Yeild</p>
+                <p>Yield</p>
               </div>
               <span className="text-[#88818C] cursor-pointer">6%</span>
             </div>

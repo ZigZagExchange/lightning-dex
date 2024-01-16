@@ -46,3 +46,9 @@ CREATE TABLE IF NOT EXISTS lp_payouts (
   currency TEXT NOT NULL,
   outgoing_txid TEXT
 );
+
+CREATE TABLE IF NOT EXISTS invoices (
+  payment_hash TEXT NOT NULL PRIMARY KEY,
+  outgoing_chain TEXT NOT NULL, 
+  outgoing_address TEXT NOT NULL
+);

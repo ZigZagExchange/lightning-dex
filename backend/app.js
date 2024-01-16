@@ -294,6 +294,31 @@ app.get('/analytics', async (_, res) => {
   const volumePerChain = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_currency')
   return res.status(200).json(volumePerChain.rows)
 })
+
+app.get("/lightning/fee/:chain/:address", async (req, res, next) => {
+  const invoicegen = await exec(
+    `lncli addinvoice 1000`
+  );
+  const invoice = JSON.parse(invoicegen.stdout.trim());
+  try {
+    await db.query(
+      "INSERT INTO invoices VALUES ($1,$2,$3)",
+      [invoice.r_hash, req.params.chain, req.params.address]
+    );  
+  } catch (e) {
+    return next(e);
+  }
+
+  res.set('Content-Type', 'text/html');
+  return res.status(200).send(`
+    <p><b>Pay the following 1000 sat fee invoice. Once you pay the fee, click the button to trade.</b></p>
+    <p>${invoice.payment_request}</p>
+    <p><button>Trade</button></p>
+  `);
+    
+})
+
+
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ err });

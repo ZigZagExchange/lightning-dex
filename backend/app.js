@@ -204,10 +204,15 @@ app.get('/bridge_history', async (_, res) => {
   return res.status(200).json(last20Bridges.rows)
 })
 app.get('/analytics', async (_, res) => {
-  const volumePerDay = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_timestamp')
-  return res.status(200).json(volumePerDay.rows)
-  const volumePerChain = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_currency')
-  return res.status(200).json(volumePerChain.rows)
+  try {
+    const volumePerDay = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_timestamp');
+    res.status(200).json(volumePerDay.rows);
+    const volumePerChain = await db.query('SELECT SUM(deposit_amount) FROM bridges GROUP BY deposit_currency');
+    res.status(200).json(volumePerChain.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 })
 app.use((err, req, res, next) => {
   console.error(err);
